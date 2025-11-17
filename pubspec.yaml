@@ -1,0 +1,31 @@
+name: plan_ex_app
+description: "Plan Execute Next"
+publish_to: 'none' 
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.2
+
+dependencies:
+
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+  dartz: ^0.10.1
+  connectivity_plus: ^7.0.0
+  fluttertoast: ^9.0.0
+  get_storage: ^2.1.1
+  provider: ^6.1.5+1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
