@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "1045154677922",
+    "project_id": "planex-4cc13",
+    "storage_bucket": "planex-4cc13.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1045154677922:android:2fd518742f1cbf261bc3fb",
+        "android_client_info": {
+          "package_name": "com.example.plan_ex_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1045154677922-7pnshdo17anklo2hnm1jlvkci04dejq3.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.plan_ex_app",
+            "certificate_hash": "c86a9cf8e02be456c92e602c365c1d978d20f2a8"
+          }
+        },
+        {
+          "client_id": "1045154677922-1nrpjnq9coctlser6chuvhjh20q58onr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDirxsscanwagyhtfCd-N9s5lGQo1lPh0A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1045154677922-1nrpjnq9coctlser6chuvhjh20q58onr.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1045154677922-nq4l1d31cg0lu2ravoomn3j9c9aedgpq.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.planExApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,14 +1,24 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:plan_ex_app/core/constants/app_theme.dart';
 import 'package:plan_ex_app/core/routes/app_router.dart';
 import 'package:plan_ex_app/core/routes/app_routes.dart';
+import 'package:plan_ex_app/features/auth_flow/data/auth_service.dart';
+import 'package:plan_ex_app/features/auth_flow/providers/auth_provider.dart';
 import 'package:plan_ex_app/features/theme_settings/provider/theme_provider.dart';
+import 'package:plan_ex_app/firebase_options.dart';
 import 'package:provider/provider.dart';
-
-void main() {
+final AuthService authService = AuthService();
+void main() async{
+    WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => ThemeProvider(),
+    MultiProvider(providers: [
+       ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),),
+       ChangeNotifierProvider(create: (_) => AuthProvider()),
+    ],
+   
       child: const MyApp(),
     ),
   );

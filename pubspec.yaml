@@ -17,6 +17,10 @@ dependencies:
   fluttertoast: ^9.0.0
   get_storage: ^2.1.1
   provider: ^6.1.5+1
+  firebase_core: ^4.2.1
+  firebase_auth: ^6.1.2
+  cloud_firestore: ^6.1.0
+  google_fonts: ^6.3.2
 
 dev_dependencies:
   flutter_test:
