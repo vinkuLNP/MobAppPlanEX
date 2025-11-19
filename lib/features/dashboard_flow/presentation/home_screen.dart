@@ -25,18 +25,6 @@ class _HomeScreenState extends State<HomeScreen> {
     },
     {
       'screen': const TasksScreen(),
-      'appBar': CustomAppBar(
-        title: "Tasks",
-        bottom: const TabBar(
-          tabs: [
-            Tab(text: "All"),
-            Tab(text: "Pending"),
-            Tab(text: "Done"),
-          ],
-          labelColor: AppColors.authThemeColor,
-          unselectedLabelColor: AppColors.greyishColor,
-        ),
-      ),
     },
     {
       'screen': const AccountScreen(),

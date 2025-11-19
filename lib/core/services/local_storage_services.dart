@@ -1,13 +1,19 @@
-import 'package:get_storage/get_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-class LocalStorageService {
-  static final _box = GetStorage();
+class SharedPrefsService {
+  static const _isProKey = 'is_pro_user';
+  final SharedPreferences _prefs;
 
-  static T? getData<T>(String key) => _box.read<T>(key);
+  SharedPrefsService._(this._prefs);
 
-  static Future<void> saveData(String key, dynamic value) async =>
-      await _box.write(key, value);
+  static Future<SharedPrefsService> getInstance() async {
+    final prefs = await SharedPreferences.getInstance();
+    return SharedPrefsService._(prefs);
+  }
 
-  static Future<void> removeData(String key) async =>
-      await _box.remove(key);
+  bool get isPro => _prefs.getBool(_isProKey) ?? false;
+
+  Future<void> setPro(bool val) async {
+    await _prefs.setBool(_isProKey, val);
+  }
 }

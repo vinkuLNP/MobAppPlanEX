@@ -17,7 +17,7 @@ class NotesRepository {
         category: e.category,
         content: e.content,
         attachments: e.attachments,
-        createdAt: DateTime.now(),
+        createdAt: DateTime.now(),color: e.color, 
       ));
 
   Future<void> update(NoteEntity e) =>
@@ -27,7 +27,7 @@ class NotesRepository {
         category: e.category,
         content: e.content,
         attachments: e.attachments,
-        createdAt: e.createdAt,
+        createdAt: e.createdAt,color: e.color, 
       ));
 
   Future<void> delete(String id) => service.deleteNote(id);

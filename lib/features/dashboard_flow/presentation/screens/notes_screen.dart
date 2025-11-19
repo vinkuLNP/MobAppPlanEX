@@ -21,69 +21,47 @@ class NotesScreen extends StatelessWidget {
         ),
       ),
 
-      body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+      body: Column(
         children: [
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  height: 46,
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Row(
-                    children: [
-                      Icon(Icons.search, color: Colors.grey),
-                      SizedBox(width: 10),
-                      Text("Search notes..."),
-                    ],
-                  ),
-                ),
-              ),
-
-              const SizedBox(width: 12),
-
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: const [
-                    Icon(Icons.filter_list),
-                    SizedBox(width: 6),
-                    Text("All Categories"),
-                  ],
-                ),
-              ),
-            ],
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: DropdownButton<String>(
+              value: provider.selectedCategory,
+              items: provider.categories
+                  .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                  .toList(),
+              onChanged: (v) {
+                if (v == null) return;
+                provider.filter(v);
+              },
+            ),
           ),
 
-          const SizedBox(height: 20),
-
-          Row(
-            children: [
-              const Icon(Icons.folder_open, color: Colors.purple),
-              const SizedBox(width: 6),
-              const Text(
-                "General",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-              ),
-            ],
+          Expanded(
+            child: provider.filteredNotes.isEmpty
+                ? const Center(child: Text("No notes yet"))
+                : ListView.builder(
+                    itemCount: provider.filteredNotes.length,
+                    itemBuilder: (context, i) {
+                      final n = provider.filteredNotes[i];
+                      return NoteCard(
+                        note: n,
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => NoteEditorScreen(note: n),
+                            ),
+                          );
+                        },
+                        onDelete: () => provider.delete(n.id),
+                      );
+                    },
+                  ),
           ),
-
-          const SizedBox(height: 10),
-
-          ...provider.filteredNotes.map((note) => NoteCard(note: note)),
         ],
       ),
     );
+    
   }
 }

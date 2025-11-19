@@ -1,4 +1,5 @@
-
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:plan_ex_app/core/constants/app_colors.dart';
 import 'package:plan_ex_app/features/dashboard_flow/domain/entities/note_entity.dart';
 
 class NoteModel extends NoteEntity {
@@ -9,6 +10,7 @@ class NoteModel extends NoteEntity {
     required super.content,
     required super.attachments,
     required super.createdAt,
+    required super.color,
   });
 
   Map<String, dynamic> toMap() {
@@ -17,7 +19,8 @@ class NoteModel extends NoteEntity {
       "category": category,
       "content": content,
       "attachments": attachments,
-      "createdAt": createdAt.toIso8601String(),
+      "createdAt": Timestamp.fromDate(createdAt),
+      "color": color,
     };
   }
 
@@ -28,7 +31,8 @@ class NoteModel extends NoteEntity {
       category: map["category"],
       content: map["content"],
       attachments: List<String>.from(map["attachments"] ?? []),
-      createdAt: DateTime.parse(map["createdAt"]),
+      createdAt: (map["createdAt"] as Timestamp).toDate(),
+      color: map["color"] ?? AppColors.authThemeColor,
     );
   }
 }

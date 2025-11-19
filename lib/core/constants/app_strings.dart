@@ -6,4 +6,5 @@ class AppStrings {
   static const signupEmailSent = "Verification email sent. Please check your inbox.";
 
   static const errorUnexpected = "Something went wrong";
+  
 }
