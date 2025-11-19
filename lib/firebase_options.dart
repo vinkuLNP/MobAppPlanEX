@@ -63,6 +63,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '1045154677922',
     projectId: 'planex-4cc13',
     storageBucket: 'planex-4cc13.firebasestorage.app',
+    androidClientId: '1045154677922-7pnshdo17anklo2hnm1jlvkci04dejq3.apps.googleusercontent.com',
     iosClientId: '1045154677922-nq4l1d31cg0lu2ravoomn3j9c9aedgpq.apps.googleusercontent.com',
     iosBundleId: 'com.example.planExApp',
   );
@@ -73,13 +74,14 @@ class DefaultFirebaseOptions {
     messagingSenderId: '1045154677922',
     projectId: 'planex-4cc13',
     storageBucket: 'planex-4cc13.firebasestorage.app',
+    androidClientId: '1045154677922-7pnshdo17anklo2hnm1jlvkci04dejq3.apps.googleusercontent.com',
     iosClientId: '1045154677922-nq4l1d31cg0lu2ravoomn3j9c9aedgpq.apps.googleusercontent.com',
     iosBundleId: 'com.example.planExApp',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
     apiKey: 'AIzaSyBQC1obuQJUFJKeQMFC6b5WbmorlVGPDEY',
-    appId: '1:1045154677922:web:b57f5b28408ac6f11bc3fb',
+    appId: '1:1045154677922:web:d6ea36b3c1ad38d01bc3fb',
     messagingSenderId: '1045154677922',
     projectId: 'planex-4cc13',
     authDomain: 'planex-4cc13.firebaseapp.com',

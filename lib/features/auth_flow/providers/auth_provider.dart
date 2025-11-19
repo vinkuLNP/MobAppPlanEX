@@ -86,16 +86,27 @@ class AuthProvider extends ChangeNotifier {
   }
 
   // AUTH CALLS
-  Future<bool> signIn() async {
+
+  Future<String> signIn() async {
     _setLoading(true);
 
-    error = await _service.signIn(
+    final result = await _service.signIn(
       email: signInEmailCtrl.text.trim(),
       password: signInPassCtrl.text,
     );
-    AppLogger.logString('Error: $error');
+
     _setLoading(false);
-    return error == null;
+
+    if (result == null) {
+      return "verified";
+    }
+
+    if (result == "unverified") {
+      return "unverified";
+    }
+
+    error = result;
+    return "error";
   }
 
   final emailCtrl = TextEditingController();
@@ -112,7 +123,7 @@ class AuthProvider extends ChangeNotifier {
   Future<bool> signUp() async {
     _setLoading(true);
     error = await _service.signUp(
-    fullName: signUpNameCtrl.text.trim(),
+      fullName: signUpNameCtrl.text.trim(),
       email: signUpEmailCtrl.text.trim(),
       password: signUpPassCtrl.text,
     );
@@ -133,32 +144,49 @@ class AuthProvider extends ChangeNotifier {
     _setLoading(false);
     return error == null;
   }
+
   Future<bool> checkEmailVerified() async {
-  _setLoading(true);
+    _setLoading(true);
 
-  final user = FirebaseAuth.instance.currentUser;
+    final user = FirebaseAuth.instance.currentUser;
 
-  if (user == null) {
-    error = "No user logged in.";
+    if (user == null) {
+      error = "No user logged in.";
+      _setLoading(false);
+      return false;
+    }
+
+    await user.reload();
+    final refreshedUser = FirebaseAuth.instance.currentUser;
+
+    final isVerified = refreshedUser?.emailVerified ?? false;
+
+    if (isVerified) {
+      error = null;
+      _setLoading(false);
+      return true;
+    }
+
+    error = "Email not verified yet";
     _setLoading(false);
     return false;
   }
 
-  await user.reload();
-  final refreshedUser = FirebaseAuth.instance.currentUser;
+  Future<String> googleSignIn() async {
+    _setLoading(true);
 
-  final isVerified = refreshedUser?.emailVerified ?? false;
+    final result = await _service.signInWithGoogle();
 
-  if (isVerified) {
-    error = null;
     _setLoading(false);
-    return true;
+
+    if (result == null) return "success";
+
+    if (result == "cancelled") return "cancelled";
+
+    if (result.toLowerCase().contains('cancelled')) return 'cancelled';
+
+    error = result;
+    notifyListeners();
+    return error!;
   }
-
-  error = "Email not verified yet";
-  _setLoading(false);
-  return false;
 }
-
-}
-

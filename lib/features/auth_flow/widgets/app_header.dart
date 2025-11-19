@@ -13,16 +13,16 @@ class AppHeader extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        SizedBox(height: MediaQuery.of(context).size.height / 9.3),
+        SizedBox(height: MediaQuery.of(context).size.height / 9.5),
 
         Image.asset(
           height: 100,
           appLogoWithOutBg,
           color: isDark ? Colors.white : Colors.black,
         ),
-        context.gap40,
+        context.gap20,
         Text(title, style: context.text.headlineMedium),
-         context.gap40,
+         context.gap20,
       ],
     );
   }
