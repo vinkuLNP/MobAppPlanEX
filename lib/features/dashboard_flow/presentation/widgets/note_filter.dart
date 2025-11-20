@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:plan_ex_app/core/app_widgets/app_common_text_widget.dart';
 
 class NoteFilter extends StatelessWidget {
   final List<String> categories;
@@ -19,7 +20,7 @@ class NoteFilter extends StatelessWidget {
       itemBuilder: (_) => categories
           .map((c) => PopupMenuItem(
                 value: c,
-                child: Text(c),
+                child: textWidget(text:  c),
               ))
           .toList(),
     );

@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:plan_ex_app/core/constants/app_assets.dart';
 import 'package:plan_ex_app/core/routes/app_routes.dart';
 
@@ -26,12 +26,12 @@ class _SplashPageState extends State<SplashPage>
       duration: const Duration(milliseconds: 1800),
     );
 
-    _fadeAnimation =
-        Tween<double>(begin: 0.0, end: 1.0).animate(_controller);
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(_controller);
 
-    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.15).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
-    );
+    _scaleAnimation = Tween<double>(
+      begin: 0.8,
+      end: 1.15,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
 
     _controller.forward();
 
@@ -41,7 +41,7 @@ class _SplashPageState extends State<SplashPage>
   void _checkAuthState() {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
-      Navigator.pushReplacementNamed(context,AppRoutes.login);
+      Navigator.pushReplacementNamed(context, AppRoutes.login);
     } else {
       Navigator.pushReplacementNamed(context, AppRoutes.home);
     }

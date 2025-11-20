@@ -31,6 +31,8 @@ extension AppContextExtensions on BuildContext {
   SizedBox get gap20 => const SizedBox(height: 20);
   SizedBox get gap24 => const SizedBox(height: 24);
   SizedBox get gap40 => const SizedBox(height: 40);
+  SizedBox get gap80 => const SizedBox(height: 80);
+
 
 
 
