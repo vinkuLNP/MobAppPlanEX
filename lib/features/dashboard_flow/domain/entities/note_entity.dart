@@ -5,6 +5,7 @@ class NoteEntity {
   final String content;
   final List<String> attachments;
   final DateTime createdAt;
+  final int color;
 
   NoteEntity({
     required this.id,
@@ -13,5 +14,6 @@ class NoteEntity {
     required this.content,
     required this.attachments,
     required this.createdAt,
+    required this.color,
   });
 }
