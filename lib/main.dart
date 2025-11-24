@@ -6,8 +6,11 @@ import 'package:plan_ex_app/core/routes/app_router.dart';
 import 'package:plan_ex_app/core/routes/app_routes.dart';
 import 'package:plan_ex_app/features/auth_flow/data/auth_service.dart';
 import 'package:plan_ex_app/features/auth_flow/providers/auth_provider.dart';
+import 'package:plan_ex_app/features/dashboard_flow/data/database/account_service.dart';
 import 'package:plan_ex_app/features/dashboard_flow/data/database/notes_service.dart';
+import 'package:plan_ex_app/features/dashboard_flow/data/repositories/account_repository.dart';
 import 'package:plan_ex_app/features/dashboard_flow/data/repositories/notes_repository.dart';
+import 'package:plan_ex_app/features/dashboard_flow/provider/account_provider.dart';
 import 'package:plan_ex_app/features/dashboard_flow/provider/notes_provider.dart';
 import 'package:plan_ex_app/features/dashboard_flow/provider/task_provider.dart';
 import 'package:plan_ex_app/features/theme_settings/provider/theme_provider.dart';
@@ -31,6 +34,8 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => AccountProvider(AccountRepository(AccountService()))),
+
         ChangeNotifierProvider(
           create: (_) => NotesProvider(NotesRepository(NotesService())),
         ),

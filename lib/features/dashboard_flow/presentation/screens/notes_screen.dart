@@ -21,7 +21,7 @@ class NotesScreen extends StatelessWidget {
                 color: AppColors.whiteColor,
               ),
               icon: const Icon(Icons.delete, color: AppColors.whiteColor),
-              backgroundColor: const Color.fromARGB(255, 227, 86, 76),
+              backgroundColor: AppColors.errorColor.withValues(alpha: 0.9),
               onPressed: () => provider.deleteSelected(),
             )
           : FloatingActionButton.extended(
@@ -44,7 +44,7 @@ class NotesScreen extends StatelessWidget {
                       child: Container(
                         height: 48,
                         decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
+                          color: AppColors.lightGrey.withValues(alpha: 0.7),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: TextField(
@@ -65,7 +65,7 @@ class NotesScreen extends StatelessWidget {
                       height: 48,
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
+                        color: AppColors.lightGrey.withValues(alpha: 0.7),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: DropdownButton<String>(
@@ -88,7 +88,10 @@ class NotesScreen extends StatelessWidget {
 
                         items: provider.categories
                             .map(
-                              (c) => DropdownMenuItem(value: c, child: Text(c)),
+                              (c) => DropdownMenuItem(
+                                value: c,
+                                child: textWidget(text: c),
+                              ),
                             )
                             .toList(),
 
@@ -105,15 +108,15 @@ class NotesScreen extends StatelessWidget {
                       height: 48,
                       width: 48,
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
+                        color: AppColors.lightGrey.withValues(alpha: 0.7),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: IconButton(
                         icon: Icon(
                           Icons.delete,
                           color: provider.multiSelectMode
-                              ? const Color.fromARGB(255, 110, 108, 108)
-                              : const Color.fromARGB(255, 144, 69, 64),
+                              ? AppColors.greyishColor
+                              : AppColors.errorColor.withValues(alpha: 0.9),
                         ),
                         onPressed: provider.multiSelectMode
                             ? provider.disableMultiSelectMode
