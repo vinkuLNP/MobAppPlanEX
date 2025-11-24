@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:plan_ex_app/core/app_widgets/app_common_button.dart';
+import 'package:plan_ex_app/core/app_widgets/app_common_text_widget.dart';
 import 'package:plan_ex_app/core/app_widgets/input_fields.dart';
 import 'package:plan_ex_app/core/constants/app_colors.dart';
-import 'package:plan_ex_app/core/constants/app_text_style.dart';
 import 'package:plan_ex_app/core/extensions/context_extensions.dart';
 import 'package:plan_ex_app/core/routes/app_routes.dart';
 import 'package:plan_ex_app/features/auth_flow/providers/auth_provider.dart';
@@ -23,8 +24,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     final auth = context.watch<AuthProvider>();
 
     return Scaffold(
-    resizeToAvoidBottomInset: true,
-          body: SingleChildScrollView(
+      resizeToAvoidBottomInset: true,
+      body: SingleChildScrollView(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 440),
           child: Padding(
@@ -35,11 +36,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const AppHeader(title: 'Forgot password'),
-        
                   if (auth.error != null)
-                    Text(auth.error!, style: const TextStyle(color: Colors.red)),
-        
-                
+                    textWidget(text: auth.error!, color: Colors.red),
                   AppInputField(
                     label: "Email",
                     controller: auth.signInEmailCtrl,
@@ -52,32 +50,32 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       }
                     },
                   ),
-        
-                context.gap40,
-        
+                  context.gap40,
                   auth.isLoading
                       ? const CircularProgressIndicator()
-                      : ElevatedButton(
-                          onPressed: () async {
+                      : AppButton(
+                          onTap: () async {
                             if (!formKey.currentState!.validate()) return;
-        
+
                             await context.read<AuthProvider>().resetPassword(
                               emailCtrl.text.trim(),
                             );
                           },
-                          child: Text(
-                            'Send reset link',
-                             style: appTextStyle(
-                                  fontSize: 14,
-                                  color: AppColors.backgroundColor,
-                                ),
-                          ),
+                          text: 'Send reset link',
+                          fontSize: 14,
+                          textColor: AppColors.backgroundColor,
                         ),
-        
+                  context.gap20,
                   TextButton(
                     onPressed: () =>
                         Navigator.pushNamed(context, AppRoutes.login),
-                    child: Text('Back to login', style: context.text.bodySmall),
+                    child: textWidget(
+                      text: 'Back to login',
+                      textDecoration: TextDecoration.underline,
+                      fontWeight: FontWeight.w600,
+                      textDecorationColor: AppColors.authThemeColor,
+                      color: AppColors.authThemeColor,
+                    ),
                   ),
                 ],
               ),

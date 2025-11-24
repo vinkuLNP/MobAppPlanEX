@@ -2,6 +2,8 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:plan_ex_app/core/app_widgets/app_common_text_widget.dart';
+import 'package:plan_ex_app/core/constants/app_text_style.dart';
 import 'package:plan_ex_app/features/dashboard_flow/data/database/supabase_service.dart';
 import 'package:plan_ex_app/features/dashboard_flow/data/models/recurrence_model.dart';
 import 'package:plan_ex_app/features/dashboard_flow/domain/entities/recurrence_entity.dart';
@@ -73,7 +75,7 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        title: Text(isEditing ? 'Edit Task' : 'Create Task'),
+        title: textWidget(text: isEditing ? 'Edit Task' : 'Create Task'),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -149,16 +151,16 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
 
   Widget _titleField() => TextField(
     controller: titleCtrl,
-    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+    style: appTextStyle(fontSize: 18, fontWeight: FontWeight.w600),
     decoration: const InputDecoration(
       labelText: 'Task title',
       border: InputBorder.none,
     ),
   );
 
-    Widget _tagField() => TextField(
+  Widget _tagField() => TextField(
     controller: tagCtrl,
-    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+    style: appTextStyle(fontSize: 18, fontWeight: FontWeight.w600),
     decoration: const InputDecoration(
       labelText: 'Add Tag',
       border: InputBorder.none,
@@ -177,22 +179,25 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
 
   Widget _colorPriorityRow() => Row(
     children: [
-      const Text('Color', style: TextStyle(fontWeight: FontWeight.w600)),
+      textWidget(text: 'Color', fontWeight: FontWeight.w600),
       const SizedBox(width: 12),
       GestureDetector(
         onTap: _openColorPicker,
         child: CircleAvatar(backgroundColor: selectedColor, radius: 16),
       ),
       const Spacer(),
-      const Text('Priority', style: TextStyle(fontWeight: FontWeight.w600)),
+      textWidget(text: 'Priority', fontWeight: FontWeight.w600),
       const SizedBox(width: 10),
       DropdownButton<String>(
         value: priority,
-        items: [
-          'low',
-          'medium',
-          'high',
-        ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+        items: ['low', 'medium', 'high']
+            .map(
+              (e) => DropdownMenuItem(
+                value: e,
+                child: textWidget(text: e),
+              ),
+            )
+            .toList(),
         onChanged: (v) => setState(() => priority = v!),
       ),
     ],
@@ -203,13 +208,16 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
     children: [
       Row(
         children: [
-          Text(
-            dueDate == null
+          textWidget(
+            text: dueDate == null
                 ? 'No due date'
                 : '${dueDate!.year}-${dueDate!.month}-${dueDate!.day}',
           ),
           const Spacer(),
-          TextButton(onPressed: _pickDate, child: const Text('Pick Due Date')),
+          TextButton(
+            onPressed: _pickDate,
+            child: textWidget(text: 'Pick Due Date'),
+          ),
         ],
       ),
       const SizedBox(height: 8),
@@ -220,10 +228,11 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
             onChanged: (v) => setState(() => recurringEnabled = v!),
           ),
           const SizedBox(width: 6),
-          const Text(
-            'Make this a recurring task',
-            style: TextStyle(fontWeight: FontWeight.w500),
+          textWidget(
+            text: 'Make this a recurring task',
+            fontWeight: FontWeight.w500,
           ),
+
           const Spacer(),
         ],
       ),
@@ -249,7 +258,12 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
             DropdownButton<RecurrenceUnit>(
               value: recurrenceUnit,
               items: RecurrenceUnit.values
-                  .map((u) => DropdownMenuItem(value: u, child: Text(u.name)))
+                  .map(
+                    (u) => DropdownMenuItem(
+                      value: u,
+                      child: textWidget(text: u.name),
+                    ),
+                  )
                   .toList(),
               onChanged: (v) => setState(() => recurrenceUnit = v!),
             ),
@@ -264,23 +278,21 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          const Text(
-            'Attachments',
-            style: TextStyle(fontWeight: FontWeight.w600),
-          ),
+          textWidget(text: 'Attachments', fontWeight: FontWeight.w600),
+
           TextButton.icon(
             onPressed: _pickAndUploadFile,
             icon: const Icon(Icons.upload_file),
-            label: const Text('Add'),
+            label: textWidget(text: 'Add'),
           ),
         ],
       ),
       if (attachments.isEmpty)
         Padding(
           padding: const EdgeInsets.only(top: 8),
-          child: Text(
-            'No attachments',
-            style: TextStyle(color: Colors.grey.shade600),
+          child: textWidget(
+            text: 'No attachments',
+            color: Colors.grey.shade600,
           ),
         ),
       ...attachments.map((a) => _attachmentTile(a)),
@@ -307,8 +319,12 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
               ),
             )
           : const Icon(Icons.insert_drive_file, size: 32),
-      title: Text(name, maxLines: 1, overflow: TextOverflow.ellipsis),
-      subtitle: Text(isImage ? 'Image' : 'Document'),
+      title: textWidget(
+        text: name,
+        maxLine: 1,
+        textOverflow: TextOverflow.ellipsis,
+      ),
+      subtitle: textWidget(text: isImage ? 'Image' : 'Document'),
       onTap: () => _openAttachment(url, isImage),
       trailing: IconButton(
         icon: const Icon(Icons.close),
@@ -357,9 +373,9 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
     } catch (e, st) {
       debugPrint('upload err $e $st');
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Upload failed: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: textWidget(text: 'Upload failed: $e')),
+        );
       }
     } finally {
       setState(() => uploading = false);
@@ -406,4 +422,3 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
     );
   }
 }
-

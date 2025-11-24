@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:plan_ex_app/core/utils/app_logger.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class AuthService {
   final _auth = FirebaseAuth.instance;
@@ -142,6 +143,38 @@ class AuthService {
       return "Google sign-in failed: $e";
     }
   }
+Future<String?> signInWithApple() async {
+  try {
+    final appleCredential = await SignInWithApple.getAppleIDCredential(
+      scopes: [
+        AppleIDAuthorizationScopes.email,
+        AppleIDAuthorizationScopes.fullName,
+      ],
+    );
+
+    final oauthCredential = OAuthProvider("apple.com").credential(
+      idToken: appleCredential.identityToken,
+      accessToken: appleCredential.authorizationCode,
+    );
+
+    final userCredential = await _auth.signInWithCredential(oauthCredential);
+
+    final user = userCredential.user;
+
+    if (user != null && user.emailVerified) {
+      return null; 
+    } else if (user != null && !user.emailVerified) {
+      return "unverified";
+    } else {
+      return "error";
+    }
+  } catch (e) {
+    if (e.toString().contains("AuthorizationErrorCode.canceled")) {
+      return "cancelled";
+    }
+    return "Apple sign-in failed: $e";
+  }
+}
 
   Future<void> signOut() async {
     try {

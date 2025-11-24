@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_button.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_text_widget.dart';
 import 'package:plan_ex_app/core/app_widgets/input_fields.dart';
 import 'package:plan_ex_app/core/constants/app_assets.dart';
 import 'package:plan_ex_app/core/constants/app_colors.dart';
+import 'package:plan_ex_app/core/constants/app_text_style.dart';
 import 'package:plan_ex_app/core/extensions/context_extensions.dart';
 import 'package:plan_ex_app/core/routes/app_routes.dart';
 import 'package:plan_ex_app/features/auth_flow/providers/auth_provider.dart';
@@ -50,10 +53,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 const AppHeader(title: "Create your account"),
 
                                 if (provider.error != null)
-                                  Text(
+                                 textWidget(text: 
                                     provider.error!,
-                                    style: const TextStyle(color: Colors.red),
-                                  ),
+                                    color: Colors.red),
+                            
 
                                 AppInputField(
                                   label: "Full Name",
@@ -64,6 +67,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                       ? "Required"
                                       : null,
                                 ),
+                                context.gap8,
 
                                 AppInputField(
                                   label: "Email",
@@ -72,6 +76,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   hint: "example@gmail.com",
                                   validator: provider.validateEmail,
                                 ),
+                                context.gap8,
 
                                 AppPasswordField(
                                   label: "Password",
@@ -80,6 +85,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   onToggle: provider.toggleSignUpObscure,
                                   validator: provider.validatePassword,
                                 ),
+                                context.gap8,
 
                                 AppPasswordField(
                                   label: "Confirm Password",
@@ -89,7 +95,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   validator: provider.validateConfirm,
                                 ),
 
-                                const SizedBox(height: 16),
+                                context.gap24,
 
                                 AppButton(
                                   onTap: () async {
@@ -122,16 +128,39 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                       AppRoutes.login,
                                     );
                                   },
-                                  child: textWidget(
-                                    text: "Already have an account? Sign In",
-                                    color: AppColors.greyishColor,
+                                  child: RichText(
+                                    text: TextSpan(
+                                      text: "Already have an account? ",
+                                      style: appTextStyle(
+                                        color: AppColors.greyishColor,
+                                        fontSize: 14,
+                                      ),
+                                      children: [
+                                        TextSpan(
+                                          text: "Sign In!",
+                                          style: appTextStyle(
+                                            fontSize: 14,
+
+                                             textDecorationColor:
+                                                      AppColors.authThemeColor,
+                                                  color:
+                                                      AppColors.authThemeColor,
+                                            textDecoration:
+                                                TextDecoration.underline,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                                 Padding(
                                   padding: const EdgeInsets.only(bottom: 20),
                                   child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      const Expanded(
+                                      const SizedBox(
+                                        width: 80,
                                         child: Divider(
                                           color: AppColors.greyishColor,
                                           thickness: 1,
@@ -146,7 +175,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                           color: AppColors.greyishColor,
                                         ),
                                       ),
-                                      const Expanded(
+                                      const SizedBox(
+                                        width: 80,
                                         child: Divider(
                                           color: AppColors.greyishColor,
                                           thickness: 1,
@@ -173,8 +203,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                       ScaffoldMessenger.of(
                                         context,
                                       ).showSnackBar(
-                                        const SnackBar(
-                                          content: Text(
+                                         SnackBar(
+                                          content:textWidget(text: 
                                             "Google Sign-Up cancelled",
                                           ),
                                         ),
@@ -184,7 +214,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         ScaffoldMessenger.of(
                                           context,
                                         ).showSnackBar(
-                                          SnackBar(content: Text(status)),
+                                          SnackBar(content:textWidget(text: status)),
                                         );
                                       }
                                     }
@@ -199,24 +229,53 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 ),
 
                                 const SizedBox(height: 16),
+                                if (Platform.isIOS)
+                                  AppButton(
+                                    text: "Sign Up with Apple",
+                                    onTap: () async {
+                                      final status = await provider
+                                          .appleSignIn();
 
-                                AppButton(
-                                  text: "Sign Up with Apple",
-                                  onTap: () async {
-                                   
-                                  },
-                                  icon: const Icon(
-                                    Icons.apple,
-                                    color: Colors.black,
+                                      if (status == "success" &&
+                                          context.mounted) {
+                                        Navigator.pushReplacementNamed(
+                                          context,
+                                          AppRoutes.home,
+                                        );
+                                      } else if (status == "cancelled" &&
+                                          context.mounted) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                           SnackBar(
+                                            content:textWidget(text: 
+                                              "Apple Sign-In cancelled",
+                                            ),
+                                          ),
+                                        );
+                                      } else {
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            SnackBar(content:textWidget(text: status)),
+                                          );
+                                        }
+                                      }
+                                    },
+
+                                    icon: const Icon(
+                                      Icons.apple,
+                                      color: Colors.black,
+                                    ),
+                                    imageSize: 20,
+                                    iconLeftMargin: 10,
+                                    showIcon: true,
+                                    buttonBackgroundColor: AppColors.whiteColor,
+                                    borderColor: AppColors.black,
+                                    textColor: AppColors.black,
+                                    isBorder: true,
                                   ),
-                                  imageSize: 20,
-                                  iconLeftMargin: 10,
-                                  showIcon: true,
-                                  buttonBackgroundColor: AppColors.whiteColor,
-                                  borderColor: AppColors.black,
-                                  textColor: AppColors.black,
-                                  isBorder: true,
-                                ),
                               ],
                             ),
                           ),

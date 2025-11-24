@@ -127,7 +127,7 @@ class TasksScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha:  0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 8,
               offset: const Offset(0, 3),
             ),
@@ -166,7 +166,7 @@ class TasksScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha:  0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -266,10 +266,10 @@ class TasksScreen extends StatelessWidget {
                             ),
                             decoration: BoxDecoration(
                               color: t.completed
-                                  ? Colors.grey.withValues(alpha:  0.12)
+                                  ? Colors.grey.withValues(alpha: 0.12)
                                   : (isOverdue
-                                        ? Colors.red.withValues(alpha:  0.12)
-                                        : Colors.blue.withValues(alpha:  0.10)),
+                                        ? Colors.red.withValues(alpha: 0.12)
+                                        : Colors.blue.withValues(alpha: 0.10)),
                               borderRadius: BorderRadius.circular(30),
                             ),
                             child: textWidget(
@@ -333,7 +333,7 @@ class TasksScreen extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: color.withValues(alpha:  0.08),
+          color: color.withValues(alpha: 0.08),
           shape: BoxShape.circle,
         ),
         child: Icon(icon, color: color, size: 20),
@@ -349,7 +349,7 @@ Description: ${task.description.isEmpty ? "-" : task.description}
 Due Date: ${task.dueDate?.toString().split(" ").first ?? "-"}
 Status: ${task.completed ? "Completed" : "Pending"}
 """;
-    Share.share(text);
+    SharePlus.instance.share(ShareParams(text: text));
   }
 
   void _confirmDelete(BuildContext context, TaskEntity task) {

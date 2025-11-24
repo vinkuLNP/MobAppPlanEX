@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_button.dart';
+import 'package:plan_ex_app/core/app_widgets/app_common_text_widget.dart';
+import 'package:plan_ex_app/core/constants/app_text_style.dart';
 import 'package:plan_ex_app/core/utils/colors_utils.dart';
 import 'package:plan_ex_app/features/dashboard_flow/presentation/widgets/image_preview_screen.dart';
 import 'package:plan_ex_app/features/dashboard_flow/provider/notes_provider.dart';
@@ -53,10 +55,11 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,
-        title: Text(
-          isEditing ? "Edit Note" : "Create Note",
-          style: const TextStyle(fontWeight: FontWeight.w600),
+        title: textWidget(
+          text: isEditing ? "Edit Note" : "Create Note",
+          fontWeight: FontWeight.w600,
         ),
+
         centerTitle: true,
       ),
 
@@ -81,13 +84,13 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
             AppButton(
               text: isEditing ? "Update Note" : "Create Note",
               onTap: uploading ? null : _saveNote,
-            ),SizedBox(height: 20,)
+            ),
+            SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
-
 
   Widget _sectionCard({required Widget child}) => Container(
     decoration: BoxDecoration(
@@ -95,7 +98,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
       borderRadius: BorderRadius.circular(16),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withValues(alpha:0.05),
+          color: Colors.black.withValues(alpha: 0.05),
           blurRadius: 8,
           offset: const Offset(0, 3),
         ),
@@ -107,7 +110,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
 
   Widget _titleField() => TextField(
     controller: titleCtrl,
-    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+    style:  appTextStyle(fontSize: 18, fontWeight: FontWeight.w600),
     decoration: const InputDecoration(
       labelText: "Title",
       border: InputBorder.none,
@@ -117,103 +120,101 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
   Widget _colorCategoryRow(NotesProvider provider) {
     return Row(
       children: [
-        const Text("Color", style: TextStyle(fontWeight: FontWeight.w500)),
+        textWidget(text: "Color", fontWeight: FontWeight.w500),
         const SizedBox(width: 12),
         GestureDetector(
           onTap: () => _openColorPicker(context),
           child: CircleAvatar(backgroundColor: selectedColor, radius: 16),
         ),
         const Spacer(),
-        const Text("Category", style: TextStyle(fontWeight: FontWeight.w500)),
+        textWidget(text: "Category", fontWeight: FontWeight.w500),
         const SizedBox(width: 10),
         provider.isPro
             ? _categoryDropdown(provider)
-            : Text("General", style: TextStyle(color: Colors.grey.shade600)),
+            : textWidget(text: "General", color: Colors.grey.shade600),
       ],
     );
   }
 
   Widget _contentField() => TextField(
     controller: contentCtrl,
-   minLines: 4,
-  maxLines: null,    
-  keyboardType: TextInputType.multiline,
-    style: const TextStyle(fontSize: 16),
+    minLines: 4,
+    maxLines: null,
+    keyboardType: TextInputType.multiline,
+    style:appTextStyle(fontSize: 16),
     decoration: const InputDecoration(
       labelText: "Write your note...",
       border: InputBorder.none,
     ),
   );
 
+  Widget _categoryDropdown(NotesProvider provider) {
+    final cats = provider.categories.where((c) => c != "All").toList();
 
-Widget _categoryDropdown(NotesProvider provider) {
-  final cats = provider.categories.where((c) => c != "All").toList();
+    if (!cats.contains(categoryCtrl.text)) {
+      cats.add(categoryCtrl.text);
+    }
 
-  if (!cats.contains(categoryCtrl.text)) {
-    cats.add(categoryCtrl.text);
-  }
-
-  return DropdownButton<String>(
-    underline: const SizedBox.shrink(),
-    value: categoryCtrl.text,
-    onChanged: (v) async {
-      if (v == "__add_new__") {
-        final newCat = await _openAddCategoryDialog();
-        if (newCat != null && newCat.trim().isNotEmpty) {
-          provider.addCategory(newCat.trim());
-          setState(() => categoryCtrl.text = newCat.trim());
+    return DropdownButton<String>(
+      underline: const SizedBox.shrink(),
+      value: categoryCtrl.text,
+      onChanged: (v) async {
+        if (v == "__add_new__") {
+          final newCat = await _openAddCategoryDialog();
+          if (newCat != null && newCat.trim().isNotEmpty) {
+            provider.addCategory(newCat.trim());
+            setState(() => categoryCtrl.text = newCat.trim());
+          }
+        } else {
+          setState(() => categoryCtrl.text = v ?? "General");
         }
-      } else {
-        setState(() => categoryCtrl.text = v ?? "General");
-      }
-    },
-    items: [
-      ...cats.map(
-        (c) => DropdownMenuItem(
-          value: c,
-          child: Text(c),
+      },
+      items: [
+        ...cats.map(
+          (c) => DropdownMenuItem(
+            value: c,
+            child: textWidget(text: c),
+          ),
         ),
-      ),
 
-      const DropdownMenuItem(
-        value: "__add_new__",
-        child: Row(
-          children: [
-            Icon(Icons.add, size: 18),
-            SizedBox(width: 6),
-            Text("Add new category"),
-          ],
-        ),
-      ),
-    ],
-  );
-}
-Future<String?> _openAddCategoryDialog() async {
-  final ctrl = TextEditingController();
-
-  return showDialog<String>(
-    context: context,
-    builder: (_) => AlertDialog(
-      title: const Text("New Category"),
-      content: TextField(
-        controller: ctrl,
-        decoration: const InputDecoration(
-          hintText: "Enter category name",
-        ),
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text("Cancel"),
-        ),
-        TextButton(
-          onPressed: () => Navigator.pop(context, ctrl.text.trim()),
-          child: const Text("Add"),
+        DropdownMenuItem(
+          value: "__add_new__",
+          child: Row(
+            children: [
+              Icon(Icons.add, size: 18),
+              SizedBox(width: 6),
+              textWidget(text: "Add new category"),
+            ],
+          ),
         ),
       ],
-    ),
-  );
-}
+    );
+  }
+
+  Future<String?> _openAddCategoryDialog() async {
+    final ctrl = TextEditingController();
+
+    return showDialog<String>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: textWidget(text: "New Category"),
+        content: TextField(
+          controller: ctrl,
+          decoration: const InputDecoration(hintText: "Enter category name"),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: textWidget(text: "Cancel"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, ctrl.text.trim()),
+            child: textWidget(text: "Add"),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _attachmentsSection(NotesProvider provider) {
     final pro = provider.isPro;
@@ -224,15 +225,17 @@ Future<String?> _openAddCategoryDialog() async {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
-              "Attachments",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            textWidget(
+              text: "Attachments",
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
             ),
+
             if (pro)
               TextButton.icon(
                 onPressed: _pickAndUploadFile,
                 icon: const Icon(Icons.upload_file, size: 20),
-                label: const Text("Add"),
+                label: textWidget(text: "Add"),
               ),
           ],
         ),
@@ -240,11 +243,11 @@ Future<String?> _openAddCategoryDialog() async {
         if (attachments.isEmpty)
           Padding(
             padding: const EdgeInsets.only(top: 8),
-            child: Text(
-              pro
+            child: textWidget(
+              text: pro
                   ? "No attachments yet."
                   : "Upgrade to Pro to add attachments.",
-              style: TextStyle(color: Colors.grey.shade600),
+              color: Colors.grey.shade600,
             ),
           ),
 
@@ -253,59 +256,61 @@ Future<String?> _openAddCategoryDialog() async {
     );
   }
 
-ListTile _attachmentTile(String url) {
-  final fileName = extractOriginalNameFromSignedUrl(url);
-  final isImage = fileName.contains(".png") ||
-      fileName.contains(".jpg") ||
-      fileName.contains(".jpeg") ||
-      fileName.contains(".webp");
+  ListTile _attachmentTile(String url) {
+    final fileName = extractOriginalNameFromSignedUrl(url);
+    final isImage =
+        fileName.contains(".png") ||
+        fileName.contains(".jpg") ||
+        fileName.contains(".jpeg") ||
+        fileName.contains(".webp");
 
-  return ListTile(
-    contentPadding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
 
-    leading: isImage
-        ? ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Image.network(
-              url,
-              height: 45,
-              width: 45,
-              fit: BoxFit.cover,
-            ),
-          )
-        : const Icon(Icons.insert_drive_file, size: 32),
+      leading: isImage
+          ? ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                url,
+                height: 45,
+                width: 45,
+                fit: BoxFit.cover,
+              ),
+            )
+          : const Icon(Icons.insert_drive_file, size: 32),
 
-    title: Text(fileName, maxLines: 1, overflow: TextOverflow.ellipsis),
-    subtitle: Text(
-      isImage ? "Image" : "Document",
-      style: TextStyle(color: Colors.grey.shade600),
-    ),
+      title: textWidget(
+        text: fileName,
+        maxLine: 1,
+        textOverflow: TextOverflow.ellipsis,
+      ),
+      subtitle: textWidget(
+        text: isImage ? "Image" : "Document",
+        color: Colors.grey.shade600,
+      ),
 
-    onTap: () => openAttachment(url, isImage: isImage),
+      onTap: () => openAttachment(url, isImage: isImage),
 
-    trailing: IconButton(
-      icon: const Icon(Icons.close),
-      onPressed: () => setState(() => attachments.remove(url)),
-    ),
-  );
-}
-
-Future<void> openAttachment(String url, {required bool isImage}) async {
-  if (isImage) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => ImagePreviewScreen(imageUrl: url),
+      trailing: IconButton(
+        icon: const Icon(Icons.close),
+        onPressed: () => setState(() => attachments.remove(url)),
       ),
     );
-  } else {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
+  Future<void> openAttachment(String url, {required bool isImage}) async {
+    if (isImage) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => ImagePreviewScreen(imageUrl: url)),
+      );
+    } else {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
     }
   }
-}
-
 
   Future<void> _pickAndUploadFile() async {
     final result = await FilePicker.platform.pickFiles(withData: false);
@@ -332,7 +337,6 @@ Future<void> openAttachment(String url, {required bool isImage}) async {
 
     final nameWithExt = parts[1];
     return nameWithExt;
-
   }
 
   Future<String> _uploadFileToSupabase(File file) async {
@@ -364,7 +368,9 @@ Future<void> openAttachment(String url, {required bool isImage}) async {
 
     if (titleCtrl.text.trim().isEmpty || contentCtrl.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Title and content cannot be empty")),
+        SnackBar(
+          content: textWidget(text: "Title and content cannot be empty"),
+        ),
       );
       return;
     }
@@ -394,7 +400,7 @@ Future<void> openAttachment(String url, {required bool isImage}) async {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text("Failed: $e")));
+        ).showSnackBar(SnackBar(content: textWidget(text: "Failed: $e")));
       }
     }
   }

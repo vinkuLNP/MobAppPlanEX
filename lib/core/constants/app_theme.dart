@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:plan_ex_app/core/constants/app_colors.dart';
 import 'package:plan_ex_app/core/constants/app_textstyles.dart';
 
 class AppTheme {
-  static Color accent = Colors.purple.shade400;
+  static Color accent = AppColors.authThemeColor;
 
   static final ThemeData lightTheme = ThemeData(
     brightness: Brightness.light,

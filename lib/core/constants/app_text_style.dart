@@ -12,7 +12,7 @@ TextStyle appTextStyle({
   TextDecoration? textDecoration,
   TextOverflow? textOverflow,
   double height = 0.0,
-}) => GoogleFonts.aDLaMDisplay(
+}) => GoogleFonts.poppins(
   decoration: textDecoration,
   decorationColor: textDecorationColor ?? AppColors.black,
   fontSize: fontSize,
