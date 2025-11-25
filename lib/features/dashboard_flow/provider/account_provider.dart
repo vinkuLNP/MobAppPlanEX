@@ -10,6 +10,7 @@ import 'package:plan_ex_app/features/dashboard_flow/domain/entities/user_entity.
 class AccountProvider extends ChangeNotifier {
   final AccountRepository repository;
   AccountProvider(this.repository);
+  final auth = FirebaseAuth.instance.currentUser;
 
   UserEntity? user;
   bool loading = true;
@@ -18,11 +19,26 @@ class AccountProvider extends ChangeNotifier {
   final nameController = TextEditingController();
   final emailController = TextEditingController();
 
-
   String? localImagePath;
+  bool processing = false;
+
+  void _setProcessing(bool value) {
+    processing = value;
+    notifyListeners();
+  }
 
   Future<void> init() async {
-    if (!loading) return;
+    loading = true;
+    notifyListeners();
+
+    final cached = repository.local.getUser();
+    if (cached != null) {
+      user = cached;
+      nameController.text = user!.fullName;
+      emailController.text = user!.email;
+      notifyListeners();
+    }
+
     await loadUser();
   }
 
@@ -30,7 +46,7 @@ class AccountProvider extends ChangeNotifier {
     loading = true;
     notifyListeners();
 
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final uid = auth?.uid;
     if (uid == null) {
       loading = false;
       notifyListeners();
@@ -40,31 +56,22 @@ class AccountProvider extends ChangeNotifier {
     user = await repository.getUser(uid);
 
     nameController.text = user?.fullName ?? '';
-
+    emailController.text = user?.email ?? '';
     try {
-      final notesSnap = await FirebaseFirestore.instance
-          .collection('notes')
-          .where('ownerId', isEqualTo: uid)
-          .get();
-      final tasksSnap = await FirebaseFirestore.instance
-          .collection('tasks')
-          .where('ownerId', isEqualTo: uid)
-          .get();
-      final completedTasksSnap = await FirebaseFirestore.instance
-          .collection('tasks')
-          .where('ownerId', isEqualTo: uid)
-          .where('completed', isEqualTo: true)
-          .get();
-
-      final totalNotes = notesSnap.docs.length;
-      final totalTasks = tasksSnap.docs.length;
-      final completedTasks = completedTasksSnap.docs.length;
-
-      user = user?.copyWith(
-        totalNotes: totalNotes,
-        totalTasks: totalTasks,
-        completedTasks: completedTasks,
-      );
+      FirebaseFirestore.instance
+          .collection("users")
+          .doc(uid)
+          .snapshots()
+          .listen((doc) {
+            final stats = doc.data()?['stats'];
+            if (stats != null) {
+              repository.updateStats(uid, {
+                'totalNotes': stats['totalNotes'],
+                'totalTasks': stats['totalTasks'],
+                'completedTasks': stats['completedTasks'],
+              });
+            }
+          });
     } catch (e) {
       AppLogger.error(e.toString());
     }
@@ -74,48 +81,60 @@ class AccountProvider extends ChangeNotifier {
   }
 
   Future<void> saveName() async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final uid = auth?.uid;
     if (uid == null) return;
+    _setProcessing(true);
     saving = true;
     notifyListeners();
     final newName = nameController.text.trim();
     await repository.updateName(uid, newName);
     user = user?.copyWith(fullName: newName);
     saving = false;
+    _setProcessing(false);
     notifyListeners();
   }
 
   Future<void> pickAndUploadAvatar(ImageSource source) async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final uid = auth?.uid;
     if (uid == null) return;
-
+    _setProcessing(true);
     final picker = ImagePicker();
     final picked = await picker.pickImage(
       source: source,
       imageQuality: 80,
       maxWidth: 1200,
     );
-    if (picked == null) return;
+    if (picked == null) {
+      _setProcessing(false);
+      return;
+    }
 
     localImagePath = picked.path;
     notifyListeners();
 
     final file = File(picked.path);
-    final oldUrl = user?.photoUrl;
-    final newUrl = await repository.uploadAvatar(uid, file);
+    final oldPath = user?.photoUrl;
+    final newPath = await repository.uploadAvatar(uid, file);
+    await repository.updateAvatar(uid, newPath);
 
-    if (oldUrl != null && oldUrl.isNotEmpty) {
-      await repository.deleteAvatarByUrl(oldUrl);
+    if (oldPath != null && oldPath.isNotEmpty) {
+      await repository.deleteAvatarByPath(oldPath);
     }
 
-    user = user?.copyWith(photoUrl: newUrl);
+    user = user?.copyWith(photoUrl: newPath);
+    _setProcessing(false);
     notifyListeners();
   }
 
-  Future<void> toggleSetting(String key, bool value) async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
-    if (uid == null) return;
+  Future<String?> getAvatarUrl() async {
+    if (user?.photoUrl == null) return null;
+    return await repository.getFreshAvatarUrl(user!.photoUrl!);
+  }
 
+  Future<void> toggleSetting(String key, bool value) async {
+    final uid = auth?.uid;
+    if (uid == null) return;
+    _setProcessing(true);
     final settings = {
       'darkMode': user?.darkMode ?? false,
       'showCreationDates': user?.showCreationDates ?? false,
@@ -136,12 +155,12 @@ class AccountProvider extends ChangeNotifier {
       overdueAlerts: settings['overdueAlerts'],
       autoSave: settings['autoSave'],
     );
-
+    _setProcessing(false);
     notifyListeners();
   }
 
   Future<void> upgrade() async {
-    final uid = FirebaseAuth.instance.currentUser?.uid;
+    final uid = auth?.uid;
     if (uid == null) return;
     await repository.upgradeUser(uid);
     user = user?.copyWith(isPaid: true);
@@ -149,10 +168,10 @@ class AccountProvider extends ChangeNotifier {
   }
 
   Future<String?> deleteAccount({required String? passwordForReauth}) async {
-    final firebaseUser = FirebaseAuth.instance.currentUser;
+    final firebaseUser = auth;
     final uid = firebaseUser?.uid;
     if (uid == null) return 'No user signed in';
-
+    _setProcessing(true);
     try {
       if (passwordForReauth != null && firebaseUser?.email != null) {
         final cred = EmailAuthProvider.credential(
@@ -163,18 +182,20 @@ class AccountProvider extends ChangeNotifier {
       }
 
       if (user?.photoUrl != null) {
-        await repository.deleteAvatarByUrl(user!.photoUrl!);
+        await repository.deleteAvatarByPath(user!.photoUrl!);
       }
 
       await repository.deleteUserDocument(uid);
 
       await firebaseUser!.delete();
-
+      _setProcessing(false);
       return null;
     } on FirebaseAuthException catch (e) {
       return e.code;
     } catch (e) {
       return e.toString();
+    } finally {
+      _setProcessing(false);
     }
   }
 }
