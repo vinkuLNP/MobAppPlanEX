@@ -3,13 +3,13 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_button.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_text_widget.dart';
+import 'package:plan_ex_app/core/app_widgets/app_common_widgets.dart';
 import 'package:plan_ex_app/core/constants/app_text_style.dart';
 import 'package:plan_ex_app/core/utils/colors_utils.dart';
-import 'package:plan_ex_app/features/dashboard_flow/presentation/widgets/image_preview_screen.dart';
+import 'package:plan_ex_app/features/dashboard_flow/presentation/widgets/pro_badge.dart';
 import 'package:plan_ex_app/features/dashboard_flow/provider/notes_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 import '../../domain/entities/note_entity.dart';
 
@@ -68,13 +68,13 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _sectionCard(child: _titleField()),
+            commonSectionCard(child: _titleField()),
             const SizedBox(height: 16),
-            _sectionCard(child: _colorCategoryRow(provider)),
+            commonSectionCard(child: _colorCategoryRow(provider)),
             const SizedBox(height: 16),
-            _sectionCard(child: _contentField()),
+            commonSectionCard(child: _contentField()),
             const SizedBox(height: 16),
-            _sectionCard(child: _attachmentsSection(provider)),
+            commonSectionCard(child: _attachmentsSection(provider)),
             const SizedBox(height: 24),
 
             uploading
@@ -92,25 +92,9 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     );
   }
 
-  Widget _sectionCard({required Widget child}) => Container(
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withValues(alpha: 0.05),
-          blurRadius: 8,
-          offset: const Offset(0, 3),
-        ),
-      ],
-    ),
-    padding: const EdgeInsets.all(16),
-    child: child,
-  );
-
   Widget _titleField() => TextField(
     controller: titleCtrl,
-    style:  appTextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+    style: appTextStyle(fontSize: 18, fontWeight: FontWeight.w600),
     decoration: const InputDecoration(
       labelText: "Title",
       border: InputBorder.none,
@@ -123,7 +107,14 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
         textWidget(text: "Color", fontWeight: FontWeight.w500),
         const SizedBox(width: 12),
         GestureDetector(
-          onTap: () => _openColorPicker(context),
+          onTap: () {
+            openColorPicker(
+              context: context,
+              onColorSelected: (color) {
+                setState(() => selectedColor = color);
+              },
+            );
+          },
           child: CircleAvatar(backgroundColor: selectedColor, radius: 16),
         ),
         const Spacer(),
@@ -141,7 +132,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     minLines: 4,
     maxLines: null,
     keyboardType: TextInputType.multiline,
-    style:appTextStyle(fontSize: 16),
+    style: appTextStyle(fontSize: 16),
     decoration: const InputDecoration(
       labelText: "Write your note...",
       border: InputBorder.none,
@@ -230,6 +221,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
+            if (!pro) ProBadge(),
 
             if (pro)
               TextButton.icon(
@@ -251,65 +243,14 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
             ),
           ),
 
-        ...attachments.map((a) => _attachmentTile(a)),
+        ...attachments.map((a) =>  commonAttachmentTile(
+          url: a,
+          isViewOnly: false,
+          onRemove: () => setState(() => attachments.remove(a)),
+          context: context,
+        ),)
       ],
     );
-  }
-
-  ListTile _attachmentTile(String url) {
-    final fileName = extractOriginalNameFromSignedUrl(url);
-    final isImage =
-        fileName.contains(".png") ||
-        fileName.contains(".jpg") ||
-        fileName.contains(".jpeg") ||
-        fileName.contains(".webp");
-
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
-
-      leading: isImage
-          ? ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                url,
-                height: 45,
-                width: 45,
-                fit: BoxFit.cover,
-              ),
-            )
-          : const Icon(Icons.insert_drive_file, size: 32),
-
-      title: textWidget(
-        text: fileName,
-        maxLine: 1,
-        textOverflow: TextOverflow.ellipsis,
-      ),
-      subtitle: textWidget(
-        text: isImage ? "Image" : "Document",
-        color: Colors.grey.shade600,
-      ),
-
-      onTap: () => openAttachment(url, isImage: isImage),
-
-      trailing: IconButton(
-        icon: const Icon(Icons.close),
-        onPressed: () => setState(() => attachments.remove(url)),
-      ),
-    );
-  }
-
-  Future<void> openAttachment(String url, {required bool isImage}) async {
-    if (isImage) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => ImagePreviewScreen(imageUrl: url)),
-      );
-    } else {
-      final uri = Uri.parse(url);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      }
-    }
   }
 
   Future<void> _pickAndUploadFile() async {
@@ -327,16 +268,6 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     } finally {
       setState(() => uploading = false);
     }
-  }
-
-  String extractOriginalNameFromSignedUrl(String url) {
-    final filePath = Uri.parse(url).pathSegments.last;
-    final clean = filePath.split('?').first;
-    final parts = clean.split('___');
-    if (parts.length < 2) return clean;
-
-    final nameWithExt = parts[1];
-    return nameWithExt;
   }
 
   Future<String> _uploadFileToSupabase(File file) async {
@@ -403,28 +334,5 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
         ).showSnackBar(SnackBar(content: textWidget(text: "Failed: $e")));
       }
     }
-  }
-
-  void _openColorPicker(BuildContext ctx) {
-    showModalBottomSheet(
-      context: ctx,
-      builder: (_) => Container(
-        padding: const EdgeInsets.all(16),
-        child: Wrap(
-          spacing: 12,
-          children: ColorsUtil.palette
-              .map(
-                (c) => GestureDetector(
-                  onTap: () {
-                    setState(() => selectedColor = c);
-                    Navigator.pop(context);
-                  },
-                  child: CircleAvatar(backgroundColor: c, radius: 22),
-                ),
-              )
-              .toList(),
-        ),
-      ),
-    );
   }
 }

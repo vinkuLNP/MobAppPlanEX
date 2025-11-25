@@ -15,6 +15,10 @@ void enableMultiSelectMode() {
   multiSelectMode = true;
   notifyListeners();
 }
+bool canCreateMoreNotes() {
+  if (isPro) return true;
+  return notes.length < 5;
+}
 
 void disableMultiSelectMode() {
   multiSelectMode = false;
@@ -39,8 +43,9 @@ int notesCountFor(String category) {
 
   Future<void> _initPrefs() async {
     _prefsService = await SharedPrefsService.getInstance();
-    isPro = true;
-    // _prefsService.isPro;
+    isPro =
+    //  true;
+    _prefsService.isPro;
     notifyListeners();
   }
 

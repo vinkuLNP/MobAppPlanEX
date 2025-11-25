@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_button.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_text_widget.dart';
+import 'package:plan_ex_app/core/app_widgets/app_common_widgets.dart';
 import 'package:plan_ex_app/core/constants/app_colors.dart';
 import 'package:plan_ex_app/core/constants/app_text_style.dart';
 import 'package:plan_ex_app/features/dashboard_flow/domain/entities/task_entity.dart';
@@ -40,6 +41,13 @@ class TasksScreen extends StatelessWidget {
           label: textWidget(text: "Add Task", color: Colors.white),
           icon: const Icon(Icons.add, color: Colors.white),
           onPressed: () {
+            if (!prov.isPro && prov.tasks.length >= 5) {
+              showUpgradeDialog(
+                context,
+                'Free users can create only 5 tasks. Upgrade to Pro for unlimited tasks, attachments and tags.',
+              );
+              return;
+            }
             Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => const TaskEditorScreen()),

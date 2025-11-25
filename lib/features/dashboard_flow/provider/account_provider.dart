@@ -1,8 +1,8 @@
 import 'dart:io';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:plan_ex_app/core/routes/app_routes.dart';
 import 'package:plan_ex_app/core/utils/app_logger.dart';
 import 'package:plan_ex_app/features/dashboard_flow/data/repositories/account_repository.dart';
 import 'package:plan_ex_app/features/dashboard_flow/domain/entities/user_entity.dart';
@@ -11,13 +11,16 @@ class AccountProvider extends ChangeNotifier {
   final AccountRepository repository;
   AccountProvider(this.repository);
   final auth = FirebaseAuth.instance.currentUser;
-
+  bool get isPremium => user?.isPaid == true;
   UserEntity? user;
-  bool loading = true;
+  bool accountLoading = false;
+  bool settingsLoading = false;
   bool saving = false;
-
+  bool initialAccountLoaded = false;
+  bool avatarResolvedOnce = false;
   final nameController = TextEditingController();
   final emailController = TextEditingController();
+  String? avatarUrl;
 
   String? localImagePath;
   bool processing = false;
@@ -27,56 +30,85 @@ class AccountProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> init() async {
-    loading = true;
-    notifyListeners();
-
-    final cached = repository.local.getUser();
-    if (cached != null) {
-      user = cached;
-      nameController.text = user!.fullName;
-      emailController.text = user!.email;
-      notifyListeners();
+  bool requirePremium(BuildContext context) {
+    if (!isPremium) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('This feature is available for Premium users only'),
+        ),
+      );
+      return false;
     }
-
-    await loadUser();
+    return true;
   }
 
-  Future<void> loadUser() async {
-    loading = true;
+  Widget premiumGuard({
+    required BuildContext context,
+    required Widget child,
+    Widget? lockedChild,
+  }) {
+    if (!isPremium) {
+      return lockedChild ??
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              Opacity(opacity: 0.4, child: child),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                padding: const EdgeInsets.all(12),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.lock, color: Colors.white),
+                    SizedBox(width: 8),
+                    Text('Premium Only', style: TextStyle(color: Colors.white)),
+                  ],
+                ),
+              ),
+            ],
+          );
+    }
+    return child;
+  }
+
+  Future<void> loadAccountBasicInfo() async {
+    final uid = auth?.uid;
+    if (uid == null) return;
+    if (initialAccountLoaded) return;
+    accountLoading = true;
     notifyListeners();
 
-    final uid = auth?.uid;
-    if (uid == null) {
-      loading = false;
-      notifyListeners();
-      return;
-    }
+    final data = await repository.getUser(uid);
 
-    user = await repository.getUser(uid);
+    user = data;
 
     nameController.text = user?.fullName ?? '';
     emailController.text = user?.email ?? '';
-    try {
-      FirebaseFirestore.instance
-          .collection("users")
-          .doc(uid)
-          .snapshots()
-          .listen((doc) {
-            final stats = doc.data()?['stats'];
-            if (stats != null) {
-              repository.updateStats(uid, {
-                'totalNotes': stats['totalNotes'],
-                'totalTasks': stats['totalTasks'],
-                'completedTasks': stats['completedTasks'],
-              });
-            }
-          });
-    } catch (e) {
-      AppLogger.error(e.toString());
-    }
 
-    loading = false;
+    if (user?.photoUrl != null && !avatarResolvedOnce) {
+      avatarUrl = await repository.getFreshAvatarUrl(user!.photoUrl!);
+      avatarResolvedOnce = true;
+    }
+    initialAccountLoaded = true;
+    accountLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> loadSettingsData() async {
+    final uid = auth?.uid;
+    if (uid == null) return;
+
+    settingsLoading = true;
+    notifyListeners();
+
+    final settings = await repository.getUser(uid);
+
+    user = settings;
+
+    settingsLoading = false;
     notifyListeners();
   }
 
@@ -84,7 +116,7 @@ class AccountProvider extends ChangeNotifier {
     final uid = auth?.uid;
     if (uid == null) return;
     _setProcessing(true);
-    saving = true;
+    // saving = true;
     notifyListeners();
     final newName = nameController.text.trim();
     await repository.updateName(uid, newName);
@@ -120,8 +152,9 @@ class AccountProvider extends ChangeNotifier {
     if (oldPath != null && oldPath.isNotEmpty) {
       await repository.deleteAvatarByPath(oldPath);
     }
-
+    avatarUrl = await repository.getFreshAvatarUrl(newPath);
     user = user?.copyWith(photoUrl: newPath);
+    avatarResolvedOnce = true;
     _setProcessing(false);
     notifyListeners();
   }
@@ -198,4 +231,29 @@ class AccountProvider extends ChangeNotifier {
       _setProcessing(false);
     }
   }
+
+  Future<void> logout(BuildContext context) async {
+    try {
+      await FirebaseAuth.instance.signOut();
+
+      repository.logout();
+      notifyListeners();
+      if (context.mounted) {
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil(AppRoutes.login, (route) => false);
+      }
+      _setProcessing(false);
+    } on FirebaseAuthException catch (e) {
+      AppLogger.error(e.toString());
+      AppLogger.error(e.code.toString());
+    } catch (e) {
+      AppLogger.error(e.toString());
+    } finally {
+      _setProcessing(false);
+    }
+  }
+  ThemeMode get themeMode =>
+    user?.darkMode == true ? ThemeMode.dark : ThemeMode.light;
+
 }

@@ -105,16 +105,14 @@ class _SignInScreenState extends State<SignInScreen> {
                                               AppRoutes.forgot,
                                             );
                                           },
-                                          child: Text(
-                                            "Forgot password?",
-                                            style: appTextStyle(
-                                              fontSize: 14,
-                                              color: AppColors.authThemeColor,
-                                              textDecorationColor:
-                                                  AppColors.authThemeColor,
-                                              textDecoration:
-                                                  TextDecoration.underline,
-                                            ),
+                                          child: textWidget(
+                                            text: "Forgot password?",
+                                            fontSize: 14,
+                                            color: AppColors.authThemeColor,
+                                            textDecorationColor:
+                                                AppColors.authThemeColor,
+                                            textDecoration:
+                                                TextDecoration.underline,
                                           ),
                                         ),
                                       ),
