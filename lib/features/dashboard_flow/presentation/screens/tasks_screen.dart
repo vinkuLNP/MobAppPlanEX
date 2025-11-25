@@ -172,12 +172,11 @@ class TasksScreen extends StatelessWidget {
                   horizontal: 16,
                   vertical: 14,
                 ),
-                leading: Checkbox(
-                  value: t.completed,
-                  activeColor: Colors.deepPurple,
-                  onChanged: t.completed
+                leading: GestureDetector(
+                  onTap: t.completed
                       ? null
-                      : (v) => _confirmCompletion(context, t),
+                      : () => _confirmCompletion(context, t),
+                  child: _circleCheckbox(t.completed),
                 ),
                 title: Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -228,18 +227,15 @@ class TasksScreen extends StatelessWidget {
                                   : Colors.green,
                             ),
                             const SizedBox(width: 4),
-                            Text(
-                              t.priority.toUpperCase(),
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 0.6,
-                                color: t.priority.toUpperCase() == "HIGH"
-                                    ? Colors.red
-                                    : t.priority.toUpperCase() == "MEDIUM"
-                                    ? Colors.orange
-                                    : Colors.green,
-                              ),
+                            textWidget(
+                              text: t.priority.toUpperCase(),
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                              color: t.priority.toUpperCase() == "HIGH"
+                                  ? Colors.red
+                                  : t.priority.toUpperCase() == "MEDIUM"
+                                  ? Colors.orange
+                                  : Colors.green,
                             ),
                           ],
                         ),
@@ -286,14 +282,14 @@ class TasksScreen extends StatelessWidget {
                     }
                     if (value == 'delete') _confirmDelete(context, t);
                   },
-                  itemBuilder: (_) => const [
+                  itemBuilder: (_) => [
                     PopupMenuItem(
                       value: 'share',
                       child: Row(
                         children: [
                           Icon(Icons.share, size: 16),
                           SizedBox(width: 6),
-                          Text('Share'),
+                          textWidget(text: 'Share'),
                         ],
                       ),
                     ),
@@ -304,7 +300,7 @@ class TasksScreen extends StatelessWidget {
                           Icon(Icons.edit, size: 16),
                           SizedBox(width: 6),
 
-                          Text('Edit'),
+                          textWidget(text: 'Edit'),
                         ],
                       ),
                     ),
@@ -315,7 +311,7 @@ class TasksScreen extends StatelessWidget {
                           Icon(Icons.delete, size: 16),
                           SizedBox(width: 6),
 
-                          Text('Delete'),
+                          textWidget(text: 'Delete'),
                         ],
                       ),
                     ),
@@ -355,12 +351,12 @@ class TasksScreen extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text("Delete Task?"),
-        content: const Text("This action cannot be undone."),
+        title: textWidget(text: "Delete Task?"),
+        content: textWidget(text: "This action cannot be undone."),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text("Cancel"),
+            child: textWidget(text: "Cancel"),
           ),
           AppButton(
             text: "Delete",
@@ -382,16 +378,16 @@ class TasksScreen extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text("Mark as Completed?"),
-        content: Text(
-          task.isRecurring
+        title: textWidget(text: "Mark as Completed?"),
+        content: textWidget(
+          text: task.isRecurring
               ? "This is a recurring task. Completing it will generate the next task."
               : "Are you sure you want to mark this task as completed?",
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text("Cancel"),
+            child: textWidget(text: "Cancel"),
           ),
           AppButton(
             text: "Confirm",
@@ -405,6 +401,21 @@ class TasksScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _circleCheckbox(bool isChecked) {
+    return Container(
+      width: 22,
+      height: 22,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.grey, width: 2),
+        color: isChecked ? Colors.grey : Colors.transparent,
+      ),
+      child: isChecked
+          ? const Icon(Icons.check, size: 14, color: Colors.white)
+          : null,
     );
   }
 }

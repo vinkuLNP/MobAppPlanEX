@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_text_widget.dart';
+import 'package:plan_ex_app/core/constants/app_colors.dart';
 import 'package:plan_ex_app/features/dashboard_flow/domain/entities/note_entity.dart';
 
 class NoteCard extends StatelessWidget {
@@ -38,9 +39,9 @@ class NoteCard extends StatelessWidget {
         child: Row(
           children: [
             if (multiSelectMode)
-              Checkbox(
-                value: isSelected,
-                onChanged: (_) => onSelectToggle?.call(),
+              GestureDetector(
+                onTap: onSelectToggle,
+                child: _selectionCircle(isSelected),
               ),
             if (!multiSelectMode)
               GestureDetector(
@@ -51,10 +52,10 @@ class NoteCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: isSelected ? Colors.orange : Colors.grey,
+                      color: AppColors.greyishColor.withValues(alpha: 0.5),
                       width: 2,
                     ),
-                    color: isSelected ? Colors.orange : Colors.transparent,
+                    color: Colors.transparent,
                   ),
                 ),
               ),
@@ -65,23 +66,19 @@ class NoteCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    note.title,
-                    style: const TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                    ),
+                  textWidget(
+                    text: note.title,
+                    color: Colors.black,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    note.content,
-                    style: TextStyle(
-                      color: const Color.fromARGB(255, 43, 42, 42),
-                      fontSize: 12,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                  textWidget(
+                    text: note.content,
+                    color: AppColors.greyishColor,
+                    fontSize: 12,
+                    maxLine: 2,
+                    textOverflow: TextOverflow.ellipsis,
                   ),
                   Row(
                     children: [
@@ -114,6 +111,24 @@ class NoteCard extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _selectionCircle(bool isSelected) {
+    return Container(
+      width: 22,
+      height: 22,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: isSelected ? AppColors.authThemeColor : AppColors.greyishColor,
+          width: 2,
+        ),
+        color: isSelected ? AppColors.authThemeColor : Colors.transparent,
+      ),
+      child: isSelected
+          ? const Icon(Icons.check, size: 14, color: Colors.white)
+          : null,
     );
   }
 }

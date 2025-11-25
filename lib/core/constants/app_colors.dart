@@ -8,4 +8,7 @@ class AppColors {
   static const Color authThemeColor = Color.fromARGB(255, 124, 75, 193);
   static const Color errorColor = Colors.redAccent;
   static const Color greyishColor = Colors.black54;
+  static const Color screenBackgroundColor = Color(0xFFECECED);
+  static const Color premiumColor = Color.fromRGBO(200, 230, 201, 1);
+  static const Color lightGrey = Color.fromRGBO(224, 224, 224, 1);
 }
