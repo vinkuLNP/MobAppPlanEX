@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_text_widget.dart';
+import 'package:plan_ex_app/core/app_widgets/app_common_widgets.dart';
 import 'package:plan_ex_app/core/constants/app_colors.dart';
 import 'package:plan_ex_app/features/dashboard_flow/presentation/widgets/note_card.dart';
 import 'package:plan_ex_app/features/dashboard_flow/presentation/widgets/note_editor_screen.dart';
@@ -21,18 +22,26 @@ class NotesScreen extends StatelessWidget {
                 color: AppColors.whiteColor,
               ),
               icon: const Icon(Icons.delete, color: AppColors.whiteColor),
-              backgroundColor: const Color.fromARGB(255, 227, 86, 76),
+              backgroundColor: AppColors.errorColor.withValues(alpha: 0.9),
               onPressed: () => provider.deleteSelected(),
             )
           : FloatingActionButton.extended(
               label: textWidget(text: "New Note"),
               icon: const Icon(Icons.add),
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => NoteEditorScreen()),
-              ),
+              onPressed: () {
+                if (!provider.isPro && provider.notes.length >= 5) {
+                  showUpgradeDialog(
+                    context,
+                    'Free users can create only 5 notes. Upgrade to Pro for unlimited notes, attachments and categories.',
+                  );
+                  return;
+                }
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => NoteEditorScreen()),
+                );
+              },
             ),
-
       body: Stack(
         children: [
           Column(
@@ -42,16 +51,23 @@ class NotesScreen extends StatelessWidget {
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.all(12),
-                      child: Container(
+                      child: SizedBox(
                         height: 48,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
                         child: TextField(
                           decoration: InputDecoration(
                             hintText: "Search notes...",
                             prefixIcon: const Icon(Icons.search, size: 20),
+                            fillColor: AppColors.lightGrey.withValues(
+                              alpha: 0.7,
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: AppColors.lightGrey.withValues(
+                                  alpha: 0.7,
+                                ),
+                              ),
+                            ),
                             border: InputBorder.none,
                             contentPadding: const EdgeInsets.only(top: 12),
                           ),
@@ -66,7 +82,7 @@ class NotesScreen extends StatelessWidget {
                       height: 48,
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
+                        color: AppColors.lightGrey.withValues(alpha: 0.7),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: DropdownButton<String>(
@@ -89,7 +105,10 @@ class NotesScreen extends StatelessWidget {
 
                         items: provider.categories
                             .map(
-                              (c) => DropdownMenuItem(value: c, child: Text(c)),
+                              (c) => DropdownMenuItem(
+                                value: c,
+                                child: textWidget(text: c),
+                              ),
                             )
                             .toList(),
 
@@ -106,15 +125,15 @@ class NotesScreen extends StatelessWidget {
                       height: 48,
                       width: 48,
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
+                        color: AppColors.lightGrey.withValues(alpha: 0.7),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: IconButton(
                         icon: Icon(
                           Icons.delete,
                           color: provider.multiSelectMode
-                              ? const Color.fromARGB(255, 110, 108, 108)
-                              : const Color.fromARGB(255, 144, 69, 64),
+                              ? AppColors.greyishColor
+                              : AppColors.errorColor.withValues(alpha: 0.9),
                         ),
                         onPressed: provider.multiSelectMode
                             ? provider.disableMultiSelectMode
@@ -124,45 +143,7 @@ class NotesScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              Padding(
-                padding: const EdgeInsets.only(left: 12, right: 12, bottom: 6),
-                child: SizedBox(
-                  height: 36,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children: provider.categories.map((category) {
-                      final isSelected = provider.selectedCategory == category;
-                      final count = provider.notesCountFor(category);
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: GestureDetector(
-                          onTap: () => provider.filter(category),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 14),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? Colors.black
-                                  : Colors.grey.shade200,
-                              borderRadius: BorderRadius.circular(20),
-                              border: isSelected
-                                  ? null
-                                  : Border.all(color: Colors.grey.shade400),
-                            ),
-                            alignment: Alignment.center,
-                            child: Text(
-                              "$category ($count)",
-                              style: TextStyle(
-                                color: isSelected ? Colors.white : Colors.black,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ),
+
               Expanded(
                 child: provider.filteredNotes.isEmpty
                     ? Center(child: textWidget(text: "No notes yet"))
@@ -192,32 +173,6 @@ class NotesScreen extends StatelessWidget {
               ),
             ],
           ),
-
-          if (!provider.multiSelectMode)
-            Positioned(
-              right: 10,
-              bottom: 100,
-              child: Column(
-                children: [
-                  FloatingActionButton(
-                    heroTag: "multiSelectBtn",
-                    mini: true,
-                    backgroundColor: Colors.white,
-                    child: const Icon(
-                      Icons.check_circle_outline,
-                      color: Colors.black,
-                    ),
-                    onPressed: () => provider.enableMultiSelectMode(),
-                  ),
-                  const SizedBox(height: 6),
-                  textWidget(
-                    text: "Select",
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ],
-              ),
-            ),
         ],
       ),
     );

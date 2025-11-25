@@ -1,12 +1,14 @@
 import 'dart:async';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:plan_ex_app/core/utils/app_logger.dart';
+import 'package:plan_ex_app/features/dashboard_flow/data/models/user_model.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class AuthService {
   final _auth = FirebaseAuth.instance;
+  final usersRef = FirebaseFirestore.instance.collection('users');
 
   Future<String?> signUp({
     required String fullName,
@@ -18,8 +20,12 @@ class AuthService {
         email: email.trim(),
         password: password,
       );
+      final user = cred.user;
+      if (user == null) return "Something went wrong";
       await cred.user?.updateDisplayName(fullName);
       await cred.user?.sendEmailVerification();
+      await createUserDocument(user, fullName: fullName);
+
       return null;
     } on FirebaseAuthException catch (e) {
       return e.message;
@@ -133,6 +139,7 @@ class AuthService {
 
       final user = FirebaseAuth.instance.currentUser;
       if (user != null && user.emailVerified) {
+        await createUserDocument(user);
         return null;
       } else if (user != null && !user.emailVerified) {
         return "unverified";
@@ -143,43 +150,71 @@ class AuthService {
       return "Google sign-in failed: $e";
     }
   }
-Future<String?> signInWithApple() async {
-  try {
-    final appleCredential = await SignInWithApple.getAppleIDCredential(
-      scopes: [
-        AppleIDAuthorizationScopes.email,
-        AppleIDAuthorizationScopes.fullName,
-      ],
-    );
 
-    final oauthCredential = OAuthProvider("apple.com").credential(
-      idToken: appleCredential.identityToken,
-      accessToken: appleCredential.authorizationCode,
-    );
+  Future<String?> signInWithApple() async {
+    try {
+      final appleCredential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
 
-    final userCredential = await _auth.signInWithCredential(oauthCredential);
+      final oauthCredential = OAuthProvider("apple.com").credential(
+        idToken: appleCredential.identityToken,
+        accessToken: appleCredential.authorizationCode,
+      );
 
-    final user = userCredential.user;
+      final userCredential = await _auth.signInWithCredential(oauthCredential);
 
-    if (user != null && user.emailVerified) {
-      return null; 
-    } else if (user != null && !user.emailVerified) {
-      return "unverified";
-    } else {
-      return "error";
+      final user = userCredential.user;
+
+      if (user != null && user.emailVerified) {
+        await createUserDocument(user);
+        return null;
+      } else if (user != null && !user.emailVerified) {
+        return "unverified";
+      } else {
+        return "error";
+      }
+    } catch (e) {
+      if (e.toString().contains("AuthorizationErrorCode.canceled")) {
+        return "cancelled";
+      }
+      return "Apple sign-in failed: $e";
     }
-  } catch (e) {
-    if (e.toString().contains("AuthorizationErrorCode.canceled")) {
-      return "cancelled";
-    }
-    return "Apple sign-in failed: $e";
   }
-}
 
   Future<void> signOut() async {
     try {
       await _auth.signOut();
       await GoogleSignIn.instance.disconnect();
     } catch (_) {}
+  }
+
+  Future<void> createUserDocument(User user, {String fullName = ''}) async {
+    final doc = await usersRef.doc(user.uid).get();
+
+    if (doc.exists) return;
+
+    final model = UserModel(
+      uid: user.uid,
+      fullName: user.displayName ?? fullName,
+      email: user.email ?? "",
+      isPaid: false,
+      photoUrl: user.photoURL ?? "",
+      createdAt: DateTime.now(),
+      darkMode: false,
+      showCreationDates: false,
+      dailySummary: false,
+      taskReminders: false,
+      overdueAlerts: false,
+      autoSave: false,
+      totalNotes: 0,
+      totalTasks: 0,
+      completedTasks: 0,
+    );
+
+    await usersRef.doc(user.uid).set(model.toMap());
   }
 }

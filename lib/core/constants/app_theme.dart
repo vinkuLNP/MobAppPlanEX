@@ -8,7 +8,14 @@ class AppTheme {
   static final ThemeData lightTheme = ThemeData(
     brightness: Brightness.light,
     primaryColor: accent,
-    colorScheme: ColorScheme.fromSeed(seedColor: accent),
+    // colorScheme: ColorScheme.fromSeed(seedColor: accent),
+    colorScheme: ColorScheme.light(
+    primary: accent,
+    // background: Colors.white,
+    surface: Colors.grey.shade100,
+    onSurface: Colors.black87,
+    // onBackground: Colors.black87,
+  ),
     scaffoldBackgroundColor: Colors.white,
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
@@ -18,6 +25,8 @@ class AppTheme {
         borderSide: BorderSide.none,
       ),
     ),
+    cardColor: AppColors.lightGrey.withValues(alpha: 0.7),
+      iconTheme: const IconThemeData(color: Colors.black87),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: accent,
@@ -29,13 +38,14 @@ class AppTheme {
     textTheme: TextTheme(
       headlineMedium: AppTextStyles.headline1,
       headlineSmall: AppTextStyles.headline2,
-      bodySmall: AppTextStyles.bodyText,
+      bodySmall: AppTextStyles.bodyText.copyWith(color: Colors.black87),
     ),
   );
 
   static final ThemeData darkTheme = ThemeData(
     brightness: Brightness.dark,
     primaryColor: accent,
+    
     scaffoldBackgroundColor: const Color(0xFF0B1020),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
@@ -45,6 +55,7 @@ class AppTheme {
         borderSide: BorderSide.none,
       ),
     ),
+    cardColor: AppColors.premiumColor,
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: accent,
@@ -56,7 +67,8 @@ class AppTheme {
     textTheme: TextTheme(
       headlineMedium: AppTextStyles.headlineDark1,
       headlineSmall: AppTextStyles.headlineDark2,
-      bodySmall: AppTextStyles.bodyTextDark,
+      bodySmall: AppTextStyles.bodyTextDark.copyWith(color: Colors.white),
+
     ),
   );
 }
