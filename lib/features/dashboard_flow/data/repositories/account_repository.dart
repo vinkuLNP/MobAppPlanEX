@@ -119,4 +119,7 @@ class AccountRepository {
     await service.deleteUserDocument(uid);
     await local.clear();
   }
+  Future<void> logout() async {
+    await local.clear();
+  }
 }

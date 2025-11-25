@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_button.dart';
@@ -17,28 +16,23 @@ class AccountScreen extends StatefulWidget {
 }
 
 class _AccountScreenState extends State<AccountScreen> {
-  bool initialized = false;
+  @override
+  void initState() {
+    super.initState();
 
- @override
-void initState() {
-  super.initState();
-
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    Provider.of<AccountProvider>(context, listen: false).init();
-  });
-}
-
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<AccountProvider>(
+        context,
+        listen: false,
+      ).loadAccountBasicInfo();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<AccountProvider>(
       builder: (context, provider, _) {
-        if (provider.loading) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
-        final user = provider.user!;
+        final user = provider.user;
         return Scaffold(
           backgroundColor: AppColors.screenBackgroundColor,
           body: Stack(
@@ -98,7 +92,7 @@ void initState() {
                           ),
                           const SizedBox(height: 6),
                           textWidget(
-                            text: user.isPaid
+                            text: user?.isPaid ?? false
                                 ? 'Premium features with unlimited storage'
                                 : 'Basic features with limited storage',
                             fontSize: 13,
@@ -109,16 +103,16 @@ void initState() {
                             children: [
                               Chip(
                                 label: textWidget(
-                                  text: user.isPaid
+                                  text: user?.isPaid ?? false
                                       ? 'Premium User'
                                       : 'Free User',
                                 ),
-                                backgroundColor: user.isPaid
+                                backgroundColor: user?.isPaid ?? false
                                     ? AppColors.premiumColor
                                     : AppColors.lightGrey,
                               ),
                               const Spacer(),
-                              if (!user.isPaid)
+                              if (user != null && !user.isPaid)
                                 Expanded(
                                   child: AppButton(
                                     text: 'Upgrade',
@@ -160,6 +154,18 @@ void initState() {
                   ],
                 ),
               ),
+
+              if (provider.accountLoading)
+                Container(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  child: const Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [CircularProgressIndicator(strokeWidth: 6)],
+                    ),
+                  ),
+                ),
+
               if (provider.processing)
                 Container(
                   color: Colors.black.withValues(alpha: 0.3),
@@ -290,22 +296,18 @@ void initState() {
         backgroundImage: FileImage(File(provider.localImagePath!)),
       );
     }
-    return FutureBuilder<String?>(
-      future: provider.getAvatarUrl(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return CircleAvatar(
-            radius: 38,
-            backgroundColor: AppColors.authThemeColor.withValues(alpha: 0.4),
-            child: const Icon(Icons.person, color: AppColors.authThemeColor),
-          );
-        }
 
-        return CircleAvatar(
-          radius: 38,
-          backgroundImage: NetworkImage(snapshot.data!),
-        );
-      },
+    if (provider.avatarUrl != null) {
+      return CircleAvatar(
+        radius: 38,
+        backgroundImage: NetworkImage(provider.avatarUrl!),
+      );
+    }
+
+    return CircleAvatar(
+      radius: 38,
+      backgroundColor: AppColors.authThemeColor.withValues(alpha: 0.4),
+      child: const Icon(Icons.person, color: AppColors.authThemeColor),
     );
   }
 

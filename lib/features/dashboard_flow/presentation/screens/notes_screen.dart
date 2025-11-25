@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_text_widget.dart';
+import 'package:plan_ex_app/core/app_widgets/app_common_widgets.dart';
 import 'package:plan_ex_app/core/constants/app_colors.dart';
 import 'package:plan_ex_app/features/dashboard_flow/presentation/widgets/note_card.dart';
 import 'package:plan_ex_app/features/dashboard_flow/presentation/widgets/note_editor_screen.dart';
@@ -27,10 +28,19 @@ class NotesScreen extends StatelessWidget {
           : FloatingActionButton.extended(
               label: textWidget(text: "New Note"),
               icon: const Icon(Icons.add),
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => NoteEditorScreen()),
-              ),
+              onPressed: () {
+                if (!provider.isPro && provider.notes.length >= 5) {
+                  showUpgradeDialog(
+                    context,
+                    'Free users can create only 5 notes. Upgrade to Pro for unlimited notes, attachments and categories.',
+                  );
+                  return;
+                }
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => NoteEditorScreen()),
+                );
+              },
             ),
       body: Stack(
         children: [
@@ -41,16 +51,23 @@ class NotesScreen extends StatelessWidget {
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.all(12),
-                      child: Container(
+                      child: SizedBox(
                         height: 48,
-                        decoration: BoxDecoration(
-                          color: AppColors.lightGrey.withValues(alpha: 0.7),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
                         child: TextField(
                           decoration: InputDecoration(
                             hintText: "Search notes...",
                             prefixIcon: const Icon(Icons.search, size: 20),
+                            fillColor: AppColors.lightGrey.withValues(
+                              alpha: 0.7,
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: AppColors.lightGrey.withValues(
+                                  alpha: 0.7,
+                                ),
+                              ),
+                            ),
                             border: InputBorder.none,
                             contentPadding: const EdgeInsets.only(top: 12),
                           ),

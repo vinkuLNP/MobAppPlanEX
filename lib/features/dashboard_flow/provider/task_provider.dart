@@ -13,7 +13,7 @@ class TasksProvider extends ChangeNotifier {
   TasksProvider() {
     _listen();
   }
-
+  bool isPro = false;
   void _listen() {
     _sub = _repo.getTasks().listen((list) {
       tasks = list;
