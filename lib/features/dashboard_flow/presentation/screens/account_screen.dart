@@ -19,14 +19,15 @@ class AccountScreen extends StatefulWidget {
 class _AccountScreenState extends State<AccountScreen> {
   bool initialized = false;
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!initialized) {
-      Provider.of<AccountProvider>(context, listen: false).init();
-      initialized = true;
-    }
-  }
+ @override
+void initState() {
+  super.initState();
+
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    Provider.of<AccountProvider>(context, listen: false).init();
+  });
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -37,139 +38,144 @@ class _AccountScreenState extends State<AccountScreen> {
             body: Center(child: CircularProgressIndicator()),
           );
         }
-
         final user = provider.user!;
-        provider.emailController.text = user.email;
-        provider.nameController.text = user.fullName;
-
         return Scaffold(
           backgroundColor: AppColors.screenBackgroundColor,
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                _card(
-                  child: Column(
-                    children: [
-                      GestureDetector(
-                        onTap: () => _showPickAvatarSheet(provider),
-                        child: CircleAvatar(
-                          radius: 38,
-                          backgroundColor: AppColors.authThemeColor.withValues(
-                            alpha: 0.4,
-                          ),
-                          backgroundImage: _avatarImage(provider),
-                          child:
-                              provider.user?.photoUrl == null &&
-                                  provider.localImagePath == null
-                              ? const Icon(
-                                  Icons.person,
-                                  size: 40,
-                                  color: AppColors.authThemeColor,
-                                )
-                              : null,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      TextButton(
-                        onPressed: () => _showPickAvatarSheet(provider),
-                        child: textWidget(text: 'Change avatar'),
-                      ),
-                      textWidget(
-                        text: 'JPG, GIF or PNG. 1MB max.',
-                        fontSize: 12,
-                        color: AppColors.greyishColor,
-                      ),
-
-                      const SizedBox(height: 16),
-                      AppInputField(
-                        label: 'Full Name',
-                        controller: provider.nameController,
-                      ),
-
-                      const SizedBox(height: 10),
-                      AppInputField(
-                        label: 'Email',
-                        controller: provider.emailController,
-                        readOnly: true,
-                      ),
-                      const SizedBox(height: 20),
-                      AppButton(text: 'Save Changes', onTap: provider.saveName),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                _card(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      textWidget(
-                        text: 'Subscriptions',
-                        fontWeight: FontWeight.bold,
-                      ),
-                      const SizedBox(height: 6),
-                      textWidget(
-                        text: user.isPaid
-                            ? 'Premium features with unlimited storage'
-                            : 'Basic features with limited storage',
-                        fontSize: 13,
-                        color: AppColors.greyishColor,
-                      ),
-                      const SizedBox(height: 12),
-                      Row(
+          body: Stack(
+            children: [
+              SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    _card(
+                      child: Column(
                         children: [
-                          Chip(
-                            label: textWidget(
-                              text: user.isPaid ? 'Premium User' : 'Free User',
-                            ),
-                            backgroundColor: user.isPaid
-                                ? AppColors.premiumColor
-                                : AppColors.lightGrey,
+                          GestureDetector(
+                            onTap: () => _showPickAvatarSheet(provider),
+                            child: _avatarImage(provider),
                           ),
-                          const Spacer(),
-                          if (!user.isPaid)
-                            Expanded(
-                              child: AppButton(
-                                text: 'Upgrade',
-                                onTap: provider.upgrade,
-                              ),
-                            ),
+                          const SizedBox(height: 8),
+                          TextButton(
+                            onPressed: () => _showPickAvatarSheet(provider),
+                            child: textWidget(text: 'Change avatar'),
+                          ),
+                          textWidget(
+                            text: 'JPG, GIF or PNG. 1MB max.',
+                            fontSize: 12,
+                            color: AppColors.greyishColor,
+                          ),
+
+                          const SizedBox(height: 16),
+                          AppInputField(
+                            label: 'Full Name',
+                            controller: provider.nameController,
+                          ),
+
+                          const SizedBox(height: 10),
+                          AppInputField(
+                            label: 'Email',
+                            controller: provider.emailController,
+                            readOnly: true,
+                          ),
+                          const SizedBox(height: 20),
+                          AppButton(
+                            text: 'Save Changes',
+                            onTap: provider.saveName,
+                          ),
                         ],
                       ),
-                    ],
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    _card(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          textWidget(
+                            text: 'Subscriptions',
+                            fontWeight: FontWeight.bold,
+                          ),
+                          const SizedBox(height: 6),
+                          textWidget(
+                            text: user.isPaid
+                                ? 'Premium features with unlimited storage'
+                                : 'Basic features with limited storage',
+                            fontSize: 13,
+                            color: AppColors.greyishColor,
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Chip(
+                                label: textWidget(
+                                  text: user.isPaid
+                                      ? 'Premium User'
+                                      : 'Free User',
+                                ),
+                                backgroundColor: user.isPaid
+                                    ? AppColors.premiumColor
+                                    : AppColors.lightGrey,
+                              ),
+                              const Spacer(),
+                              if (!user.isPaid)
+                                Expanded(
+                                  child: AppButton(
+                                    text: 'Upgrade',
+                                    onTap: provider.upgrade,
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    _card(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          textWidget(
+                            text: 'Danger Zone',
+                            fontWeight: FontWeight.bold,
+                          ),
+                          const SizedBox(height: 6),
+                          textWidget(
+                            text: 'Irreversible and destructive action.',
+                            fontSize: 13,
+                            color: AppColors.greyishColor,
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          AppButton(
+                            text: 'Delete Account Forever',
+                            onTap: () => _confirmDelete(provider),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (provider.processing)
+                Container(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  child: const Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        CircularProgressIndicator(
+                          strokeWidth: 6,
+                          color: AppColors.authThemeColor,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-
-                const SizedBox(height: 20),
-
-                _card(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      textWidget(
-                        text: 'Danger Zone',
-                        fontWeight: FontWeight.bold,
-                      ),
-                      const SizedBox(height: 6),
-                      textWidget(
-                        text: 'Irreversible and destructive action.',
-                        fontSize: 13,
-                        color: AppColors.greyishColor,
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      AppButton(
-                        text: 'Delete Account Forever',
-                        onTap: () => _confirmDelete(provider),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+            ],
           ),
         );
       },
@@ -277,15 +283,30 @@ class _AccountScreenState extends State<AccountScreen> {
     );
   }
 
-  ImageProvider? _avatarImage(AccountProvider provider) {
+  Widget _avatarImage(AccountProvider provider) {
     if (provider.localImagePath != null) {
-      return FileImage(File(provider.localImagePath!));
+      return CircleAvatar(
+        radius: 38,
+        backgroundImage: FileImage(File(provider.localImagePath!)),
+      );
     }
-    final url = provider.user?.photoUrl;
-    if (url != null && url.isNotEmpty) {
-      return NetworkImage(url);
-    }
-    return null;
+    return FutureBuilder<String?>(
+      future: provider.getAvatarUrl(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return CircleAvatar(
+            radius: 38,
+            backgroundColor: AppColors.authThemeColor.withValues(alpha: 0.4),
+            child: const Icon(Icons.person, color: AppColors.authThemeColor),
+          );
+        }
+
+        return CircleAvatar(
+          radius: 38,
+          backgroundImage: NetworkImage(snapshot.data!),
+        );
+      },
+    );
   }
 
   void _showPickAvatarSheet(AccountProvider provider) {

@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:plan_ex_app/core/utils/app_logger.dart';
 import 'package:plan_ex_app/features/dashboard_flow/data/models/user_model.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:uuid/uuid.dart';
 
 class AccountService {
   final _db = FirebaseFirestore.instance.collection('users');
@@ -33,13 +35,47 @@ class AccountService {
     await _db.doc(uid).update({'stats': stats});
   }
 
-  Future<String> uploadAvatar(String uid, File file) async {
-    return 'url';
+  Future<void> updateAvatar(String uid, String avatarUrl) async {
+    await _db.doc(uid).update({'photoUrl': avatarUrl});
+  }
+
+  Future<String> uploadAvatarToSupabase(String uid, File file) async {
+    final supabase = Supabase.instance.client;
+    final id = const Uuid().v4();
+
+    final ext = file.path.split('.').last;
+    final filePath = "avatars/$uid/$id.$ext";
+    final fileBytes = await file.readAsBytes();
+
+    await supabase.storage
+        .from('user_avatars')
+        .uploadBinary(
+          filePath,
+          fileBytes,
+          fileOptions: FileOptions(contentType: "image/$ext"),
+        );
+
+    return filePath;
+  }
+
+  Future<String?> getFreshAvatarUrl(String path) async {
+    final supabase = Supabase.instance.client;
+    return await supabase.storage
+        .from('user_avatars')
+        .createSignedUrl(path, 60 * 60 * 24 * 7);
+  }
+
+  Future<void> deleteSupabaseAvatarByPath(String path) async {
+    try {
+      final supabase = Supabase.instance.client;
+      await supabase.storage.from('user_avatars').remove([path]);
+    } catch (e) {
+      AppLogger.error(e.toString());
+    }
   }
 
   Future<void> deleteAvatarByUrl(String url) async {
-    try {
-    } catch (e) {
+    try {} catch (e) {
       AppLogger.error(e.toString());
     }
   }

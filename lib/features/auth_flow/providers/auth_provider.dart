@@ -2,10 +2,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:plan_ex_app/core/utils/app_logger.dart';
 import 'package:plan_ex_app/features/auth_flow/data/auth_service.dart';
+import 'package:plan_ex_app/features/dashboard_flow/data/repositories/account_repository.dart';
 
 class AuthProvider extends ChangeNotifier {
   final AuthService _service = AuthService();
+  final AccountRepository accountRepository;
 
+  AuthProvider({required this.accountRepository});
   // SIGN IN CONTROLLERS
   final signInEmailCtrl = TextEditingController();
   final signInPassCtrl = TextEditingController();
@@ -98,6 +101,8 @@ class AuthProvider extends ChangeNotifier {
     _setLoading(false);
 
     if (result == null) {
+      final uid = FirebaseAuth.instance.currentUser!.uid;
+await accountRepository.getUser(uid);
       return "verified";
     }
 

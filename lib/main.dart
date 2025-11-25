@@ -6,6 +6,7 @@ import 'package:plan_ex_app/core/routes/app_router.dart';
 import 'package:plan_ex_app/core/routes/app_routes.dart';
 import 'package:plan_ex_app/features/auth_flow/data/auth_service.dart';
 import 'package:plan_ex_app/features/auth_flow/providers/auth_provider.dart';
+import 'package:plan_ex_app/features/dashboard_flow/data/database/account_local_datasource.dart';
 import 'package:plan_ex_app/features/dashboard_flow/data/database/account_service.dart';
 import 'package:plan_ex_app/features/dashboard_flow/data/database/notes_service.dart';
 import 'package:plan_ex_app/features/dashboard_flow/data/repositories/account_repository.dart';
@@ -16,6 +17,7 @@ import 'package:plan_ex_app/features/dashboard_flow/provider/task_provider.dart'
 import 'package:plan_ex_app/features/theme_settings/provider/theme_provider.dart';
 import 'package:plan_ex_app/firebase_options.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final AuthService authService = AuthService();
@@ -28,21 +30,30 @@ void main() async {
     url: dotenv.env['SUPABASE_URL']!,
     anonKey: dotenv.env['SUPABASE_KEY']!,
   );
+  final prefs = await SharedPreferences.getInstance();
+  final accountLocal = AccountLocalDataSource(prefs);
+  final accountService = AccountService();
+  final accountRepository = AccountRepository(accountService, accountLocal);
 
   runApp(
     MultiProvider(
       providers: [
+        Provider<AccountRepository>.value(value: accountRepository),
+
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => AccountProvider(AccountRepository(AccountService()))),
+        ChangeNotifierProvider(
+          create: (_) => AuthProvider(accountRepository: accountRepository),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => AccountProvider(accountRepository),
+        ),
 
         ChangeNotifierProvider(
-          create: (_) => NotesProvider(NotesRepository(NotesService())),
+          create: (_) =>
+              NotesProvider(NotesRepository(NotesService(), accountRepository)),
         ),
 
-         ChangeNotifierProvider(
-          create: (_) => TasksProvider(),
-        ),
+        ChangeNotifierProvider(create: (_) => TasksProvider()),
       ],
 
       child: const MyApp(),

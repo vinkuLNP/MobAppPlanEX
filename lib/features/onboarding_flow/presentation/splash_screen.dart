@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:plan_ex_app/core/constants/app_assets.dart';
 import 'package:plan_ex_app/core/routes/app_routes.dart';
+import 'package:plan_ex_app/features/dashboard_flow/data/repositories/account_repository.dart';
+import 'package:provider/provider.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -38,12 +40,16 @@ class _SplashPageState extends State<SplashPage>
     Timer(const Duration(seconds: 2), _checkAuthState);
   }
 
-  void _checkAuthState() {
+  void _checkAuthState() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
       Navigator.pushReplacementNamed(context, AppRoutes.login);
     } else {
-      Navigator.pushReplacementNamed(context, AppRoutes.home);
+      final accountRepository = context.read<AccountRepository>();
+      await accountRepository.getUser(user.uid);
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, AppRoutes.home);
+      }
     }
   }
 
