@@ -8,33 +8,37 @@ class NotesProvider extends ChangeNotifier {
   late SharedPrefsService _prefsService;
 
   NotesProvider(this.repo) {
-    _listenNotes();
+    listenNotes();
     _initPrefs();
   }
-void enableMultiSelectMode() {
-  multiSelectMode = true;
-  notifyListeners();
-}
-bool canCreateMoreNotes() {
-  if (isPro) return true;
-  return notes.length < 5;
-}
+  bool isDeleting = false;
 
-void disableMultiSelectMode() {
-  multiSelectMode = false;
-  selectedNoteIds.clear();
-  notifyListeners();
-}
-int notesCountFor(String category) {
-  if (category == "All") return notes.length;
-  return notes.where((n) => n.category == category).length;
-}
+  void enableMultiSelectMode() {
+    multiSelectMode = true;
+    notifyListeners();
+  }
+
+  bool canCreateMoreNotes() {
+    if (isPro) return true;
+    return notes.length < 5;
+  }
+
+  void disableMultiSelectMode() {
+    multiSelectMode = false;
+    selectedNoteIds.clear();
+    notifyListeners();
+  }
+
+  int notesCountFor(String category) {
+    if (category == "All") return notes.length;
+    return notes.where((n) => n.category == category).length;
+  }
 
   List<NoteEntity> notes = [];
   String selectedCategory = "All";
   bool isPro = false;
 
-  void _listenNotes() {
+  void listenNotes() {
     repo.getNotes().listen((event) {
       notes = event;
       notifyListeners();
@@ -43,8 +47,7 @@ int notesCountFor(String category) {
 
   Future<void> _initPrefs() async {
     _prefsService = await SharedPrefsService.getInstance();
-    isPro =
-     true;
+    isPro = true;
     // _prefsService.isPro;
     notifyListeners();
   }
@@ -62,7 +65,15 @@ int notesCountFor(String category) {
 
   Future<void> add(NoteEntity e) => repo.add(e);
   Future<void> update(NoteEntity e) => repo.update(e);
-  Future<void> delete(String id) => repo.delete(id);
+  Future<void> delete(String id) async {
+    isDeleting = true;
+    notifyListeners();
+
+    await repo.delete(id);
+
+    isDeleting = false;
+    notifyListeners();
+  }
 
   void filter(String category) {
     selectedCategory = category;
@@ -123,9 +134,21 @@ int notesCountFor(String category) {
   }
 
   Future<void> deleteSelected() async {
+    if (selectedNoteIds.isEmpty) return;
+
+    isDeleting = true;
+    notifyListeners();
+
     for (var id in selectedNoteIds) {
       await repo.delete(id);
     }
     clearSelection();
+    isDeleting = false;
+    notifyListeners();
+  }
+
+  void clearNotes() {
+    notes.clear();
+    notifyListeners();
   }
 }

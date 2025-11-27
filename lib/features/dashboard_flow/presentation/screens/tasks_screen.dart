@@ -103,41 +103,43 @@ class TasksScreen extends StatelessWidget {
         return Column(
           children: [
             _taskTile(list[i], context),
-            i >= list.length - 1 ? SizedBox(height: 80,): SizedBox()
+            i >= list.length - 1 ? SizedBox(height: 80) : SizedBox(),
           ],
         );
-      }
+      },
     );
   }
 
   Widget _statsRow(TasksProvider prov, BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 7),
-      child: Row(
-        children: [
-          _statCard(
-            "Completion",
-            "${prov.completionRate.toStringAsFixed(1)}%",
-            AppColors.authThemeColor,
-            context,
-          ),
-          const SizedBox(width: 10),
-          _statCard("Week", prov.thisWeek.toString(), Colors.blue, context),
-          const SizedBox(width: 10),
-          _statCard(
-            "Month",
-            prov.completedThisMonth.toString(),
-            Colors.teal,
-            context,
-          ),
-          const SizedBox(width: 10),
-          _statCard(
-            "Overdue",
-            prov.overdue.toString(),
-            Colors.redAccent,
-            context,
-          ),
-        ],
+      child: IntrinsicHeight(
+        child: Row(
+          children: [
+            _statCard(
+              "Completion",
+              "${prov.completionRate.toStringAsFixed(1)}%",
+              AppColors.authThemeColor,
+              context,
+            ),
+            const SizedBox(width: 10),
+            _statCard("Week", prov.thisWeek.toString(), Colors.blue, context),
+            const SizedBox(width: 10),
+            _statCard(
+              "Month",
+              prov.completedThisMonth.toString(),
+              Colors.teal,
+              context,
+            ),
+            const SizedBox(width: 10),
+            _statCard(
+              "Overdue",
+              prov.overdue.toString(),
+              Colors.redAccent,
+              context,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -151,12 +153,11 @@ class TasksScreen extends StatelessWidget {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 6),
-        height: 90,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           color: Theme.of(context).cardColor,
         ),
-        child: Column(
+        child: Column( mainAxisSize: MainAxisSize.max,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             textWidget(
@@ -233,6 +234,8 @@ class TasksScreen extends StatelessWidget {
                       child: textWidget(
                         context: context,
                         text: t.title,
+                        maxLine: 2,
+                        textOverflow: TextOverflow.ellipsis,
                         fontWeight: FontWeight.w600,
                         textDecoration: t.completed
                             ? TextDecoration.lineThrough

@@ -79,6 +79,7 @@ class AuthService {
       await user.sendEmailVerification();
       return null;
     } catch (e) {
+      AppLogger.error(e.toString());
       return 'Could not send verification email.';
     }
   }

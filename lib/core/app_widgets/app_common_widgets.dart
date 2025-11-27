@@ -1,8 +1,13 @@
 import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_text_widget.dart';
+import 'package:plan_ex_app/core/app_widgets/universal_document_viewer.dart';
 import 'package:plan_ex_app/core/constants/app_colors.dart';
+import 'package:plan_ex_app/core/utils/app_logger.dart';
 import 'package:plan_ex_app/core/utils/colors_utils.dart';
 import 'package:plan_ex_app/features/dashboard_flow/presentation/widgets/image_preview_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -141,16 +146,45 @@ Future<void> _openAttachment(
   bool isImage,
   BuildContext context,
 ) async {
-  if (isImage) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => ImagePreviewScreen(imageUrl: url)),
-    );
-  } else {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+  try {
+    AppLogger.logString("Opening attachment: $url");
+
+    if (isImage) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ImagePreviewScreen(imageUrl: url),
+        ),
+      );
+      return;
     }
+
+    // final dio = Dio();
+    // final dir = await getTemporaryDirectory();
+    // final fileName = url.split('/').last.split('?').first;
+    // final filePath = '${dir.path}/$fileName';
+
+    // AppLogger.logString("Downloading file to: $filePath");
+
+    // await dio.download(url, filePath);
+
+    // final result = await OpenFilex.open(filePath);
+
+    // AppLogger.logString("OpenFilex result: ${result.message}");
+
+    // if (result.type != ResultType.done) {
+    //   _showSnack(context, "No app found to open this file");
+    // }
+        Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => UniversalDocumentViewer(fileUrl: url),
+      ),
+    );
+
+  } catch (e) {
+    AppLogger.error("Error opening attachment: $e");
+    _showSnack(context, "Failed to open attachment");
   }
 }
 
@@ -160,3 +194,9 @@ String _extractOriginalName(String url) {
   if (parts.length < 2) return clean;
   return parts[1];
 }
+void _showSnack(BuildContext context, String msg) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: textWidget( context: context,  color: Theme.of(context).cardColor,text:msg,)),
+  );
+}
+

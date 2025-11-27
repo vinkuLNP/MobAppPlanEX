@@ -84,6 +84,20 @@ class AccountService {
   }
 
   Future<void> deleteUserDocument(String uid) async {
-    await _db.doc(uid).delete();
+    final userRef = _db.doc(uid);
+     final subCollections = [
+    'tasks',
+    'notes',
+  ]; 
+
+  for (String collection in subCollections) {
+    final colRef = userRef.collection(collection);
+    final snapshots = await colRef.get();
+
+    for (var doc in snapshots.docs) {
+      await doc.reference.delete();
+    }
+  }
+    await userRef.delete();
   }
 }

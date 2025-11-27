@@ -2,11 +2,16 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:plan_ex_app/core/app_widgets/app_common_text_widget.dart';
 import 'package:plan_ex_app/core/notifications/notification_service.dart';
 import 'package:plan_ex_app/core/routes/app_routes.dart';
 import 'package:plan_ex_app/core/utils/app_logger.dart';
 import 'package:plan_ex_app/features/dashboard_flow/data/repositories/account_repository.dart';
+import 'package:plan_ex_app/features/dashboard_flow/domain/entities/task_entity.dart';
 import 'package:plan_ex_app/features/dashboard_flow/domain/entities/user_entity.dart';
+import 'package:plan_ex_app/features/dashboard_flow/provider/notes_provider.dart';
+import 'package:plan_ex_app/features/dashboard_flow/provider/task_provider.dart';
+import 'package:provider/provider.dart';
 
 class AccountProvider extends ChangeNotifier {
   final AccountRepository repository;
@@ -36,8 +41,12 @@ class AccountProvider extends ChangeNotifier {
   bool requirePremium(BuildContext context) {
     if (!isPremium) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('This feature is available for Premium users only'),
+        SnackBar(
+          content: textWidget(
+            context: context,
+            color: Theme.of(context).cardColor,
+            text: 'This feature is available for Premium users only',
+          ),
         ),
       );
       return false;
@@ -115,17 +124,43 @@ class AccountProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> saveName() async {
+  Future<void> saveName(BuildContext context) async {
+    FocusScope.of(context).unfocus();
     final uid = authUser?.uid;
     if (uid == null) return;
+
+    final newName = nameController.text.trim();
+    final oldName = user?.fullName.trim() ?? '';
+    if (newName == oldName) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: textWidget(
+            context: context,
+            color: Theme.of(context).cardColor,
+            text: 'No changes detected',
+          ),
+        ),
+      );
+      return;
+    }
     _setProcessing(true);
     notifyListeners();
-    final newName = nameController.text.trim();
     await repository.updateName(uid, newName);
     user = user?.copyWith(fullName: newName);
     saving = false;
     _setProcessing(false);
     notifyListeners();
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: textWidget(
+            context: context,
+            color: Theme.of(context).cardColor,
+            text: 'Name updated successfully',
+          ),
+        ),
+      );
+    }
   }
 
   Future<void> pickAndUploadAvatar(ImageSource source) async {
@@ -194,44 +229,101 @@ class AccountProvider extends ChangeNotifier {
       overdueAlerts: settings['overdueAlerts'],
       autoSave: settings['autoSave'],
     );
-    if (key == 'dailySummary' && value == true) {
-      final notificationAllowed = await NotificationService.requestPermissionIfNeeded();
-      final exactAlarmAllowed = await NotificationService.requestExactAlarmPermissionIfNeeded();
+    if (context.mounted) {
+      await handleNotificationChange(key, value, context);
+    }
+    _setProcessing(false);
+    notifyListeners();
+  }
 
+  Future<void> handleNotificationChange(
+    String key,
+    bool value,
+    BuildContext context,
+  ) async {
+    if (key == 'dailySummary') {
+      if (value) {
+        final notificationAllowed =
+            await NotificationService.requestPermissionIfNeeded();
+        final exactAlarmAllowed =
+            await NotificationService.requestExactAlarmPermissionIfNeeded();
 
-      if ((!notificationAllowed || !exactAlarmAllowed)  && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Notification permission denied")),
+        if ((!notificationAllowed || !exactAlarmAllowed) && context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: textWidget(
+                context: context,
+                color: Theme.of(context).cardColor,
+                text: "Notification permission denied",
+              ),
+            ),
+          );
+          return;
+        }
+        final completed = user?.completedTasks;
+        final total = user?.totalTasks;
+        await NotificationService.scheduleDailySummaryAt(
+          const TimeOfDay(hour: 10, minute: 30),
+          "You completed $completed out of $total tasks today 🎯",
         );
-        return;
+      } else {
+        await NotificationService.cancelDailySummary();
       }
+    }
 
+    if (key == 'overdueAlerts') {
+      if (!value) {
+        await NotificationService.cancelOverdueAlerts();
+      }
+    }
+
+    if (key == 'taskReminders') {
+      if (!value) {
+        await NotificationService.cancelTaskReminders();
+      }
+    }
+  }
+
+  Future<void> restoreNotifications(List<TaskEntity> tasks) async {
+    if (user == null) return;
+
+    if (user!.dailySummary) {
       final completed = user?.completedTasks;
       final total = user?.totalTasks;
-
-      NotificationService.scheduleDailySummaryAt(
-        const TimeOfDay(hour: 20, minute: 0), 
+      await NotificationService.scheduleDailySummaryAt(
+        const TimeOfDay(hour: 10, minute: 30),
         "You completed $completed out of $total tasks today 🎯",
       );
     }
 
-    if (key == 'overdueAlerts' && value == true) {
-      final allowed = await NotificationService.requestPermissionIfNeeded();
-
-      if (!allowed && context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Notification permission denied")),
-        );
-        return;
+    if (user!.taskReminders) {
+      for (final task in tasks) {
+        if (!task.completed && task.dueDate != null) {
+          await NotificationService.scheduleTaskReminder(
+            task.title,
+            task.createdAt.toString(),
+            task.dueDate!,
+          );
+        }
       }
-
-      NotificationService.showOverdueAlert(
-        "You have overdue tasks. Complete them now ⚠️",
-      );
     }
 
-    _setProcessing(false);
-    notifyListeners();
+    if (user!.overdueAlerts) {
+      for (final task in tasks) {
+        if (!task.completed && task.isOverdue) {
+          await NotificationService.scheduleOverdueAlertForTask(
+            task.id,
+            task.title,
+            task.dueDate!,
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> bootstrapNotifications(List<TaskEntity> tasks) async {
+    await NotificationService.cancelAll();
+    await restoreNotifications(tasks);
   }
 
   Future<void> upgrade() async {
@@ -261,8 +353,10 @@ class AccountProvider extends ChangeNotifier {
       }
 
       await repository.deleteUserDocument(uid);
-
+      await repository.logout();
+      await FirebaseAuth.instance.signOut();
       await firebaseUser!.delete();
+      user = null;
       _setProcessing(false);
       return null;
     } on FirebaseAuthException catch (e) {
@@ -273,7 +367,9 @@ class AccountProvider extends ChangeNotifier {
       _setProcessing(false);
     }
   }
-
+clearCache(){
+  repository.logout();
+}
   ThemeMode _localThemeMode = ThemeMode.light;
 
   ThemeMode get themeMode {
@@ -287,6 +383,18 @@ class AccountProvider extends ChangeNotifier {
     try {
       _localThemeMode = ThemeMode.light;
       user = null;
+      Provider.of<NotesProvider>(context, listen: false).clearNotes();
+      Provider.of<TasksProvider>(context, listen: false).clearTasks();
+      nameController.clear();
+      emailController.clear();
+      avatarResolvedOnce = false;
+      initialAccountLoaded = false;
+      localImagePath = null;
+
+      avatarUrl = '';
+      accountLoading = false;
+      settingsLoading = false;
+      saving = false;
       await FirebaseAuth.instance.signOut();
 
       repository.logout();

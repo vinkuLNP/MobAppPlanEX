@@ -23,6 +23,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 
 final AuthService authService = AuthService();
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
    tz.initializeTimeZones();
@@ -44,7 +46,7 @@ void main() async {
       providers: [
         Provider<AccountRepository>.value(value: accountRepository),
 
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => AuthUserProvider()),
         ChangeNotifierProvider(
           create: (_) => AccountProvider(accountRepository),
         ),
@@ -72,6 +74,7 @@ class MyApp extends StatelessWidget {
     return Consumer<AccountProvider>(
       builder: (context, accountProvider, _) {
         return MaterialApp(
+            navigatorKey: navigatorKey,
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme(context),
           darkTheme: AppTheme.darkTheme(context),

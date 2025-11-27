@@ -66,26 +66,29 @@ class NoteCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          textWidget(
-                            context: context,
-                            text: note.title,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
-                          ),
-                          const SizedBox(height: 4),
-                          textWidget(
-                            context: context,
-                            text: note.content,
-                            fontSize: 12,
-                            maxLine: 2,
-                            textOverflow: TextOverflow.ellipsis,
-                          ),
-                        ],
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            textWidget(
+                              context: context,
+                              text: note.title,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                              maxLine: 2,
+                              textOverflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            textWidget(
+                              context: context,
+                              text: note.content,
+                              fontSize: 12,
+                              maxLine: 2,
+                              textOverflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
                       ),
                       PopupMenuButton<String>(
                         onSelected: (value) {
@@ -134,17 +137,24 @@ class NoteCard extends StatelessWidget {
                             ),
                           ),
                         ],
-                        child:  Icon(Icons.more_vert,color: Theme.of(context).hintColor,),
+                        child: Icon(
+                          Icons.more_vert,
+                          color: Theme.of(context).hintColor,
+                        ),
                       ),
                     ],
                   ),
                   Row(
                     children: [
-                      textWidget(
-                        context: context,
-                        text: note.category,
-                        fontSize: 12,
-                        fontWeight: FontWeight.normal,
+                      Expanded(
+                        child: textWidget(
+                          context: context,
+                          text: note.category,
+                          maxLine: 1,
+                          textOverflow: TextOverflow.ellipsis,
+                          fontSize: 12,
+                          fontWeight: FontWeight.normal,
+                        ),
                       ),
                       const Spacer(),
                       textWidget(

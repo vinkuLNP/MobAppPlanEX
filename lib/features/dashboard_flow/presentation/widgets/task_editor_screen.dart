@@ -114,9 +114,11 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
                 ignoring: savingTask,
                 child: AppButton(
                   isLoading: savingTask,
-                  text:savingTask
-      ? (isEditing ? 'Saving...' : 'Creating...')
-      : isEditing ? 'Save Changes' : 'Create Task',
+                  text: savingTask
+                      ? (isEditing ? 'Saving...' : 'Creating...')
+                      : isEditing
+                      ? 'Save Changes'
+                      : 'Create Task',
                   onTap: uploading
                       ? null
                       : () async {
@@ -169,11 +171,9 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
   Widget _titleField() => TextField(
     controller: titleCtrl,
     readOnly: isViewOnly,
-    style: appTextStyle(
-      context: context,
-      fontSize: 18,
-      fontWeight: FontWeight.w600,
-    ),
+    minLines: 1,
+    maxLines: 7,
+    style: appTextStyle(context: context, fontSize: 14),
     decoration: InputDecoration(
       labelText: 'Task title',
       filled: false,
@@ -284,11 +284,13 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
                 : null,
           ),
           const SizedBox(width: 6),
-          textWidget(
-            context: context,
-
-            text: 'Make this a recurring task',
-            fontWeight: FontWeight.w500,
+          Flexible(
+            child: textWidget(
+              context: context,
+            
+              text: 'Make this a recurring task',
+              fontWeight: FontWeight.w500,
+            ),
           ),
           SizedBox(width: 5),
           ProBadge(),
@@ -352,7 +354,7 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
           if (!isViewOnly && provider.isPro)
             TextButton.icon(
               onPressed: _pickAndUploadFile,
-              icon: const Icon(Icons.upload_file),
+              icon: Icon(Icons.upload_file, color: Theme.of(context).hintColor),
               label: textWidget(context: context, text: 'Add'),
             ),
         ],
@@ -408,7 +410,11 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: textWidget(context: context, text: 'Upload failed: $e'),
+            content: textWidget(
+              context: context,
+              text: 'Upload failed: $e',
+              color: Theme.of(context).cardColor,
+            ),
           ),
         );
       }
@@ -423,6 +429,18 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
       initialDate: dueDate ?? DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
+        builder: (context, child) {
+      return Theme(
+        data: Theme.of(context).copyWith(
+          textButtonTheme: TextButtonThemeData(
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).hintColor,
+            ),
+          ),
+        ),
+        child: child!,
+      );
+    },
     );
     if (p != null) setState(() => dueDate = p);
   }

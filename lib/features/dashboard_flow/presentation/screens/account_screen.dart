@@ -79,7 +79,7 @@ class _AccountScreenState extends State<AccountScreen> {
                           const SizedBox(height: 20),
                           AppButton(
                             text: 'Save Changes',
-                            onTap: provider.saveName,
+                            onTap: () => provider.saveName(context),
                           ),
                         ],
                       ),
@@ -239,7 +239,11 @@ class _AccountScreenState extends State<AccountScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: textWidget(context: context, text: 'Account deleted'),
+            content: textWidget(
+              context: context,
+              color: Theme.of(context).cardColor,
+              text: 'Account deleted',
+            ),
           ),
         );
       }
@@ -252,6 +256,7 @@ class _AccountScreenState extends State<AccountScreen> {
           SnackBar(
             content: textWidget(
               context: context,
+              color: Theme.of(context).cardColor,
               text: 'Delete failed: $resultCode',
             ),
           ),
@@ -294,6 +299,7 @@ class _AccountScreenState extends State<AccountScreen> {
                     SnackBar(
                       content: textWidget(
                         context: context,
+                        color: Theme.of(context).cardColor,
                         text: 'Account deleted',
                       ),
                     ),
@@ -305,6 +311,7 @@ class _AccountScreenState extends State<AccountScreen> {
                     SnackBar(
                       content: textWidget(
                         context: context,
+                        color: Theme.of(context).cardColor,
                         text: 'Delete failed: $res',
                       ),
                     ),

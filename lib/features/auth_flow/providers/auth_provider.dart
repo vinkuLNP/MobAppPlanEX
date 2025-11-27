@@ -1,12 +1,14 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:plan_ex_app/core/utils/app_logger.dart';
 import 'package:plan_ex_app/features/auth_flow/data/auth_service.dart';
 
-class AuthProvider extends ChangeNotifier {
+class AuthUserProvider extends ChangeNotifier {
   final AuthService _service = AuthService();
 
-  AuthProvider();
+  AuthUserProvider();
   final signInEmailCtrl = TextEditingController();
   final signInPassCtrl = TextEditingController();
 
@@ -14,6 +16,7 @@ class AuthProvider extends ChangeNotifier {
   final signUpEmailCtrl = TextEditingController();
   final signUpPassCtrl = TextEditingController();
   final signUpConfirmCtrl = TextEditingController();
+  bool resetLinkSent = false;
 
   bool autoValidate = false;
   bool isLoading = false;
@@ -59,18 +62,33 @@ class AuthProvider extends ChangeNotifier {
   }
 
   String? validatePassword(String? v) {
-    RegExp regex = RegExp(
-      r'^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[!@#\$&*~]).{6,}$',
-    );
     if (v == null || v.isEmpty) {
       return 'Please enter password';
-    } else {
-      if (!regex.hasMatch(v)) {
-        return 'Weak password"';
-      } else {
-        return null;
-      }
     }
+
+    List<String> errors = [];
+
+    if (v.length < 6) {
+      errors.add("Password must be at least 6 characters long");
+    }
+    if (!RegExp(r'[A-Z]').hasMatch(v)) {
+      errors.add("Add at least 1 uppercase letter");
+    }
+    if (!RegExp(r'[a-z]').hasMatch(v)) {
+      errors.add("Add at least 1 lowercase letter");
+    }
+    if (!RegExp(r'[0-9]').hasMatch(v)) {
+      errors.add("Add at least 1 number");
+    }
+    if (!RegExp(r'[!@#\$&*~]').hasMatch(v)) {
+      errors.add("Add at least 1 special character (!@#\$&*~)");
+    }
+
+    if (errors.isNotEmpty) {
+      return errors.join('\n');
+    }
+
+    return null;
   }
 
   String? validateConfirm(String? v) {
@@ -83,7 +101,6 @@ class AuthProvider extends ChangeNotifier {
     isLoading = v;
     notifyListeners();
   }
-
 
   Future<String> signIn() async {
     _setLoading(true);
@@ -115,6 +132,8 @@ class AuthProvider extends ChangeNotifier {
   void dispose() {
     emailCtrl.dispose();
     passCtrl.dispose();
+  _cooldownTimer?.cancel();
+
     super.dispose();
   }
 
@@ -129,6 +148,39 @@ class AuthProvider extends ChangeNotifier {
     return error == null;
   }
 
+  int cooldown = 0;
+  Timer? _cooldownTimer;
+  DateTime? _cooldownEnd;
+  void startCooldown() {
+    _cooldownEnd = DateTime.now().add(const Duration(seconds: 30));
+    cooldown = 30;
+    notifyListeners();
+
+    _cooldownTimer?.cancel();
+    _cooldownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      final remaining = _cooldownEnd!.difference(DateTime.now()).inSeconds;
+
+      if (remaining <= 0) {
+        cooldown = 0;
+        timer.cancel();
+      } else {
+        cooldown = remaining;
+      }
+      notifyListeners();
+    });
+  }
+  void restoreCooldown() {
+  if (_cooldownEnd == null) return;
+
+  final remaining = _cooldownEnd!.difference(DateTime.now()).inSeconds;
+  if (remaining > 0) {
+    cooldown = remaining;
+    startCooldown();
+  }
+}
+
+
+
   Future<bool> sendVerification() async {
     _setLoading(true);
     error = await _service.sendEmailVerification();
@@ -139,8 +191,20 @@ class AuthProvider extends ChangeNotifier {
   Future<bool> resetPassword(String email) async {
     _setLoading(true);
     error = await _service.resetPassword(email);
+    if (error == null) {
+      resetLinkSent = true;
+    } else {
+      resetLinkSent = false;
+    }
     _setLoading(false);
+    notifyListeners();
     return error == null;
+  }
+
+  void clearResetState() {
+    resetLinkSent = false;
+    error = null;
+    notifyListeners();
   }
 
   Future<bool> checkEmailVerified() async {

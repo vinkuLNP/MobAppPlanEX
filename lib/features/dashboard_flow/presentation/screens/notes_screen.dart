@@ -22,9 +22,12 @@ class NotesScreen extends StatelessWidget {
                 text: "Delete (${provider.selectedNoteIds.length})",
                 color: AppColors.whiteColor,
               ),
-              icon: const Icon(Icons.delete_outlined, color: AppColors.whiteColor),
+              icon: const Icon(
+                Icons.delete_outlined,
+                color: AppColors.whiteColor,
+              ),
               backgroundColor: AppColors.errorColor.withValues(alpha: 0.9),
-              onPressed: () => provider.deleteSelected(),
+              onPressed:provider.isDeleting ? null :  () => provider.deleteSelected(),
             )
           : FloatingActionButton.extended(
               backgroundColor: AppColors.authThemeColor,
@@ -34,7 +37,7 @@ class NotesScreen extends StatelessWidget {
                 color: AppColors.whiteColor,
               ),
               icon: const Icon(Icons.add),
-              onPressed: () {
+              onPressed:provider.isDeleting ? null :  () {
                 if (!provider.isPro && provider.notes.length >= 5) {
                   showUpgradeDialog(
                     context,
@@ -138,7 +141,9 @@ class NotesScreen extends StatelessWidget {
                       ),
                       child: IconButton(
                         icon: Icon(
-                          Icons.delete_outlined,
+                          provider.multiSelectMode
+                              ? Icons.close
+                              : Icons.delete_outlined,
                           color: provider.multiSelectMode
                               ? Theme.of(context).hintColor
                               : AppColors.errorColor.withValues(alpha: 0.9),
@@ -160,44 +165,70 @@ class NotesScreen extends StatelessWidget {
                           text: "No notes yet",
                         ),
                       )
-                    : ListView.builder(
-                        itemCount: provider.filteredNotes.length,
-                        itemBuilder: (context, i) {
-                          final n = provider.filteredNotes[i];
-                          return Column(
-                            children: [
-                              NoteCard(
-                                note: n,
-                                isSelected: provider.selectedNoteIds.contains(
-                                  n.id,
-                                ),
-                                multiSelectMode: provider.multiSelectMode,
-                                onSelectToggle: () =>
-                                    provider.toggleSelection(n.id),
-
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => NoteEditorScreen(
-                                        note: n,
-                                        isViewOnly: true,
-                                      ),
-                                    ),
-                                  );
-                                },
-                                onDelete: () => provider.delete(n.id),
-                              ),
-                              i >= provider.filteredNotes.length - 1
-                                  ? SizedBox(height: 80)
-                                  : SizedBox(),
-                            ],
-                          );
+                    : GestureDetector(
+                        onTap: () {
+                          if (provider.multiSelectMode) {
+                            provider.disableMultiSelectMode();
+                          }
                         },
+                        child: ListView.builder(
+                          itemCount: provider.filteredNotes.length,
+                          itemBuilder: (context, i) {
+                            final n = provider.filteredNotes[i];
+                            return Column(
+                              children: [
+                                NoteCard(
+                                  note: n,
+                                  isSelected: provider.selectedNoteIds.contains(
+                                    n.id,
+                                  ),
+                                  multiSelectMode: provider.multiSelectMode,
+                                  onSelectToggle: () =>
+                                      provider.toggleSelection(n.id),
+
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => NoteEditorScreen(
+                                          note: n,
+                                          isViewOnly: true,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  onDelete: () => provider.delete(n.id),
+                                ),
+                                i >= provider.filteredNotes.length - 1
+                                    ? SizedBox(height: 80)
+                                    : SizedBox(),
+                              ],
+                            );
+                          },
+                        ),
                       ),
               ),
             ],
           ),
+
+    if (provider.isDeleting)
+      Container(
+        color: Colors.black.withOpacity(0.4),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: const [
+              CircularProgressIndicator(),
+              SizedBox(height: 12),
+              Text(
+                "Deleting notes...",
+                style: TextStyle(color: Colors.white, fontSize: 16),
+              ),
+            ],
+          ),
+        ),
+      ),
+
         ],
       ),
     );

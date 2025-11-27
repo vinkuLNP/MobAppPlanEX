@@ -9,6 +9,7 @@ import 'package:plan_ex_app/core/constants/app_colors.dart';
 import 'package:plan_ex_app/core/constants/app_text_style.dart';
 import 'package:plan_ex_app/core/extensions/context_extensions.dart';
 import 'package:plan_ex_app/core/routes/app_routes.dart';
+import 'package:plan_ex_app/core/routes/auth_flow_navigation.dart';
 import 'package:plan_ex_app/features/auth_flow/providers/auth_provider.dart';
 import 'package:plan_ex_app/features/auth_flow/widgets/app_header.dart';
 import 'package:plan_ex_app/features/dashboard_flow/provider/account_provider.dart';
@@ -26,7 +27,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AuthProvider>(
+    return Consumer<AuthUserProvider>(
       builder: (context, provider, _) {
         final accountProvider = context.read<AccountProvider>();
 
@@ -126,10 +127,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 TextButton(
                                   onPressed: () {
                                     provider.clearError();
-                                    Navigator.pushNamed(
-                                      context,
-                                      AppRoutes.login,
-                                    );
+                                    authFlowNavigate(context, AppRoutes.login);
                                   },
                                   child: RichText(
                                     text: TextSpan(
@@ -213,7 +211,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                       ).showSnackBar(
                                          SnackBar(
                                           content:textWidget( context: context, text: 
-                                            "Google Sign-Up cancelled",
+                                            "Google Sign-Up cancelled",color: AppColors.whiteColor
                                           ),
                                         ),
                                       );
@@ -222,7 +220,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         ScaffoldMessenger.of(
                                           context,
                                         ).showSnackBar(
-                                          SnackBar(content:textWidget( context: context, text: status)),
+                                          SnackBar(content:textWidget( context: context, text: status,color: AppColors.whiteColor)),
                                         );
                                       }
                                     }
@@ -262,7 +260,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         ).showSnackBar(
                                            SnackBar(
                                             content:textWidget( context: context, text: 
-                                              "Apple Sign-In cancelled",
+                                              "Apple Sign-In cancelled",color: AppColors.whiteColor
                                             ),
                                           ),
                                         );
@@ -271,7 +269,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                           ScaffoldMessenger.of(
                                             context,
                                           ).showSnackBar(
-                                            SnackBar(content:textWidget( context: context, text: status)),
+                                            SnackBar(content:textWidget( context: context, text: status,color: AppColors.whiteColor)),
                                           );
                                         }
                                       }

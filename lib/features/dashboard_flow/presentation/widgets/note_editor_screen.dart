@@ -16,8 +16,8 @@ import '../../domain/entities/note_entity.dart';
 
 class NoteEditorScreen extends StatefulWidget {
   final NoteEntity? note;
-    final bool isViewOnly;  
-  const NoteEditorScreen({super.key, this.note,this.isViewOnly = false,});
+  final bool isViewOnly;
+  const NoteEditorScreen({super.key, this.note, this.isViewOnly = false});
 
   @override
   State<NoteEditorScreen> createState() => _NoteEditorScreenState();
@@ -28,7 +28,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
   final contentCtrl = TextEditingController();
   final categoryCtrl = TextEditingController();
   Color selectedColor = ColorsUtil.palette.first;
-bool savingNote = false;
+  bool savingNote = false;
 
   List<String> attachments = [];
   bool uploading = false;
@@ -53,7 +53,13 @@ bool savingNote = false;
     final provider = Provider.of<NotesProvider>(context);
     final isEditing = widget.note != null;
     return Scaffold(
-      appBar: CustomAppBar(title:widget.isViewOnly ? "View Note": isEditing ? "Edit Note" : "Create Note"),
+      appBar: CustomAppBar(
+        title: widget.isViewOnly
+            ? "View Note"
+            : isEditing
+            ? "Edit Note"
+            : "Create Note",
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(18),
         child: Column(
@@ -79,11 +85,11 @@ bool savingNote = false;
                 : const SizedBox.shrink(),
             const SizedBox(height: 16),
             if (!widget.isViewOnly)
-            AppButton(
-              isLoading: savingNote,
-              text: isEditing ? "Update Note" : "Create Note",
-              onTap:(uploading || savingNote) ? null : _saveNote,
-            ),
+              AppButton(
+                isLoading: savingNote,
+                text: isEditing ? "Update Note" : "Create Note",
+                onTap: (uploading || savingNote) ? null : _saveNote,
+              ),
             SizedBox(height: 20),
           ],
         ),
@@ -93,20 +99,15 @@ bool savingNote = false;
 
   Widget _titleField() => TextField(
     controller: titleCtrl,
-     readOnly: widget.isViewOnly,
-    style: appTextStyle(
-      context: context,
-      fontSize: 18,
-      fontWeight: FontWeight.w600,
-    ),
-    decoration:  InputDecoration(
+    minLines: 1,
+    maxLines: 7,
+    readOnly: widget.isViewOnly,
+    style: appTextStyle(context: context, fontSize: 14),
+    decoration: InputDecoration(
       labelText: "Title",
       filled: false,
       border: InputBorder.none,
- labelStyle: appTextStyle(
-      context: context,
-      fontSize: 14,
-    ),
+      labelStyle: appTextStyle(context: context, fontSize: 14),
     ),
   );
 
@@ -120,79 +121,72 @@ bool savingNote = false;
         ),
         const SizedBox(width: 12),
         GestureDetector(
-          onTap:widget.isViewOnly ? null :  () {
-            openColorPicker(
-              context: context,
-              onColorSelected: (color) {
-                setState(() => selectedColor = color);
-              },
-            );
-          },
+          onTap: widget.isViewOnly
+              ? null
+              : () {
+                  openColorPicker(
+                    context: context,
+                    onColorSelected: (color) {
+                      setState(() => selectedColor = color);
+                    },
+                  );
+                },
           child: CircleAvatar(backgroundColor: selectedColor, radius: 16),
         ),
-        const Spacer(),
+        // const Spacer(),
+        SizedBox(width: 6,),
         textWidget(
           context: context,
           text: "Category",
           fontWeight: FontWeight.w500,
         ),
         const SizedBox(width: 10),
-        provider.isPro
-            ? 
-            _categoryDropdown(provider)
-            : textWidget(
-                context: context,
-                text: "General",
-                color: Colors.grey.shade600,
-              ),
+        Flexible(
+          child: provider.isPro
+              ? _categoryDropdown(provider)
+              : textWidget(
+                  context: context,
+                  text: "General",
+                  color: Colors.grey.shade600,
+                ),
+        ),
       ],
     );
   }
-
-  Widget _contentField() => TextField(
-    controller: contentCtrl,
-    minLines: 4,
-    maxLines: null,
-     readOnly: widget.isViewOnly,
-    keyboardType: TextInputType.multiline,
-    style: appTextStyle(context: context, fontSize: 16),
-    decoration:  InputDecoration(
-       filled: false,
-      labelText: "Write your note...",
-      border: InputBorder.none,
-      labelStyle: appTextStyle(
-      context: context,
-      fontSize: 14,
-    ),
-    ),
-  );
-
   Widget _categoryDropdown(NotesProvider provider) {
     final cats = provider.categories.where((c) => c != "All").toList();
 
+ if (!cats.contains("General")) {
+    cats.insert(0, "General");
+  }
     if (!cats.contains(categoryCtrl.text)) {
       cats.add(categoryCtrl.text);
     }
-
+if (categoryCtrl.text.isEmpty) {
+    categoryCtrl.text = "General";
+  }
     return DropdownButton<String>(
       underline: const SizedBox.shrink(),
+      isExpanded: true,
       value: categoryCtrl.text,
-      onChanged:widget.isViewOnly ? null :  (v) async {
-        if (v == "__add_new__") {
-          final newCat = await _openAddCategoryDialog();
-          if (newCat != null && newCat.trim().isNotEmpty) {
-            provider.addCategory(newCat.trim());
-            setState(() => categoryCtrl.text = newCat.trim());
-          }
-        } else {
-          setState(() => categoryCtrl.text = v ?? "General");
-        }
-      },
+      onChanged: widget.isViewOnly
+          ? null
+          : (v) async {
+              if (v == "__add_new__") {
+                final newCat = await _openAddCategoryDialog();
+                if (newCat != null && newCat.trim().isNotEmpty) {
+                  provider.addCategory(newCat.trim());
+                  setState(() => categoryCtrl.text = newCat.trim());
+                }
+              } else {
+                setState(() => categoryCtrl.text = v ?? "General");
+              }
+            },
       items: [
         ...cats.map(
           (c) => DropdownMenuItem(
             value: c,
-            child: textWidget(context: context, text: c),
+            child: textWidget(context: context, text: c,maxLine: 1,textOverflow: TextOverflow.ellipsis),
           ),
         ),
 
@@ -202,7 +196,7 @@ bool savingNote = false;
             children: [
               Icon(Icons.add, size: 18),
               SizedBox(width: 6),
-              textWidget(context: context, text: "Add new category"),
+              Flexible(child: textWidget(context: context, text: "Add new category")),
             ],
           ),
         ),
@@ -219,7 +213,7 @@ bool savingNote = false;
         title: textWidget(context: context, text: "New Category"),
         content: TextField(
           controller: ctrl,
-          
+
           decoration: const InputDecoration(hintText: "Enter category name"),
         ),
         actions: [
@@ -235,6 +229,22 @@ bool savingNote = false;
       ),
     );
   }
+
+  Widget _contentField() => TextField(
+    controller: contentCtrl,
+    minLines: 4,
+    maxLines: null,
+    readOnly: widget.isViewOnly,
+    keyboardType: TextInputType.multiline,
+    style: appTextStyle(context: context, fontSize: 16),
+    decoration: InputDecoration(
+      filled: false,
+      labelText: "Write your note...",
+      border: InputBorder.none,
+      labelStyle: appTextStyle(context: context, fontSize: 14),
+    ),
+  );
+
 
   Widget _attachmentsSection(NotesProvider provider) {
     final pro = provider.isPro;
@@ -253,10 +263,14 @@ bool savingNote = false;
             ),
             if (!pro) ProBadge(),
 
-            if (pro&& !widget.isViewOnly)
+            if (pro && !widget.isViewOnly)
               TextButton.icon(
                 onPressed: _pickAndUploadFile,
-                icon: const Icon(Icons.upload_file, size: 20),
+                icon: Icon(
+                  Icons.upload_file,
+                  size: 20,
+                  color: Theme.of(context).hintColor,
+                ),
                 label: textWidget(context: context, text: "Add"),
               ),
           ],
@@ -277,8 +291,10 @@ bool savingNote = false;
         ...attachments.map(
           (a) => commonAttachmentTile(
             url: a,
-            isViewOnly: false,
-            onRemove:widget.isViewOnly ? null : () => setState(() => attachments.remove(a)),
+            isViewOnly: widget.isViewOnly,
+            onRemove: widget.isViewOnly
+                ? null
+                : () => setState(() => attachments.remove(a)),
             context: context,
           ),
         ),
@@ -328,18 +344,19 @@ bool savingNote = false;
   }
 
   Future<void> _saveNote() async {
-     if (savingNote) return; // ✅ prevents double tap
+    if (savingNote) return;
 
-  setState(() => savingNote = true);
+    setState(() => savingNote = true);
     final provider = Provider.of<NotesProvider>(context, listen: false);
 
     if (titleCtrl.text.trim().isEmpty || contentCtrl.text.trim().isEmpty) {
-         setState(() => savingNote = false);
+      setState(() => savingNote = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: textWidget(
             context: context,
             text: "Title and content cannot be empty",
+            color: Theme.of(context).cardColor,
           ),
         ),
       );
@@ -371,13 +388,16 @@ bool savingNote = false;
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: textWidget(context: context, text: "Failed: $e"),
+            content: textWidget(
+              context: context,
+              text: "Failed: $e",
+              color: Theme.of(context).cardColor,
+            ),
           ),
         );
       }
     } finally {
-    if (mounted) setState(() => savingNote = false);
-  }
-
+      if (mounted) setState(() => savingNote = false);
+    }
   }
 }
