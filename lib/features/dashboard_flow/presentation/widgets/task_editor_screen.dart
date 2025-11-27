@@ -5,9 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_text_widget.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_widgets.dart';
 import 'package:plan_ex_app/core/constants/app_text_style.dart';
+import 'package:plan_ex_app/core/utils/app_logger.dart';
 import 'package:plan_ex_app/features/dashboard_flow/data/database/supabase_service.dart';
 import 'package:plan_ex_app/features/dashboard_flow/data/models/recurrence_model.dart';
 import 'package:plan_ex_app/features/dashboard_flow/domain/entities/recurrence_entity.dart';
+import 'package:plan_ex_app/features/dashboard_flow/presentation/widgets/custom_appbar.dart';
 import 'package:plan_ex_app/features/dashboard_flow/presentation/widgets/pro_badge.dart';
 import 'package:plan_ex_app/features/dashboard_flow/provider/task_provider.dart';
 import 'package:provider/provider.dart';
@@ -29,6 +31,7 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
   final titleCtrl = TextEditingController();
   final descCtrl = TextEditingController();
   final tagCtrl = TextEditingController();
+  bool savingTask = false;
 
   DateTime? dueDate;
   String priority = 'medium';
@@ -46,6 +49,7 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
   @override
   void initState() {
     super.initState();
+    dueDate = widget.editing?.dueDate ?? DateTime.now();
     if (widget.editing != null) {
       final t = widget.editing!;
       titleCtrl.text = t.title;
@@ -72,72 +76,88 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
     final prov = Provider.of<TasksProvider>(context, listen: false);
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: textWidget(
-          text: isViewOnly
-              ? 'View Task'
-              : isEditing
-              ? 'Edit Task'
-              : 'Create Task',
-        ),
-        centerTitle: true,
+      appBar: CustomAppBar(
+        title: isViewOnly
+            ? 'View Task'
+            : isEditing
+            ? 'Edit Task'
+            : 'Create Task',
       ),
+
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            commonSectionCard(child: _titleField()),
+            commonSectionCard(context: context, child: _titleField()),
             const SizedBox(height: 12),
-            commonSectionCard(child: _colorPriorityRow()),
+            commonSectionCard(context: context, child: _colorPriorityRow()),
             const SizedBox(height: 12),
-            commonSectionCard(child: _descriptionField()),
+            commonSectionCard(context: context, child: _descriptionField()),
             const SizedBox(height: 12),
-            commonSectionCard(child: _dueAndRecurringRow(prov)),
+            commonSectionCard(
+              context: context,
+              child: _dueAndRecurringRow(prov),
+            ),
             const SizedBox(height: 12),
-            commonSectionCard(child: _tagField()),
+            commonSectionCard(context: context, child: _tagField()),
             const SizedBox(height: 12),
-            commonSectionCard(child: _attachmentsSection(prov)),
+            commonSectionCard(
+              context: context,
+              child: _attachmentsSection(prov),
+            ),
             const SizedBox(height: 20),
             if (uploading) const LinearProgressIndicator(minHeight: 4),
             const SizedBox(height: 12),
             if (!isViewOnly)
-              AppButton(
-                text: isEditing ? 'Save Changes' : 'Create Task',
-                onTap: uploading
-                    ? null
-                    : () async {
-                        final newTask = TaskEntity(
-                          id: widget.editing?.id ?? '',
-                          title: titleCtrl.text.trim(),
-                          description: descCtrl.text.trim(),
-                          createdAt:
-                              widget.editing?.createdAt ?? DateTime.now(),
-                          dueDate: dueDate,
-                          completed: widget.editing?.completed ?? false,
-                          color: selectedColor.toARGB32(),
-                          attachments: attachments,
-                          priority: priority,
-                          tags: tags,
-                          recurrence: recurringEnabled
-                              ? RecurrenceModel(
-                                  interval: recurrenceInterval,
-                                  unit: recurrenceUnit,
-                                )
-                              : null,
-                        );
-                        if (widget.editing == null) {
-                          await prov.addTask(newTask);
-                        } else {
-                          await prov.updateTask(newTask);
-                        }
-                        if (context.mounted) {
-                          Navigator.pop(context);
-                        }
-                      },
+              IgnorePointer(
+                ignoring: savingTask,
+                child: AppButton(
+                  isLoading: savingTask,
+                  text:savingTask
+      ? (isEditing ? 'Saving...' : 'Creating...')
+      : isEditing ? 'Save Changes' : 'Create Task',
+                  onTap: uploading
+                      ? null
+                      : () async {
+                          setState(() => savingTask = true);
+                          try {
+                            final newTask = TaskEntity(
+                              id: widget.editing?.id ?? '',
+                              title: titleCtrl.text.trim(),
+                              description: descCtrl.text.trim(),
+                              createdAt:
+                                  widget.editing?.createdAt ?? DateTime.now(),
+                              dueDate: dueDate,
+                              completed: widget.editing?.completed ?? false,
+                              color: selectedColor.toARGB32(),
+                              attachments: attachments,
+                              priority: priority,
+                              tags: tags,
+                              recurrence: recurringEnabled
+                                  ? RecurrenceModel(
+                                      interval: recurrenceInterval,
+                                      unit: recurrenceUnit,
+                                    )
+                                  : null,
+                            );
+                            if (widget.editing == null) {
+                              await prov.addTask(newTask);
+                            } else {
+                              await prov.updateTask(newTask);
+                            }
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                            }
+                          } catch (e) {
+                            AppLogger.error(e.toString());
+                          } finally {
+                            if (mounted) {
+                              setState(() => savingTask = false);
+                            }
+                          }
+                        },
+                ),
               ),
             const SizedBox(height: 20),
           ],
@@ -149,20 +169,32 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
   Widget _titleField() => TextField(
     controller: titleCtrl,
     readOnly: isViewOnly,
-    style: appTextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-    decoration: const InputDecoration(
+    style: appTextStyle(
+      context: context,
+      fontSize: 18,
+      fontWeight: FontWeight.w600,
+    ),
+    decoration: InputDecoration(
       labelText: 'Task title',
-
+      filled: false,
       border: InputBorder.none,
+      labelStyle: appTextStyle(context: context, fontSize: 14),
     ),
   );
 
   Widget _tagField() => TextField(
     controller: tagCtrl,
     readOnly: isViewOnly,
-    style: appTextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-    decoration: const InputDecoration(
+    enabled: !isViewOnly,
+    style: appTextStyle(
+      context: context,
+      fontSize: 18,
+      fontWeight: FontWeight.w600,
+    ),
+    decoration: InputDecoration(
+      filled: false,
       labelText: 'Add Tag',
+      labelStyle: appTextStyle(context: context, fontSize: 14),
       border: InputBorder.none,
     ),
   );
@@ -172,7 +204,9 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
     readOnly: isViewOnly,
     minLines: 4,
     maxLines: null,
-    decoration: const InputDecoration(
+    decoration: InputDecoration(
+      filled: false,
+      labelStyle: appTextStyle(context: context, fontSize: 14),
       labelText: 'Description (optional)',
       border: InputBorder.none,
     ),
@@ -180,7 +214,7 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
 
   Widget _colorPriorityRow() => Row(
     children: [
-      textWidget(text: 'Color', fontWeight: FontWeight.w600),
+      textWidget(context: context, text: 'Color', fontWeight: FontWeight.w600),
       const SizedBox(width: 12),
       GestureDetector(
         onTap: isViewOnly
@@ -196,15 +230,21 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
         child: CircleAvatar(backgroundColor: selectedColor, radius: 16),
       ),
       const Spacer(),
-      textWidget(text: 'Priority', fontWeight: FontWeight.w600),
+      textWidget(
+        context: context,
+
+        text: 'Priority',
+        fontWeight: FontWeight.w600,
+      ),
       const SizedBox(width: 10),
       DropdownButton<String>(
         value: priority,
+        iconDisabledColor: Colors.grey,
         items: ['low', 'medium', 'high']
             .map(
               (e) => DropdownMenuItem(
                 value: e,
-                child: textWidget(text: e),
+                child: textWidget(context: context, text: e),
               ),
             )
             .toList(),
@@ -219,16 +259,18 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
       Row(
         children: [
           textWidget(
+            context: context,
+
             text: dueDate == null
                 ? 'No due date'
                 : '${dueDate!.year}-${dueDate!.month}-${dueDate!.day}',
           ),
           const Spacer(),
           isViewOnly
-              ? textWidget(text: 'Due Date')
+              ? textWidget(context: context, text: 'Due Date')
               : TextButton(
                   onPressed: _pickDate,
-                  child: textWidget(text: 'Pick Due Date'),
+                  child: textWidget(context: context, text: 'Pick Due Date'),
                 ),
         ],
       ),
@@ -243,6 +285,8 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
           ),
           const SizedBox(width: 6),
           textWidget(
+            context: context,
+
             text: 'Make this a recurring task',
             fontWeight: FontWeight.w500,
           ),
@@ -274,11 +318,12 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
             const SizedBox(width: 8),
             DropdownButton<RecurrenceUnit>(
               value: recurrenceUnit,
+              iconDisabledColor: Colors.grey,
               items: RecurrenceUnit.values
                   .map(
                     (u) => DropdownMenuItem(
                       value: u,
-                      child: textWidget(text: u.name),
+                      child: textWidget(context: context, text: u.name),
                     ),
                   )
                   .toList(),
@@ -297,13 +342,18 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          textWidget(text: 'Attachments', fontWeight: FontWeight.w600),
+          textWidget(
+            context: context,
+
+            text: 'Attachments',
+            fontWeight: FontWeight.w600,
+          ),
           if (!provider.isPro) ProBadge(),
           if (!isViewOnly && provider.isPro)
             TextButton.icon(
               onPressed: _pickAndUploadFile,
               icon: const Icon(Icons.upload_file),
-              label: textWidget(text: 'Add'),
+              label: textWidget(context: context, text: 'Add'),
             ),
         ],
       ),
@@ -311,6 +361,8 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
         Padding(
           padding: const EdgeInsets.only(top: 8),
           child: textWidget(
+            context: context,
+
             text: provider.isPro
                 ? "No attachments yet."
                 : "Upgrade to Pro to add attachments.",
@@ -355,7 +407,9 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
       debugPrint('upload err $e $st');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: textWidget(text: 'Upload failed: $e')),
+          SnackBar(
+            content: textWidget(context: context, text: 'Upload failed: $e'),
+          ),
         );
       }
     } finally {

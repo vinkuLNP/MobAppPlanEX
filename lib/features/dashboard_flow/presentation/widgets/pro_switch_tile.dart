@@ -28,12 +28,24 @@ class ProSwitchTile extends StatelessWidget {
         contentPadding: EdgeInsets.zero,
         title: Row(
           children: [
-            textWidget(text: title),
+            textWidget(context: context,
+            
+            
+            
+            
+            
+            text: title,color: Theme.of(context).hintColor),
             const SizedBox(width: 8),
             if (!isPremium) const ProBadge(),
           ],
         ),
-        subtitle: textWidget(
+        subtitle: textWidget(context: context,
+
+
+
+
+
+        
           text: description,
           fontSize: 13,
           color: Colors.grey,

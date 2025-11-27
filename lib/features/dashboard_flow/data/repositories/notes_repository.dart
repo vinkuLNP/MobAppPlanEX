@@ -12,7 +12,7 @@ class NotesRepository {
   Stream<List<NoteEntity>> getNotes() => service.getNotes();
 
   Future<void> add(NoteEntity e) async {
-    final totalNotes = service.addNote(
+    final totalNotes = await service.addNote(
       NoteModel(
         id: "",
         title: e.title,

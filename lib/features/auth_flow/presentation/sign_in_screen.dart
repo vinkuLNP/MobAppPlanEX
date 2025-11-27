@@ -8,6 +8,7 @@ import 'package:plan_ex_app/core/constants/app_colors.dart';
 import 'package:plan_ex_app/core/constants/app_text_style.dart';
 import 'package:plan_ex_app/core/routes/app_routes.dart';
 import 'package:plan_ex_app/core/utils/app_logger.dart';
+import 'package:plan_ex_app/features/dashboard_flow/provider/account_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:plan_ex_app/core/extensions/context_extensions.dart';
 import 'package:plan_ex_app/features/auth_flow/providers/auth_provider.dart';
@@ -27,6 +28,7 @@ class _SignInScreenState extends State<SignInScreen> {
   Widget build(BuildContext context) {
     return Consumer<AuthProvider>(
       builder: (context, provider, _) {
+        final accountProvider = context.read<AccountProvider>();
         return LayoutBuilder(
           builder: (context, constraints) {
             return Scaffold(
@@ -65,6 +67,7 @@ class _SignInScreenState extends State<SignInScreen> {
                                             bottom: 16,
                                           ),
                                           child: textWidget(
+                                            context: context,
                                             text: provider.error!,
                                             color: AppColors.errorColor,
                                           ),
@@ -106,6 +109,7 @@ class _SignInScreenState extends State<SignInScreen> {
                                             );
                                           },
                                           child: textWidget(
+                                            context: context,
                                             text: "Forgot password?",
                                             fontSize: 14,
                                             color: AppColors.authThemeColor,
@@ -132,14 +136,20 @@ class _SignInScreenState extends State<SignInScreen> {
                                             provider.enableAutoValidate();
                                             return;
                                           }
+
                                           final status = await provider
                                               .signIn();
-                                          if (status == "verified" &&
-                                              context.mounted) {
-                                            Navigator.pushReplacementNamed(
-                                              context,
-                                              AppRoutes.home,
-                                            );
+                                          if (status == "verified") {
+                                            await accountProvider
+                                                .loadAccountBasicInfo();
+                                            await accountProvider
+                                                .loadSettingsData();
+                                            if (context.mounted) {
+                                              Navigator.pushReplacementNamed(
+                                                context,
+                                                AppRoutes.home,
+                                              );
+                                            }
                                           } else if (status == "unverified" &&
                                               context.mounted) {
                                             Navigator.pushReplacementNamed(
@@ -161,13 +171,16 @@ class _SignInScreenState extends State<SignInScreen> {
                                           text: TextSpan(
                                             text: "Didn't have an account? ",
                                             style: appTextStyle(
-                                              color: AppColors.greyishColor,
+                                              context: context,
+                                              color: Theme.of(context).hintColor
+                                                  .withValues(alpha: 0.6),
                                               fontSize: 14,
                                             ),
                                             children: [
                                               TextSpan(
                                                 text: "Sign Up!",
                                                 style: appTextStyle(
+                                                  context: context,
                                                   fontSize: 14,
                                                   textDecorationColor:
                                                       AppColors.authThemeColor,
@@ -203,6 +216,7 @@ class _SignInScreenState extends State<SignInScreen> {
                                                     horizontal: 8.0,
                                                   ),
                                               child: textWidget(
+                                                context: context,
                                                 text: "or",
                                                 color: AppColors.greyishColor,
                                               ),
@@ -222,12 +236,17 @@ class _SignInScreenState extends State<SignInScreen> {
                                         onTap: () async {
                                           final status = await provider
                                               .googleSignIn();
-                                          if (status == "success" &&
-                                              context.mounted) {
-                                            Navigator.pushReplacementNamed(
-                                              context,
-                                              AppRoutes.home,
-                                            );
+                                          if (status == "success") {
+                                            await accountProvider
+                                                .loadAccountBasicInfo();
+                                            await accountProvider
+                                                .loadSettingsData();
+                                            if (context.mounted) {
+                                              Navigator.pushReplacementNamed(
+                                                context,
+                                                AppRoutes.home,
+                                              );
+                                            }
                                           } else if (status == "cancelled" &&
                                               context.mounted) {
                                             ScaffoldMessenger.of(
@@ -235,6 +254,7 @@ class _SignInScreenState extends State<SignInScreen> {
                                             ).showSnackBar(
                                               SnackBar(
                                                 content: textWidget(
+                                                  context: context,
                                                   text:
                                                       "Google Sign-In cancelled",
                                                 ),
@@ -247,6 +267,7 @@ class _SignInScreenState extends State<SignInScreen> {
                                               ).showSnackBar(
                                                 SnackBar(
                                                   content: textWidget(
+                                                    context: context,
                                                     text: status,
                                                   ),
                                                 ),
@@ -271,12 +292,17 @@ class _SignInScreenState extends State<SignInScreen> {
                                             final status = await provider
                                                 .appleSignIn();
 
-                                            if (status == "success" &&
-                                                context.mounted) {
+                                            if (status == "success" ) {
+                                            await accountProvider
+                                                .loadAccountBasicInfo();
+                                            await accountProvider
+                                                .loadSettingsData();
+                                            if (context.mounted) {
                                               Navigator.pushReplacementNamed(
                                                 context,
                                                 AppRoutes.home,
                                               );
+                                            }
                                             } else if (status == "cancelled" &&
                                                 context.mounted) {
                                               ScaffoldMessenger.of(
@@ -284,6 +310,7 @@ class _SignInScreenState extends State<SignInScreen> {
                                               ).showSnackBar(
                                                 SnackBar(
                                                   content: textWidget(
+                                                    context: context,
                                                     text:
                                                         "Apple Sign-In cancelled",
                                                   ),
@@ -296,6 +323,7 @@ class _SignInScreenState extends State<SignInScreen> {
                                                 ).showSnackBar(
                                                   SnackBar(
                                                     content: textWidget(
+                                                      context: context,
                                                       text: status,
                                                     ),
                                                   ),

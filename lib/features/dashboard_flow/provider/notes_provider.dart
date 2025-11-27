@@ -44,8 +44,8 @@ int notesCountFor(String category) {
   Future<void> _initPrefs() async {
     _prefsService = await SharedPrefsService.getInstance();
     isPro =
-    //  true;
-    _prefsService.isPro;
+     true;
+    // _prefsService.isPro;
     notifyListeners();
   }
 

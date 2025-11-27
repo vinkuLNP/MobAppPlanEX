@@ -122,6 +122,7 @@ class AppButton extends StatelessWidget {
                         : const SizedBox(width: 8),
                     text.isNotEmpty
                         ? textWidget(
+                          context: context,
                             text: text,
                             color: textColor,
                             fontSize: fontSize,

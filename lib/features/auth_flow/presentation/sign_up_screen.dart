@@ -11,6 +11,7 @@ import 'package:plan_ex_app/core/extensions/context_extensions.dart';
 import 'package:plan_ex_app/core/routes/app_routes.dart';
 import 'package:plan_ex_app/features/auth_flow/providers/auth_provider.dart';
 import 'package:plan_ex_app/features/auth_flow/widgets/app_header.dart';
+import 'package:plan_ex_app/features/dashboard_flow/provider/account_provider.dart';
 import 'package:provider/provider.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -27,6 +28,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Widget build(BuildContext context) {
     return Consumer<AuthProvider>(
       builder: (context, provider, _) {
+        final accountProvider = context.read<AccountProvider>();
+
         return LayoutBuilder(
           builder: (context, constraints) {
             return Scaffold(
@@ -53,7 +56,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 const AppHeader(title: "Create your account"),
 
                                 if (provider.error != null)
-                                 textWidget(text: 
+                                 textWidget( context: context, text: 
                                     provider.error!,
                                     color: Colors.red),
                             
@@ -131,14 +134,14 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   child: RichText(
                                     text: TextSpan(
                                       text: "Already have an account? ",
-                                      style: appTextStyle(
-                                        color: AppColors.greyishColor,
+                                      style: appTextStyle(context: context,
+                                        color: Theme.of(context).hintColor.withValues(alpha: 0.6),
                                         fontSize: 14,
                                       ),
                                       children: [
                                         TextSpan(
                                           text: "Sign In!",
-                                          style: appTextStyle(
+                                          style: appTextStyle(context: context,
                                             fontSize: 14,
 
                                              textDecorationColor:
@@ -170,7 +173,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 8.0,
                                         ),
-                                        child: textWidget(
+                                        child: textWidget( context: context, 
                                           text: "or",
                                           color: AppColors.greyishColor,
                                         ),
@@ -192,19 +195,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                     final status = await provider
                                         .googleSignIn();
 
-                                    if (status == "success" &&
-                                        context.mounted) {
-                                      Navigator.pushReplacementNamed(
-                                        context,
-                                        AppRoutes.home,
-                                      );
+                                    if (status == "success" ) {
+                                            await accountProvider
+                                                .loadAccountBasicInfo();
+                                            await accountProvider
+                                                .loadSettingsData();
+                                            if (context.mounted) {
+                                              Navigator.pushReplacementNamed(
+                                                context,
+                                                AppRoutes.home,
+                                              );
+                                            }
                                     } else if (status == "cancelled" &&
                                         context.mounted) {
                                       ScaffoldMessenger.of(
                                         context,
                                       ).showSnackBar(
                                          SnackBar(
-                                          content:textWidget(text: 
+                                          content:textWidget( context: context, text: 
                                             "Google Sign-Up cancelled",
                                           ),
                                         ),
@@ -214,7 +222,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         ScaffoldMessenger.of(
                                           context,
                                         ).showSnackBar(
-                                          SnackBar(content:textWidget(text: status)),
+                                          SnackBar(content:textWidget( context: context, text: status)),
                                         );
                                       }
                                     }
@@ -236,19 +244,24 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                       final status = await provider
                                           .appleSignIn();
 
-                                      if (status == "success" &&
-                                          context.mounted) {
-                                        Navigator.pushReplacementNamed(
-                                          context,
-                                          AppRoutes.home,
-                                        );
+                                      if (status == "success" ) {
+                                            await accountProvider
+                                                .loadAccountBasicInfo();
+                                            await accountProvider
+                                                .loadSettingsData();
+                                            if (context.mounted) {
+                                              Navigator.pushReplacementNamed(
+                                                context,
+                                                AppRoutes.home,
+                                              );
+                                            }
                                       } else if (status == "cancelled" &&
                                           context.mounted) {
                                         ScaffoldMessenger.of(
                                           context,
                                         ).showSnackBar(
                                            SnackBar(
-                                            content:textWidget(text: 
+                                            content:textWidget( context: context, text: 
                                               "Apple Sign-In cancelled",
                                             ),
                                           ),
@@ -258,7 +271,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                           ScaffoldMessenger.of(
                                             context,
                                           ).showSnackBar(
-                                            SnackBar(content:textWidget(text: status)),
+                                            SnackBar(content:textWidget( context: context, text: status)),
                                           );
                                         }
                                       }

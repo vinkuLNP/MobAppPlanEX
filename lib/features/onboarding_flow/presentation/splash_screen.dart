@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:plan_ex_app/core/constants/app_assets.dart';
 import 'package:plan_ex_app/core/routes/app_routes.dart';
-import 'package:plan_ex_app/features/dashboard_flow/data/repositories/account_repository.dart';
+import 'package:plan_ex_app/features/dashboard_flow/provider/account_provider.dart';
 import 'package:provider/provider.dart';
 
 class SplashPage extends StatefulWidget {
@@ -37,7 +37,7 @@ class _SplashPageState extends State<SplashPage>
 
     _controller.forward();
 
-    Timer(const Duration(seconds: 2), _checkAuthState);
+    Timer(const Duration(seconds: 3), _checkAuthState);
   }
 
   void _checkAuthState() async {
@@ -45,8 +45,9 @@ class _SplashPageState extends State<SplashPage>
     if (user == null) {
       Navigator.pushReplacementNamed(context, AppRoutes.login);
     } else {
-      final accountRepository = context.read<AccountRepository>();
-      await accountRepository.getUser(user.uid);
+      final accountProvider = context.read<AccountProvider>();
+      await accountProvider.loadSettingsData();
+      await accountProvider.loadAccountBasicInfo();
       if (mounted) {
         Navigator.pushReplacementNamed(context, AppRoutes.home);
       }
@@ -62,13 +63,13 @@ class _SplashPageState extends State<SplashPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: Theme.of(context).colorScheme.primary,
       body: Center(
         child: ScaleTransition(
           scale: _scaleAnimation,
           child: FadeTransition(
             opacity: _fadeAnimation,
-            child: Image.asset(appLogoBlack, width: 140),
+            child: Image.asset(appLogoWhite, width: 260),
           ),
         ),
       ),

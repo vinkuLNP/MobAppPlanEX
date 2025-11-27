@@ -6,6 +6,7 @@ import 'package:plan_ex_app/core/app_widgets/app_common_text_widget.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_widgets.dart';
 import 'package:plan_ex_app/core/constants/app_text_style.dart';
 import 'package:plan_ex_app/core/utils/colors_utils.dart';
+import 'package:plan_ex_app/features/dashboard_flow/presentation/widgets/custom_appbar.dart';
 import 'package:plan_ex_app/features/dashboard_flow/presentation/widgets/pro_badge.dart';
 import 'package:plan_ex_app/features/dashboard_flow/provider/notes_provider.dart';
 import 'package:provider/provider.dart';
@@ -15,7 +16,8 @@ import '../../domain/entities/note_entity.dart';
 
 class NoteEditorScreen extends StatefulWidget {
   final NoteEntity? note;
-  const NoteEditorScreen({super.key, this.note});
+    final bool isViewOnly;  
+  const NoteEditorScreen({super.key, this.note,this.isViewOnly = false,});
 
   @override
   State<NoteEditorScreen> createState() => _NoteEditorScreenState();
@@ -26,6 +28,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
   final contentCtrl = TextEditingController();
   final categoryCtrl = TextEditingController();
   Color selectedColor = ColorsUtil.palette.first;
+bool savingNote = false;
 
   List<String> attachments = [];
   bool uploading = false;
@@ -49,41 +52,37 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
   Widget build(BuildContext context) {
     final provider = Provider.of<NotesProvider>(context);
     final isEditing = widget.note != null;
-
     return Scaffold(
-      backgroundColor: Colors.grey.shade100,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.white,
-        title: textWidget(
-          text: isEditing ? "Edit Note" : "Create Note",
-          fontWeight: FontWeight.w600,
-        ),
-
-        centerTitle: true,
-      ),
-
+      appBar: CustomAppBar(title:widget.isViewOnly ? "View Note": isEditing ? "Edit Note" : "Create Note"),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            commonSectionCard(child: _titleField()),
+            commonSectionCard(context: context, child: _titleField()),
             const SizedBox(height: 16),
-            commonSectionCard(child: _colorCategoryRow(provider)),
+            commonSectionCard(
+              context: context,
+              child: _colorCategoryRow(provider),
+            ),
             const SizedBox(height: 16),
-            commonSectionCard(child: _contentField()),
+            commonSectionCard(context: context, child: _contentField()),
             const SizedBox(height: 16),
-            commonSectionCard(child: _attachmentsSection(provider)),
+            commonSectionCard(
+              context: context,
+              child: _attachmentsSection(provider),
+            ),
             const SizedBox(height: 24),
 
             uploading
                 ? const LinearProgressIndicator(minHeight: 4)
                 : const SizedBox.shrink(),
             const SizedBox(height: 16),
+            if (!widget.isViewOnly)
             AppButton(
+              isLoading: savingNote,
               text: isEditing ? "Update Note" : "Create Note",
-              onTap: uploading ? null : _saveNote,
+              onTap:(uploading || savingNote) ? null : _saveNote,
             ),
             SizedBox(height: 20),
           ],
@@ -94,20 +93,34 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
 
   Widget _titleField() => TextField(
     controller: titleCtrl,
-    style: appTextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-    decoration: const InputDecoration(
+     readOnly: widget.isViewOnly,
+    style: appTextStyle(
+      context: context,
+      fontSize: 18,
+      fontWeight: FontWeight.w600,
+    ),
+    decoration:  InputDecoration(
       labelText: "Title",
+      filled: false,
       border: InputBorder.none,
+ labelStyle: appTextStyle(
+      context: context,
+      fontSize: 14,
+    ),
     ),
   );
 
   Widget _colorCategoryRow(NotesProvider provider) {
     return Row(
       children: [
-        textWidget(text: "Color", fontWeight: FontWeight.w500),
+        textWidget(
+          context: context,
+          text: "Color",
+          fontWeight: FontWeight.w500,
+        ),
         const SizedBox(width: 12),
         GestureDetector(
-          onTap: () {
+          onTap:widget.isViewOnly ? null :  () {
             openColorPicker(
               context: context,
               onColorSelected: (color) {
@@ -118,11 +131,20 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
           child: CircleAvatar(backgroundColor: selectedColor, radius: 16),
         ),
         const Spacer(),
-        textWidget(text: "Category", fontWeight: FontWeight.w500),
+        textWidget(
+          context: context,
+          text: "Category",
+          fontWeight: FontWeight.w500,
+        ),
         const SizedBox(width: 10),
         provider.isPro
-            ? _categoryDropdown(provider)
-            : textWidget(text: "General", color: Colors.grey.shade600),
+            ? 
+            _categoryDropdown(provider)
+            : textWidget(
+                context: context,
+                text: "General",
+                color: Colors.grey.shade600,
+              ),
       ],
     );
   }
@@ -131,11 +153,17 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     controller: contentCtrl,
     minLines: 4,
     maxLines: null,
+     readOnly: widget.isViewOnly,
     keyboardType: TextInputType.multiline,
-    style: appTextStyle(fontSize: 16),
-    decoration: const InputDecoration(
+    style: appTextStyle(context: context, fontSize: 16),
+    decoration:  InputDecoration(
+       filled: false,
       labelText: "Write your note...",
       border: InputBorder.none,
+      labelStyle: appTextStyle(
+      context: context,
+      fontSize: 14,
+    ),
     ),
   );
 
@@ -149,7 +177,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     return DropdownButton<String>(
       underline: const SizedBox.shrink(),
       value: categoryCtrl.text,
-      onChanged: (v) async {
+      onChanged:widget.isViewOnly ? null :  (v) async {
         if (v == "__add_new__") {
           final newCat = await _openAddCategoryDialog();
           if (newCat != null && newCat.trim().isNotEmpty) {
@@ -164,7 +192,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
         ...cats.map(
           (c) => DropdownMenuItem(
             value: c,
-            child: textWidget(text: c),
+            child: textWidget(context: context, text: c),
           ),
         ),
 
@@ -174,7 +202,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
             children: [
               Icon(Icons.add, size: 18),
               SizedBox(width: 6),
-              textWidget(text: "Add new category"),
+              textWidget(context: context, text: "Add new category"),
             ],
           ),
         ),
@@ -188,19 +216,20 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     return showDialog<String>(
       context: context,
       builder: (_) => AlertDialog(
-        title: textWidget(text: "New Category"),
+        title: textWidget(context: context, text: "New Category"),
         content: TextField(
           controller: ctrl,
+          
           decoration: const InputDecoration(hintText: "Enter category name"),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: textWidget(text: "Cancel"),
+            child: textWidget(context: context, text: "Cancel"),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, ctrl.text.trim()),
-            child: textWidget(text: "Add"),
+            child: textWidget(context: context, text: "Add"),
           ),
         ],
       ),
@@ -217,17 +246,18 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             textWidget(
+              context: context,
               text: "Attachments",
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
             if (!pro) ProBadge(),
 
-            if (pro)
+            if (pro&& !widget.isViewOnly)
               TextButton.icon(
                 onPressed: _pickAndUploadFile,
                 icon: const Icon(Icons.upload_file, size: 20),
-                label: textWidget(text: "Add"),
+                label: textWidget(context: context, text: "Add"),
               ),
           ],
         ),
@@ -236,6 +266,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
           Padding(
             padding: const EdgeInsets.only(top: 8),
             child: textWidget(
+              context: context,
               text: pro
                   ? "No attachments yet."
                   : "Upgrade to Pro to add attachments.",
@@ -243,12 +274,14 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
             ),
           ),
 
-        ...attachments.map((a) =>  commonAttachmentTile(
-          url: a,
-          isViewOnly: false,
-          onRemove: () => setState(() => attachments.remove(a)),
-          context: context,
-        ),)
+        ...attachments.map(
+          (a) => commonAttachmentTile(
+            url: a,
+            isViewOnly: false,
+            onRemove:widget.isViewOnly ? null : () => setState(() => attachments.remove(a)),
+            context: context,
+          ),
+        ),
       ],
     );
   }
@@ -295,12 +328,19 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
   }
 
   Future<void> _saveNote() async {
+     if (savingNote) return; // ✅ prevents double tap
+
+  setState(() => savingNote = true);
     final provider = Provider.of<NotesProvider>(context, listen: false);
 
     if (titleCtrl.text.trim().isEmpty || contentCtrl.text.trim().isEmpty) {
+         setState(() => savingNote = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: textWidget(text: "Title and content cannot be empty"),
+          content: textWidget(
+            context: context,
+            text: "Title and content cannot be empty",
+          ),
         ),
       );
       return;
@@ -329,10 +369,15 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
       if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: textWidget(text: "Failed: $e")));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: textWidget(context: context, text: "Failed: $e"),
+          ),
+        );
       }
-    }
+    } finally {
+    if (mounted) setState(() => savingNote = false);
+  }
+
   }
 }

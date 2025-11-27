@@ -2,18 +2,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:plan_ex_app/core/utils/app_logger.dart';
 import 'package:plan_ex_app/features/auth_flow/data/auth_service.dart';
-import 'package:plan_ex_app/features/dashboard_flow/data/repositories/account_repository.dart';
 
 class AuthProvider extends ChangeNotifier {
   final AuthService _service = AuthService();
-  final AccountRepository accountRepository;
 
-  AuthProvider({required this.accountRepository});
-  // SIGN IN CONTROLLERS
+  AuthProvider();
   final signInEmailCtrl = TextEditingController();
   final signInPassCtrl = TextEditingController();
 
-  // SIGN UP CONTROLLERS
   final signUpNameCtrl = TextEditingController();
   final signUpEmailCtrl = TextEditingController();
   final signUpPassCtrl = TextEditingController();
@@ -88,7 +84,6 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // AUTH CALLS
 
   Future<String> signIn() async {
     _setLoading(true);
@@ -101,8 +96,6 @@ class AuthProvider extends ChangeNotifier {
     _setLoading(false);
 
     if (result == null) {
-      final uid = FirebaseAuth.instance.currentUser!.uid;
-await accountRepository.getUser(uid);
       return "verified";
     }
 
@@ -194,20 +187,20 @@ await accountRepository.getUser(uid);
     notifyListeners();
     return error!;
   }
+
   Future<String> appleSignIn() async {
-  _setLoading(true);
+    _setLoading(true);
 
-  final result = await _service.signInWithApple();
+    final result = await _service.signInWithApple();
 
-  _setLoading(false);
+    _setLoading(false);
 
-  if (result == null) return "success";
+    if (result == null) return "success";
 
-  if (result == "cancelled") return "cancelled";
+    if (result == "cancelled") return "cancelled";
 
-  error = result;
-  notifyListeners();
-  return error!;
-}
-
+    error = result;
+    notifyListeners();
+    return error!;
+  }
 }

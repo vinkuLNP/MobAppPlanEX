@@ -24,8 +24,12 @@ class TaskCard extends StatelessWidget {
           value: task.completed,
           onChanged: (v) => prov.toggleComplete(task, v ?? false),
         ),
-        title: textWidget(text: task.title, fontWeight: FontWeight.w600),
-        subtitle: textWidget(text: '$dueText • ${task.priority}'),
+        title: textWidget(context: context,
+        
+        text: task.title, fontWeight: FontWeight.w600),
+        subtitle: textWidget(context: context,
+        
+        text: '$dueText • ${task.priority}'),
         trailing: IconButton(
           icon: const Icon(Icons.open_in_new),
           onPressed: () => Navigator.push(
