@@ -21,14 +21,16 @@ class TasksScreen extends StatelessWidget {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
-        backgroundColor: const Color(0xffF5F6FA),
         appBar: CustomAppBar(
           title: "Tasks",
           bottom: TabBar(
-            indicatorColor: Colors.deepPurple,
-            labelStyle: appTextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+            indicatorColor: AppColors.authThemeColor,
+            labelStyle: appTextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              context: context,
+            ),
             labelColor: AppColors.authThemeColor,
-            unselectedLabelColor: AppColors.greyishColor,
             tabs: [
               Tab(text: "All (${prov.total})"),
               Tab(text: "Pending (${prov.pending.length})"),
@@ -37,8 +39,12 @@ class TasksScreen extends StatelessWidget {
           ),
         ),
         floatingActionButton: FloatingActionButton.extended(
-          backgroundColor: Colors.deepPurple,
-          label: textWidget(text: "Add Task", color: Colors.white),
+          backgroundColor: AppColors.authThemeColor,
+          label: textWidget(
+            context: context,
+            text: "Add Task",
+            color: Colors.white,
+          ),
           icon: const Icon(Icons.add, color: Colors.white),
           onPressed: () {
             if (!prov.isPro && prov.tasks.length >= 5) {
@@ -57,7 +63,7 @@ class TasksScreen extends StatelessWidget {
         body: Column(
           children: [
             const SizedBox(height: 14),
-            _statsRow(prov),
+            _statsRow(prov, context),
             const SizedBox(height: 10),
             Expanded(
               child: prov.loading
@@ -82,18 +88,29 @@ class TasksScreen extends StatelessWidget {
   Widget _taskList(List<TaskEntity> list, BuildContext context) {
     if (list.isEmpty) {
       return Center(
-        child: textWidget(text: "No tasks yet", color: Colors.black45),
+        child: textWidget(
+          context: context,
+          text: "No tasks yet",
+          color: Theme.of(context).hintColor,
+        ),
       );
     }
 
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: list.length,
-      itemBuilder: (_, i) => _taskTile(list[i], context),
+      itemBuilder: (_, i) {
+        return Column(
+          children: [
+            _taskTile(list[i], context),
+            i >= list.length - 1 ? SizedBox(height: 80,): SizedBox()
+          ],
+        );
+      }
     );
   }
 
-  Widget _statsRow(TasksProvider prov) {
+  Widget _statsRow(TasksProvider prov, BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 7),
       child: Row(
@@ -101,34 +118,56 @@ class TasksScreen extends StatelessWidget {
           _statCard(
             "Completion",
             "${prov.completionRate.toStringAsFixed(1)}%",
-            Colors.deepPurple,
+            AppColors.authThemeColor,
+            context,
           ),
           const SizedBox(width: 10),
-          _statCard("Week", prov.thisWeek.toString(), Colors.blue),
+          _statCard("Week", prov.thisWeek.toString(), Colors.blue, context),
           const SizedBox(width: 10),
-          _statCard("Month", prov.completedThisMonth.toString(), Colors.teal),
+          _statCard(
+            "Month",
+            prov.completedThisMonth.toString(),
+            Colors.teal,
+            context,
+          ),
           const SizedBox(width: 10),
-          _statCard("Overdue", prov.overdue.toString(), Colors.redAccent),
+          _statCard(
+            "Overdue",
+            prov.overdue.toString(),
+            Colors.redAccent,
+            context,
+          ),
         ],
       ),
     );
   }
 
-  Widget _statCard(String title, String value, Color color) {
+  Widget _statCard(
+    String title,
+    String value,
+    Color color,
+    BuildContext context,
+  ) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 6),
         height: 90,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          color: Colors.white,
+          color: Theme.of(context).cardColor,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            textWidget(text: title, fontSize: 12, color: Colors.black54),
+            textWidget(
+              context: context,
+              text: title,
+              fontSize: 12,
+              color: Theme.of(context).hintColor,
+            ),
             const SizedBox(height: 6),
             textWidget(
+              context: context,
               text: value,
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -145,11 +184,12 @@ class TasksScreen extends StatelessWidget {
         t.dueDate != null &&
         !t.completed &&
         t.dueDate!.isBefore(DateTime.now());
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
@@ -191,12 +231,15 @@ class TasksScreen extends StatelessWidget {
                   children: [
                     Expanded(
                       child: textWidget(
+                        context: context,
                         text: t.title,
                         fontWeight: FontWeight.w600,
                         textDecoration: t.completed
                             ? TextDecoration.lineThrough
                             : TextDecoration.none,
-                        color: t.completed ? Colors.grey : Colors.black87,
+                        color: t.completed
+                            ? Colors.grey
+                            : Theme.of(context).hintColor,
                       ),
                     ),
                     if (t.priority.isNotEmpty)
@@ -208,17 +251,28 @@ class TasksScreen extends StatelessWidget {
                         ),
                         decoration: BoxDecoration(
                           color: t.priority.toUpperCase() == "HIGH"
-                              ? Colors.red.shade50
+                              ? (isDark
+                                    ? Colors.red.shade100
+                                    : Colors.red.shade50)
                               : t.priority.toUpperCase() == "MEDIUM"
-                              ? Colors.orange.shade50
-                              : Colors.green.shade50,
+                              ? (isDark
+                                    ? Colors.orange.shade100
+                                    : Colors.orange.shade50)
+                              : (isDark
+                                    ? Colors.green.shade100
+                                    : Colors.green.shade50),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
                             color: t.priority.toUpperCase() == "HIGH"
-                                ? Colors.red
+                                ? (isDark ? Colors.red.shade50 : Colors.red)
                                 : t.priority.toUpperCase() == "MEDIUM"
-                                ? Colors.orange
-                                : Colors.green,
+                                ? (isDark
+                                      ? Colors.orange.shade50
+                                      : Colors.orange)
+                                : (isDark
+                                      ? Colors.green.shade50
+                                      : Colors.green),
+
                             width: 0.7,
                           ),
                         ),
@@ -229,21 +283,22 @@ class TasksScreen extends StatelessWidget {
                               Icons.flag,
                               size: 12,
                               color: t.priority.toUpperCase() == "HIGH"
-                                  ? Colors.red
+                                  ? (isDark ? Colors.red : Colors.red)
                                   : t.priority.toUpperCase() == "MEDIUM"
-                                  ? Colors.orange
-                                  : Colors.green,
+                                  ? (isDark ? Colors.orange : Colors.orange)
+                                  : (isDark ? Colors.green : Colors.green),
                             ),
                             const SizedBox(width: 4),
                             textWidget(
+                              context: context,
                               text: t.priority.toUpperCase(),
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
                               color: t.priority.toUpperCase() == "HIGH"
-                                  ? Colors.red
+                                  ? (isDark ? Colors.black : Colors.red)
                                   : t.priority.toUpperCase() == "MEDIUM"
-                                  ? Colors.orange
-                                  : Colors.green,
+                                  ? (isDark ? Colors.black : Colors.orange)
+                                  : (isDark ? Colors.black : Colors.green),
                             ),
                           ],
                         ),
@@ -258,9 +313,12 @@ class TasksScreen extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.only(top: 4),
                         child: textWidget(
+                          context: context,
                           text: t.description,
                           fontSize: 13,
-                          color: Colors.black54,
+                          color: Theme.of(
+                            context,
+                          ).hintColor.withValues(alpha: 0.6),
                           maxLine: 2,
                         ),
                       ),
@@ -268,6 +326,7 @@ class TasksScreen extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.only(top: 6),
                         child: textWidget(
+                          context: context,
                           text: isOverdue
                               ? "Overdue • ${t.dueDate!.toLocal().toString().split(' ').first}"
                               : "Due • ${t.dueDate!.toLocal().toString().split(' ').first}",
@@ -297,7 +356,7 @@ class TasksScreen extends StatelessWidget {
                         children: [
                           Icon(Icons.share, size: 16),
                           SizedBox(width: 6),
-                          textWidget(text: 'Share'),
+                          textWidget(context: context, text: 'Share'),
                         ],
                       ),
                     ),
@@ -308,7 +367,7 @@ class TasksScreen extends StatelessWidget {
                           Icon(Icons.edit, size: 16),
                           SizedBox(width: 6),
 
-                          textWidget(text: 'Edit'),
+                          textWidget(context: context, text: 'Edit'),
                         ],
                       ),
                     ),
@@ -319,7 +378,7 @@ class TasksScreen extends StatelessWidget {
                           Icon(Icons.delete, size: 16),
                           SizedBox(width: 6),
 
-                          textWidget(text: 'Delete'),
+                          textWidget(context: context, text: 'Delete'),
                         ],
                       ),
                     ),
@@ -359,12 +418,15 @@ class TasksScreen extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: textWidget(text: "Delete Task?"),
-        content: textWidget(text: "This action cannot be undone."),
+        title: textWidget(context: context, text: "Delete Task?"),
+        content: textWidget(
+          context: context,
+          text: "This action cannot be undone.",
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: textWidget(text: "Cancel"),
+            child: textWidget(context: context, text: "Cancel"),
           ),
           AppButton(
             text: "Delete",
@@ -386,8 +448,9 @@ class TasksScreen extends StatelessWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: textWidget(text: "Mark as Completed?"),
+        title: textWidget(context: context, text: "Mark as Completed?"),
         content: textWidget(
+          context: context,
           text: task.isRecurring
               ? "This is a recurring task. Completing it will generate the next task."
               : "Are you sure you want to mark this task as completed?",
@@ -395,7 +458,7 @@ class TasksScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: textWidget(text: "Cancel"),
+            child: textWidget(context: context, text: "Cancel"),
           ),
           AppButton(
             text: "Confirm",

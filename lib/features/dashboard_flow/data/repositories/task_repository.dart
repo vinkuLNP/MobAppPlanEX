@@ -1,28 +1,57 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:plan_ex_app/core/notifications/notification_service.dart';
 import 'package:plan_ex_app/features/dashboard_flow/data/database/task_service.dart';
+import 'package:plan_ex_app/features/dashboard_flow/data/repositories/account_repository.dart';
 import 'package:plan_ex_app/features/dashboard_flow/domain/entities/recurrence_entity.dart';
 import '../../domain/entities/task_entity.dart';
 import '../models/task_model.dart';
 
 class TasksRepository {
   final TaskService _service = TaskService();
-
+  final AccountRepository accountRepository;
+  TasksRepository(this.accountRepository);
   Stream<List<TaskEntity>> getTasks() => _service.watchTasks();
 
-  Future<void> add(TaskEntity t) => _service.addTask(
-    TaskModel(
-      id: '',
-      title: t.title,
-      description: t.description,
-      createdAt: t.createdAt,
-      dueDate: t.dueDate,
-      completed: t.completed,
-      color: t.color,
-      attachments: t.attachments,
-      priority: t.priority,
-      tags: t.tags,
-      recurrence: t.recurrence,
-    ),
-  );
+  Future<void> add(TaskEntity t) async {
+    final stats = await _service.addTask(
+      TaskModel(
+        id: '',
+        title: t.title,
+        description: t.description,
+        createdAt: t.createdAt,
+        dueDate: t.dueDate,
+        completed: t.completed,
+        color: t.color,
+        attachments: t.attachments,
+        priority: t.priority,
+        tags: t.tags,
+        recurrence: t.recurrence,
+      ),
+    );
+  final uid = FirebaseAuth.instance.currentUser!.uid;
+
+    if (t.dueDate != null) {
+  final user = await accountRepository.getUser(uid);
+
+  if (user.taskReminders == true) {
+    final allowed = await NotificationService.requestPermissionIfNeeded();
+    if (!allowed) return;
+
+    final reminderTime = t.dueDate!.subtract(const Duration(minutes: 30));
+    final finalTime = reminderTime.isAfter(DateTime.now())
+        ? reminderTime
+        : DateTime.now().add(const Duration(seconds: 2));
+
+    await NotificationService.scheduleTaskReminder(
+      t.title,
+      finalTime,
+    );
+  }
+}
+
+
+    await accountRepository.updateStats(uid, stats);
+  }
 
   Future<void> update(TaskEntity t) => _service.updateTask(
     TaskModel(
@@ -40,7 +69,11 @@ class TasksRepository {
     ),
   );
 
-  Future<void> delete(String id) => _service.deleteTask(id);
+  Future<void> delete(String id) async {
+    final stats = await _service.deleteTask(id);
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    await accountRepository.updateStats(uid, stats);
+  }
 
   Future<void> toggleComplete(TaskEntity task, bool value) async {
     await _service.toggleComplete(task.id, value);
@@ -50,7 +83,6 @@ class TasksRepository {
       if (nextDate != null) {
         await add(
           TaskEntity(
-            
             id: '',
             title: task.title,
             description: task.description,

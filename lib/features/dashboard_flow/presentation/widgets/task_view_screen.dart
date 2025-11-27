@@ -10,13 +10,15 @@ class TaskViewScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: textWidget(text: task.title)),
+      appBar: AppBar(title: textWidget(context: context,
+      text: task.title)),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            textWidget(text: task.description),
+            textWidget(context: context,
+            text: task.description),
             if (task.attachments.isNotEmpty) const SizedBox(height: 12),
             Wrap(
               spacing: 8,
@@ -45,7 +47,8 @@ class TaskViewScreen extends StatelessWidget {
                               width: 120,
                               height: 90,
                             )
-                          : textWidget(text: name),
+                          : textWidget(context: context,
+                          text: name),
                     ),
                   ),
                 );

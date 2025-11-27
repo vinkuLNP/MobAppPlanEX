@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:plan_ex_app/core/notifications/notification_service.dart';
 import 'package:plan_ex_app/core/routes/app_routes.dart';
 import 'package:plan_ex_app/core/utils/app_logger.dart';
 import 'package:plan_ex_app/features/dashboard_flow/data/repositories/account_repository.dart';
@@ -10,8 +11,10 @@ import 'package:plan_ex_app/features/dashboard_flow/domain/entities/user_entity.
 class AccountProvider extends ChangeNotifier {
   final AccountRepository repository;
   AccountProvider(this.repository);
-  final auth = FirebaseAuth.instance.currentUser;
-  bool get isPremium => user?.isPaid == true;
+  User? get authUser => FirebaseAuth.instance.currentUser;
+
+  bool get isPremium => true;
+  // user?.isPaid == true;
   UserEntity? user;
   bool accountLoading = false;
   bool settingsLoading = false;
@@ -75,7 +78,7 @@ class AccountProvider extends ChangeNotifier {
   }
 
   Future<void> loadAccountBasicInfo() async {
-    final uid = auth?.uid;
+    final uid = authUser?.uid;
     if (uid == null) return;
     if (initialAccountLoaded) return;
     accountLoading = true;
@@ -88,7 +91,7 @@ class AccountProvider extends ChangeNotifier {
     nameController.text = user?.fullName ?? '';
     emailController.text = user?.email ?? '';
 
-    if (user?.photoUrl != null && !avatarResolvedOnce) {
+    if (user?.photoUrl != null && user?.photoUrl != '' && !avatarResolvedOnce) {
       avatarUrl = await repository.getFreshAvatarUrl(user!.photoUrl!);
       avatarResolvedOnce = true;
     }
@@ -98,7 +101,7 @@ class AccountProvider extends ChangeNotifier {
   }
 
   Future<void> loadSettingsData() async {
-    final uid = auth?.uid;
+    final uid = authUser?.uid;
     if (uid == null) return;
 
     settingsLoading = true;
@@ -113,10 +116,9 @@ class AccountProvider extends ChangeNotifier {
   }
 
   Future<void> saveName() async {
-    final uid = auth?.uid;
+    final uid = authUser?.uid;
     if (uid == null) return;
     _setProcessing(true);
-    // saving = true;
     notifyListeners();
     final newName = nameController.text.trim();
     await repository.updateName(uid, newName);
@@ -127,7 +129,7 @@ class AccountProvider extends ChangeNotifier {
   }
 
   Future<void> pickAndUploadAvatar(ImageSource source) async {
-    final uid = auth?.uid;
+    final uid = authUser?.uid;
     if (uid == null) return;
     _setProcessing(true);
     final picker = ImagePicker();
@@ -164,8 +166,12 @@ class AccountProvider extends ChangeNotifier {
     return await repository.getFreshAvatarUrl(user!.photoUrl!);
   }
 
-  Future<void> toggleSetting(String key, bool value) async {
-    final uid = auth?.uid;
+  Future<void> toggleSetting(
+    String key,
+    bool value,
+    BuildContext context,
+  ) async {
+    final uid = authUser?.uid;
     if (uid == null) return;
     _setProcessing(true);
     final settings = {
@@ -188,12 +194,48 @@ class AccountProvider extends ChangeNotifier {
       overdueAlerts: settings['overdueAlerts'],
       autoSave: settings['autoSave'],
     );
+    if (key == 'dailySummary' && value == true) {
+      final notificationAllowed = await NotificationService.requestPermissionIfNeeded();
+      final exactAlarmAllowed = await NotificationService.requestExactAlarmPermissionIfNeeded();
+
+
+      if ((!notificationAllowed || !exactAlarmAllowed)  && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Notification permission denied")),
+        );
+        return;
+      }
+
+      final completed = user?.completedTasks;
+      final total = user?.totalTasks;
+
+      NotificationService.scheduleDailySummaryAt(
+        const TimeOfDay(hour: 20, minute: 0), 
+        "You completed $completed out of $total tasks today 🎯",
+      );
+    }
+
+    if (key == 'overdueAlerts' && value == true) {
+      final allowed = await NotificationService.requestPermissionIfNeeded();
+
+      if (!allowed && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Notification permission denied")),
+        );
+        return;
+      }
+
+      NotificationService.showOverdueAlert(
+        "You have overdue tasks. Complete them now ⚠️",
+      );
+    }
+
     _setProcessing(false);
     notifyListeners();
   }
 
   Future<void> upgrade() async {
-    final uid = auth?.uid;
+    final uid = authUser?.uid;
     if (uid == null) return;
     await repository.upgradeUser(uid);
     user = user?.copyWith(isPaid: true);
@@ -201,7 +243,7 @@ class AccountProvider extends ChangeNotifier {
   }
 
   Future<String?> deleteAccount({required String? passwordForReauth}) async {
-    final firebaseUser = auth;
+    final firebaseUser = authUser;
     final uid = firebaseUser?.uid;
     if (uid == null) return 'No user signed in';
     _setProcessing(true);
@@ -232,8 +274,19 @@ class AccountProvider extends ChangeNotifier {
     }
   }
 
+  ThemeMode _localThemeMode = ThemeMode.light;
+
+  ThemeMode get themeMode {
+    if (user != null) {
+      return user?.darkMode == true ? ThemeMode.dark : ThemeMode.light;
+    }
+    return _localThemeMode;
+  }
+
   Future<void> logout(BuildContext context) async {
     try {
+      _localThemeMode = ThemeMode.light;
+      user = null;
       await FirebaseAuth.instance.signOut();
 
       repository.logout();
@@ -253,7 +306,4 @@ class AccountProvider extends ChangeNotifier {
       _setProcessing(false);
     }
   }
-  ThemeMode get themeMode =>
-    user?.darkMode == true ? ThemeMode.dark : ThemeMode.light;
-
 }

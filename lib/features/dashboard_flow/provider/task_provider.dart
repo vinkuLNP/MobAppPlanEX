@@ -4,13 +4,13 @@ import 'package:plan_ex_app/features/dashboard_flow/data/repositories/task_repos
 import 'package:plan_ex_app/features/dashboard_flow/domain/entities/task_entity.dart';
 
 class TasksProvider extends ChangeNotifier {
-  final TasksRepository _repo = TasksRepository();
+  final TasksRepository _repo ;
 
   List<TaskEntity> tasks = [];
   StreamSubscription? _sub;
   bool loading = true;
 
-  TasksProvider() {
+  TasksProvider(this._repo) {
     _listen();
   }
   bool isPro = false;

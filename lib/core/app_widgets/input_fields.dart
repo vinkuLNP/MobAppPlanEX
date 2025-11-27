@@ -36,11 +36,16 @@ class AppInputField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        textWidget(text: label, fontWeight: FontWeight.w400, fontSize: 14),
+        textWidget(
+          text: label,
+          fontWeight: FontWeight.w400,
+          fontSize: 14,
+          context: context,
+        ),
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,
-          style: appTextStyle(fontSize: 12),
+          style: appTextStyle(context: context, fontSize: 12),
           keyboardType: keyboardType,
           readOnly: readOnly!,
           maxLength: maxLength,
@@ -50,9 +55,19 @@ class AppInputField extends StatelessWidget {
             counterText: '',
             hintText: hint,
             filled: readOnly,
-            fillColor: readOnly! ? Colors.grey.shade300 : Colors.white,
-            errorStyle: appTextStyle(fontSize: 12, color: Colors.red),
-            hintStyle: appTextStyle(fontSize: 12, color: Colors.grey),
+            fillColor: readOnly!
+                ? Theme.of(context).highlightColor.withValues(alpha: 0.4)
+                : Theme.of(context).hintColor,
+            errorStyle: appTextStyle(
+              context: context,
+              fontSize: 12,
+              color: Colors.red,
+            ),
+            hintStyle: appTextStyle(
+              context: context,
+              fontSize: 12,
+              color: Theme.of(context).hintColor,
+            ),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
@@ -101,18 +116,31 @@ class AppPasswordField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        textWidget(text: label, fontWeight: FontWeight.w400, fontSize: 14),
+        textWidget(
+          text: label,
+          fontWeight: FontWeight.w400,
+          fontSize: 14,
+          context: context,
+        ),
 
         const SizedBox(height: 8),
         TextFormField(
           controller: controller,
           obscureText: obscure,
           onChanged: onChanged,
-          style: appTextStyle(fontSize: 12),
+          style: appTextStyle(context: context, fontSize: 12),
           decoration: InputDecoration(
             hintText: '******',
-            hintStyle: appTextStyle(fontSize: 12, color: Colors.grey),
-            errorStyle: appTextStyle(fontSize: 12, color: Colors.red),
+            hintStyle: appTextStyle(
+              context: context,
+              fontSize: 12,
+              color: Colors.grey,
+            ),
+            errorStyle: appTextStyle(
+              context: context,
+              fontSize: 12,
+              color: Colors.red,
+            ),
             border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),

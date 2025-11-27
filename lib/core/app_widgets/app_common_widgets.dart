@@ -11,28 +11,32 @@ void showUpgradeDialog(BuildContext context, String subtitle) {
   showDialog(
     context: context,
     builder: (_) => AlertDialog(
-      title: textWidget(text: "Upgrade to Pro"),
-      content: textWidget(text: subtitle),
+      title: textWidget(text: "Upgrade to Pro", context: context),
+      content: textWidget(text: subtitle, context: context),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: textWidget(text: "Later"),
+          child: textWidget(text: "Later", context: context),
         ),
         ElevatedButton(
           onPressed: () {
             Navigator.pop(context);
           },
-          child: textWidget(text: "Upgrade", color: AppColors.whiteColor),
+          child: textWidget(
+            text: "Upgrade",
+            context: context,
+            color: AppColors.whiteColor,
+          ),
         ),
       ],
     ),
   );
 }
 
-Widget commonSectionCard({required Widget child}) => Container(
+Widget commonSectionCard({required Widget child, required BuildContext context}) => Container(
   padding: const EdgeInsets.all(16),
   decoration: BoxDecoration(
-    color: Colors.white,
+    color:Theme.of(context).cardColor,
     borderRadius: BorderRadius.circular(16),
     boxShadow: [
       BoxShadow(
@@ -93,11 +97,15 @@ Widget commonAttachmentTile({
           )
         : const Icon(Icons.insert_drive_file, size: 32),
     title: textWidget(
+      context: context,
+
       text: fileName,
       maxLine: 1,
       textOverflow: TextOverflow.ellipsis,
     ),
     subtitle: textWidget(
+      context: context,
+
       text: isImage ? 'Image' : 'Document',
       color: Colors.grey.shade600,
     ),

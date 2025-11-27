@@ -34,7 +34,6 @@ class _AccountScreenState extends State<AccountScreen> {
       builder: (context, provider, _) {
         final user = provider.user;
         return Scaffold(
-          backgroundColor: AppColors.screenBackgroundColor,
           body: Stack(
             children: [
               SingleChildScrollView(
@@ -51,12 +50,18 @@ class _AccountScreenState extends State<AccountScreen> {
                           const SizedBox(height: 8),
                           TextButton(
                             onPressed: () => _showPickAvatarSheet(provider),
-                            child: textWidget(text: 'Change avatar'),
+                            child: textWidget(
+                              context: context,
+                              text: 'Change avatar',
+                            ),
                           ),
                           textWidget(
+                            context: context,
                             text: 'JPG, GIF or PNG. 1MB max.',
                             fontSize: 12,
-                            color: AppColors.greyishColor,
+                            color: Theme.of(
+                              context,
+                            ).hintColor.withValues(alpha: 0.6),
                           ),
 
                           const SizedBox(height: 16),
@@ -87,29 +92,38 @@ class _AccountScreenState extends State<AccountScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           textWidget(
+                            context: context,
                             text: 'Subscriptions',
                             fontWeight: FontWeight.bold,
                           ),
                           const SizedBox(height: 6),
                           textWidget(
+                            context: context,
                             text: user?.isPaid ?? false
                                 ? 'Premium features with unlimited storage'
                                 : 'Basic features with limited storage',
                             fontSize: 13,
-                            color: AppColors.greyishColor,
+                            color: Theme.of(
+                              context,
+                            ).hintColor.withValues(alpha: 0.6),
                           ),
                           const SizedBox(height: 12),
                           Row(
                             children: [
                               Chip(
                                 label: textWidget(
+                                  context: context,
                                   text: user?.isPaid ?? false
                                       ? 'Premium User'
                                       : 'Free User',
                                 ),
                                 backgroundColor: user?.isPaid ?? false
-                                    ? AppColors.premiumColor
-                                    : AppColors.lightGrey,
+                                    ? Theme.of(
+                                        context,
+                                      ).cardColor.withValues(alpha: 0.6)
+                                    : Theme.of(
+                                        context,
+                                      ).cardColor.withValues(alpha: 0.6),
                               ),
                               const Spacer(),
                               if (user != null && !user.isPaid)
@@ -132,14 +146,18 @@ class _AccountScreenState extends State<AccountScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           textWidget(
+                            context: context,
                             text: 'Danger Zone',
                             fontWeight: FontWeight.bold,
                           ),
                           const SizedBox(height: 6),
                           textWidget(
+                            context: context,
                             text: 'Irreversible and destructive action.',
                             fontSize: 13,
-                            color: AppColors.greyishColor,
+                            color: Theme.of(
+                              context,
+                            ).hintColor.withValues(alpha: 0.6),
                           ),
 
                           const SizedBox(height: 12),
@@ -192,19 +210,24 @@ class _AccountScreenState extends State<AccountScreen> {
     final want = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: textWidget(text: 'Delete account'),
+        title: textWidget(context: context, text: 'Delete account'),
         content: textWidget(
+          context: context,
           text:
               'This will permanently delete your account and all its data. Are you sure?',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: textWidget(text: 'Cancel'),
+            child: textWidget(context: context, text: 'Cancel'),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: textWidget(text: 'Delete', color: AppColors.errorColor),
+            child: textWidget(
+              context: context,
+              text: 'Delete',
+              color: AppColors.errorColor,
+            ),
           ),
         ],
       ),
@@ -214,9 +237,11 @@ class _AccountScreenState extends State<AccountScreen> {
     final resultCode = await provider.deleteAccount(passwordForReauth: null);
     if (resultCode == null) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: textWidget(text: 'Account deleted')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: textWidget(context: context, text: 'Account deleted'),
+          ),
+        );
       }
     } else if (resultCode == 'requires-recent-login' ||
         resultCode == 'user-not-found') {
@@ -224,7 +249,12 @@ class _AccountScreenState extends State<AccountScreen> {
     } else {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: textWidget(text: 'Delete failed: $resultCode')),
+          SnackBar(
+            content: textWidget(
+              context: context,
+              text: 'Delete failed: $resultCode',
+            ),
+          ),
         );
       }
     }
@@ -235,11 +265,12 @@ class _AccountScreenState extends State<AccountScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: textWidget(text: 'Re-authenticate'),
+        title: textWidget(context: context, text: 'Re-authenticate'),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             textWidget(
+              context: context,
               text:
                   'For security, please enter your password to delete the account.',
             ),
@@ -249,7 +280,7 @@ class _AccountScreenState extends State<AccountScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: textWidget(text: 'Cancel'),
+            child: textWidget(context: context, text: 'Cancel'),
           ),
           TextButton(
             onPressed: () async {
@@ -260,18 +291,28 @@ class _AccountScreenState extends State<AccountScreen> {
               if (res == null) {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: textWidget(text: 'Account deleted')),
+                    SnackBar(
+                      content: textWidget(
+                        context: context,
+                        text: 'Account deleted',
+                      ),
+                    ),
                   );
                 }
               } else {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: textWidget(text: 'Delete failed: $res')),
+                    SnackBar(
+                      content: textWidget(
+                        context: context,
+                        text: 'Delete failed: $res',
+                      ),
+                    ),
                   );
                 }
               }
             },
-            child: textWidget(text: 'Confirm'),
+            child: textWidget(context: context, text: 'Confirm'),
           ),
         ],
       ),
@@ -282,7 +323,7 @@ class _AccountScreenState extends State<AccountScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.whiteColor,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(22),
       ),
       child: child,
@@ -320,7 +361,10 @@ class _AccountScreenState extends State<AccountScreen> {
             children: [
               ListTile(
                 leading: const Icon(Icons.photo_library),
-                title: textWidget(text: 'Choose from gallery'),
+                title: textWidget(
+                  context: context,
+                  text: 'Choose from gallery',
+                ),
                 onTap: () {
                   Navigator.of(ctx).pop();
                   provider.pickAndUploadAvatar(ImageSource.gallery);
@@ -328,7 +372,7 @@ class _AccountScreenState extends State<AccountScreen> {
               ),
               ListTile(
                 leading: const Icon(Icons.camera_alt),
-                title: textWidget(text: 'Take a photo'),
+                title: textWidget(context: context, text: 'Take a photo'),
                 onTap: () {
                   Navigator.of(ctx).pop();
                   provider.pickAndUploadAvatar(ImageSource.camera);

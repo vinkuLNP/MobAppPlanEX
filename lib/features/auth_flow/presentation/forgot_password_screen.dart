@@ -37,7 +37,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 children: [
                   const AppHeader(title: 'Forgot password'),
                   if (auth.error != null)
-                    textWidget(text: auth.error!, color: Colors.red),
+                    textWidget(text: auth.error!, color: Colors.red, context: context,),
                   AppInputField(
                     label: "Email",
                     controller: auth.signInEmailCtrl,
@@ -74,7 +74,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       textDecoration: TextDecoration.underline,
                       fontWeight: FontWeight.w600,
                       textDecorationColor: AppColors.authThemeColor,
-                      color: AppColors.authThemeColor,
+                      color: AppColors.authThemeColor, context: context,
                     ),
                   ),
                 ],

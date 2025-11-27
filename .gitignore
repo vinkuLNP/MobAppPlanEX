@@ -47,3 +47,16 @@ app.*.map.json
 /assets/env
 .env
 
+# Flutter
+.flutter-plugins
+build/
+
+# iOS
+ios/Pods/
+ios/Build/
+ios/.symlinks/
+ios/Flutter/.last_build_id
+ios/Flutter/flutter_export_environment.sh
+ios/Flutter/ephemeral/
+
+

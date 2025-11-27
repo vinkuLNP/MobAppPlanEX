@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_text_widget.dart';
-import 'package:plan_ex_app/core/constants/app_colors.dart';
 import 'package:plan_ex_app/features/dashboard_flow/presentation/widgets/pro_switch_tile.dart';
 import 'package:plan_ex_app/features/dashboard_flow/provider/account_provider.dart';
 import 'package:provider/provider.dart';
@@ -38,7 +37,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         }
 
         return Scaffold(
-          backgroundColor: AppColors.screenBackgroundColor,
           body: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -58,6 +56,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       textWidget(
+                        context: context,
                         text: 'Appearance',
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
@@ -69,7 +68,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             'Toggle between light and dark themes (Pro feature)',
                         value: user.darkMode,
                         isPremium: true,
-                        onChanged: (v) => provider.toggleSetting('darkMode', v),
+                        onChanged: (v) => provider.toggleSetting('darkMode', v,context),
                         onUpgradeTap: () {},
                       ),
 
@@ -80,7 +79,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         value: user.showCreationDates,
                         isPremium: provider.isPremium,
                         onChanged: (v) =>
-                            provider.toggleSetting('showCreationDates', v),
+                            provider.toggleSetting('showCreationDates', v,context),
                         onUpgradeTap: () {},
                       ),
                     ],
@@ -92,6 +91,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       textWidget(
+                        context: context,
                         text: 'Notifications',
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
@@ -104,7 +104,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         value: user.dailySummary,
                         isPremium: provider.isPremium,
                         onChanged: (v) =>
-                            provider.toggleSetting('dailySummary', v),
+                            provider.toggleSetting('dailySummary', v,context),
                         onUpgradeTap: () {},
                       ),
 
@@ -115,7 +115,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         value: user.taskReminders,
                         isPremium: provider.isPremium,
                         onChanged: (v) =>
-                            provider.toggleSetting('taskReminders', v),
+                            provider.toggleSetting('taskReminders', v,context),
                         onUpgradeTap: () {},
                       ),
                       ProSwitchTile(
@@ -125,7 +125,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         value: user.overdueAlerts,
                         isPremium: provider.isPremium,
                         onChanged: (v) =>
-                            provider.toggleSetting('overdueAlerts', v),
+                            provider.toggleSetting('overdueAlerts', v,context),
                         onUpgradeTap: () {},
                       ),
                     ],
@@ -139,7 +139,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         'Automatically save changes as you type (Pro feature)',
                     value: user.autoSave,
                     isPremium: provider.isPremium,
-                    onChanged: (v) => provider.toggleSetting('autoSave', v),
+                    onChanged: (v) => provider.toggleSetting('autoSave', v,context),
                     onUpgradeTap: () {},
                   ),
                 ),
@@ -148,7 +148,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _card(
                   child: ListTile(
                     leading: const Icon(Icons.logout, color: Colors.red),
-                    title: textWidget(text: 'Logout'),
+                    title: textWidget(context: context, text: 'Logout'),
                     onTap: () => provider.logout(context),
                   ),
                 ),
@@ -165,11 +165,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Column(
         children: [
           textWidget(
+            context: context,
             text: value.toString(),
-            fontSize: 18,
+            fontSize: 20,
             fontWeight: FontWeight.bold,
+            color: Theme.of(context).hintColor,
           ),
-          textWidget(text: title),
+          const SizedBox(height: 6),
+          textWidget(
+            context: context,
+            color: Theme.of(context).hintColor,
+            text: title,
+            fontSize: 13,
+          ),
         ],
       ),
     );
@@ -179,11 +187,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.whiteColor,
-        borderRadius: BorderRadius.circular(22),
+        color: Theme.of(context).cardColor,
+
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Theme.of(context).cardColor.withValues(alpha: 0.4),
+            blurRadius: 10,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
       child: child,
     );
   }
 }
-

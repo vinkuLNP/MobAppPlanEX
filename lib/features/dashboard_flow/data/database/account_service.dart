@@ -32,8 +32,11 @@ class AccountService {
   }
 
   Future<void> updateStats(String uid, Map<String, dynamic> stats) async {
-    await _db.doc(uid).update({'stats': stats});
-  }
+  await _db.doc(uid).set({
+    'stats': stats,
+  }, SetOptions(merge: true));
+}
+
 
   Future<void> updateAvatar(String uid, String avatarUrl) async {
     await _db.doc(uid).update({'photoUrl': avatarUrl});
