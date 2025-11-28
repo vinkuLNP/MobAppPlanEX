@@ -1,12 +1,18 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:plan_ex_app/core/notifications/notification_streams.dart';
+import 'package:plan_ex_app/core/routes/app_routes.dart';
+import 'package:plan_ex_app/main.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _notifications =
       FlutterLocalNotificationsPlugin();
+  static const int dailySummaryId = 100;
+  static const int overdueAlertId = 101;
+  static const int taskReminderId = 102;
 
   static Future<void> init() async {
     tz.initializeTimeZones();
@@ -26,8 +32,26 @@ class NotificationService {
       iOS: iosSettings,
     );
 
-    await _notifications.initialize(settings);
+    await _notifications.initialize(settings,    onDidReceiveNotificationResponse: (NotificationResponse response) {
+      _handleNotificationTap(response);
+    },
+);
   }
+static void _handleNotificationTap(NotificationResponse response) {
+  final context = navigatorKey.currentContext;
+  if (context == null) return;
+
+  Navigator.of(context).pushNamedAndRemoveUntil(
+    AppRoutes.home,
+    (route) => false,
+  );
+
+  Future.delayed(const Duration(milliseconds: 300), () {
+    homeScreenTaskTabStream.add(1);
+  });
+}
+
+  static int generateTaskNotificationId(String taskId) => taskId.hashCode;
 
   static Future<bool> requestExactAlarmPermissionIfNeeded() async {
     if (!Platform.isAndroid) return true;
@@ -94,7 +118,7 @@ class NotificationService {
     );
 
     await _notifications.zonedSchedule(
-      4,
+      dailySummaryId,
       "Daily Task Summary",
       body,
       tzTime,
@@ -111,11 +135,15 @@ class NotificationService {
     );
   }
 
-  static Future<void> scheduleTaskReminder(String title, DateTime time) async {
+  static Future<void> scheduleTaskReminder(
+    String title,
+    String taskId,
+    DateTime time,
+  ) async {
     final tz.TZDateTime scheduledTime = tz.TZDateTime.from(time, tz.local);
 
     await _notifications.zonedSchedule(
-      2,
+      generateTaskNotificationId(taskId),
       "Task Reminder",
       title,
       scheduledTime,
@@ -135,7 +163,7 @@ class NotificationService {
 
   static Future<void> showOverdueAlert(String title) async {
     await _notifications.show(
-      3,
+      overdueAlertId,
       "Overdue Task",
       title,
       const NotificationDetails(
@@ -148,4 +176,54 @@ class NotificationService {
       ),
     );
   }
+
+  static Future<void> cancelDailySummary() async {
+    await _notifications.cancel(dailySummaryId);
+  }
+
+  static Future<void> cancelTaskReminders() async {
+    await _notifications.cancel(taskReminderId);
+  }
+
+  static Future<void> cancelOverdueAlerts() async {
+    await _notifications.cancel(overdueAlertId);
+  }
+
+  static Future<void> cancelAll() async {
+    await _notifications.cancelAll();
+  }
+
+  static Future<void> scheduleOverdueAlertForTask(
+    String taskId,
+    String title,
+    DateTime dueDate,
+  ) async {
+    final overdueTime = DateTime(
+      dueDate.year,
+      dueDate.month,
+      dueDate.day,
+      10,
+      25,
+    );
+
+    final tzTime = tz.TZDateTime.from(overdueTime, tz.local);
+
+    await _notifications.zonedSchedule(
+      generateTaskNotificationId(taskId) + 100000,
+      "Overdue Task",
+      "Task '$title' is overdue ⚠️",
+      tzTime,
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          'overdue_alert',
+          'Overdue Alerts',
+          importance: Importance.high,
+          priority: Priority.high,
+        ),
+        iOS: DarwinNotificationDetails(presentAlert: true, presentSound: true),
+      ),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+    );
+  }
 }
+

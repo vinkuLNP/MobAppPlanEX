@@ -18,6 +18,12 @@ class TaskEntity {
     if (recurrence!.unit == RecurrenceUnit.none) return false;
     return true;
   }
+  bool get isOverdue {
+  if (completed) return false;
+  if (dueDate == null) return false;
+  return dueDate!.isBefore(DateTime.now());
+}
+
   TaskEntity({
     required this.id,
     required this.title,

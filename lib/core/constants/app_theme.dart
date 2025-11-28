@@ -46,6 +46,13 @@ class AppTheme {
       shadowColor: const Color.fromARGB(136, 214, 210, 210),
       hintColor: AppColors.black,
       highlightColor: Colors.grey.shade300,
+
+
+  textSelectionTheme: const TextSelectionThemeData(
+    cursorColor: Colors.black,
+  ),
+
+
     );
   }
 
@@ -95,7 +102,9 @@ class AppTheme {
           elevation: 0,
         ),
       ),
-
+  textSelectionTheme: const TextSelectionThemeData(
+    cursorColor: Colors.white,
+  ),
       hintColor: Colors.white60,
       highlightColor: softPrimary.withValues(alpha: 0.2),
       shadowColor: const Color.fromARGB(255, 65, 63, 63).withValues(alpha: 0.4),
