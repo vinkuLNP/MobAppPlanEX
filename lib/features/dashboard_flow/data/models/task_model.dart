@@ -21,7 +21,7 @@ class TaskModel extends TaskEntity {
       'title': title,
       'description': description,
       'createdAt': Timestamp.fromDate(createdAt),
-      'dueDate': dueDate == null ? null : Timestamp.fromDate(dueDate!),
+      'dueDate': dueDate == null ?  Timestamp.fromDate(createdAt) : Timestamp.fromDate(dueDate!),
       'completed': completed,
       'color': color,
       'attachments': attachments,

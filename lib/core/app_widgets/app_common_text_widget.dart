@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:plan_ex_app/core/constants/app_colors.dart';
 import 'package:plan_ex_app/core/constants/app_text_style.dart';
 
 Widget textWidget({
   required String text,
+  required BuildContext context,
   String highLightText = "",
-  Color color = AppColors.black,
-  Color textDecorationColor= AppColors.black,
-
+  Color? color,
+  Color? textDecorationColor,
   double fontSize = 14,
-  Color highLightColor = AppColors.black,
+  Color? highLightColor,
   TextAlign alignment = TextAlign.start,
   int? maxLine,
   TextDecoration? textDecoration,
@@ -24,13 +23,15 @@ Widget textWidget({
         textAlign: alignment,
         maxLines: maxLine,
         style: appTextStyle(
+          context: context,
           fontSize: fontSize,
           fontWeight: fontWeight,
-          color: color,
+          color: color ?? Theme.of(context).hintColor,
           height: height,
           fontStyle: fontStyle,
           textDecoration: textDecoration,
-          textDecorationColor:textDecorationColor ,
+          textDecorationColor:
+              textDecorationColor ?? Theme.of(context).hintColor,
           textOverflow: textOverflow,
         ),
       )
@@ -38,11 +39,12 @@ Widget textWidget({
         text,
         textAlign: alignment,
         maxLines: maxLine,
-        style: appTextStyle(
+        style: appTextStyle( context: context,
           fontSize: fontSize,
           fontWeight: fontWeight,
-          textDecorationColor:textDecorationColor ,
-          color: color,
+          textDecorationColor:
+              textDecorationColor ?? Theme.of(context).hintColor,
+          color: color ?? Theme.of(context).hintColor,
           height: height,
           fontStyle: fontStyle,
           textDecoration: textDecoration,

@@ -13,7 +13,7 @@ class ProBadge extends StatelessWidget {
         color: AppColors.authThemeColor.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(20),
       ),
-      child: textWidget(
+      child: textWidget(context: context,
         text: 'PRO',
         color: Colors.white,
         fontSize: 12,

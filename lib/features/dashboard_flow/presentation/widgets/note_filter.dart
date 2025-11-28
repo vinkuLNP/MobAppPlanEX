@@ -20,7 +20,7 @@ class NoteFilter extends StatelessWidget {
       itemBuilder: (_) => categories
           .map((c) => PopupMenuItem(
                 value: c,
-                child: textWidget(text:  c),
+                child: textWidget(context: context,text:  c),
               ))
           .toList(),
     );

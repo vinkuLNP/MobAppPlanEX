@@ -1,8 +1,13 @@
 import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_text_widget.dart';
+import 'package:plan_ex_app/core/app_widgets/universal_document_viewer.dart';
 import 'package:plan_ex_app/core/constants/app_colors.dart';
+import 'package:plan_ex_app/core/utils/app_logger.dart';
 import 'package:plan_ex_app/core/utils/colors_utils.dart';
 import 'package:plan_ex_app/features/dashboard_flow/presentation/widgets/image_preview_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -11,28 +16,32 @@ void showUpgradeDialog(BuildContext context, String subtitle) {
   showDialog(
     context: context,
     builder: (_) => AlertDialog(
-      title: textWidget(text: "Upgrade to Pro"),
-      content: textWidget(text: subtitle),
+      title: textWidget(text: "Upgrade to Pro", context: context),
+      content: textWidget(text: subtitle, context: context),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: textWidget(text: "Later"),
+          child: textWidget(text: "Later", context: context),
         ),
         ElevatedButton(
           onPressed: () {
             Navigator.pop(context);
           },
-          child: textWidget(text: "Upgrade", color: AppColors.whiteColor),
+          child: textWidget(
+            text: "Upgrade",
+            context: context,
+            color: AppColors.whiteColor,
+          ),
         ),
       ],
     ),
   );
 }
 
-Widget commonSectionCard({required Widget child}) => Container(
+Widget commonSectionCard({required Widget child, required BuildContext context}) => Container(
   padding: const EdgeInsets.all(16),
   decoration: BoxDecoration(
-    color: Colors.white,
+    color:Theme.of(context).cardColor,
     borderRadius: BorderRadius.circular(16),
     boxShadow: [
       BoxShadow(
@@ -93,11 +102,15 @@ Widget commonAttachmentTile({
           )
         : const Icon(Icons.insert_drive_file, size: 32),
     title: textWidget(
+      context: context,
+
       text: fileName,
       maxLine: 1,
       textOverflow: TextOverflow.ellipsis,
     ),
     subtitle: textWidget(
+      context: context,
+
       text: isImage ? 'Image' : 'Document',
       color: Colors.grey.shade600,
     ),
@@ -133,16 +146,45 @@ Future<void> _openAttachment(
   bool isImage,
   BuildContext context,
 ) async {
-  if (isImage) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => ImagePreviewScreen(imageUrl: url)),
-    );
-  } else {
-    final uri = Uri.parse(url);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+  try {
+    AppLogger.logString("Opening attachment: $url");
+
+    if (isImage) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => ImagePreviewScreen(imageUrl: url),
+        ),
+      );
+      return;
     }
+
+    // final dio = Dio();
+    // final dir = await getTemporaryDirectory();
+    // final fileName = url.split('/').last.split('?').first;
+    // final filePath = '${dir.path}/$fileName';
+
+    // AppLogger.logString("Downloading file to: $filePath");
+
+    // await dio.download(url, filePath);
+
+    // final result = await OpenFilex.open(filePath);
+
+    // AppLogger.logString("OpenFilex result: ${result.message}");
+
+    // if (result.type != ResultType.done) {
+    //   _showSnack(context, "No app found to open this file");
+    // }
+        Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => UniversalDocumentViewer(fileUrl: url),
+      ),
+    );
+
+  } catch (e) {
+    AppLogger.error("Error opening attachment: $e");
+    _showSnack(context, "Failed to open attachment");
   }
 }
 
@@ -152,3 +194,9 @@ String _extractOriginalName(String url) {
   if (parts.length < 2) return clean;
   return parts[1];
 }
+void _showSnack(BuildContext context, String msg) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: textWidget( context: context,  color: Theme.of(context).cardColor,text:msg,)),
+  );
+}
+

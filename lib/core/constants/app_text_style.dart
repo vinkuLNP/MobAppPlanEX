@@ -1,9 +1,9 @@
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/material.dart';
-import 'package:plan_ex_app/core/constants/app_colors.dart';
 
 TextStyle appTextStyle({
   required double fontSize,
+  required BuildContext context,
   bool isBold = false,
   Color? color,
   Color? textDecorationColor,
@@ -14,9 +14,9 @@ TextStyle appTextStyle({
   double height = 0.0,
 }) => GoogleFonts.poppins(
   decoration: textDecoration,
-  decorationColor: textDecorationColor ?? AppColors.black,
+  decorationColor: textDecorationColor ?? Theme.of(context).hintColor,
   fontSize: fontSize,
-  color: color ?? AppColors.black,
+  color: color ?? Theme.of(context).hintColor,
   fontStyle: fontStyle,
   height: height,
   fontWeight: isBold == true ? FontWeight.bold : fontWeight,

@@ -22,40 +22,38 @@ class TaskService {
         .map((snap) => snap.docs.map((d) => TaskModel.fromDoc(d)).toList());
   }
 
-  Future<void> addTask(TaskModel model) async {
+  Future<Map<String, dynamic>> addTask(TaskModel model) async {
     final uid = FirebaseAuth.instance.currentUser!.uid;
-
     await _col().add(model.toMap());
+    return await _updateTaskStats(uid);
+  }
 
-    await _updateTaskStats(uid);
+  Future<Map<String, dynamic>> deleteTask(String id) async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    await _col().doc(id).delete();
+    return await _updateTaskStats(uid);
+  }
+
+  Future<Map<String, dynamic>> toggleComplete(String id, bool value) async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+    await _col().doc(id).update({"completed": value});
+    return await _updateTaskStats(uid);
   }
 
   Future<void> updateTask(TaskModel model) =>
       _col().doc(model.id).update(model.toMap());
 
-  Future<void> deleteTask(String id) async {
-    final uid = FirebaseAuth.instance.currentUser!.uid;
-
-    await _col().doc(id).delete();
-
-    await _updateTaskStats(uid);
-  }
-
-  Future<void> toggleComplete(String id, bool value) async {
-    final uid = FirebaseAuth.instance.currentUser!.uid;
-
-    await _col().doc(id).update({"completed": value});
-
-    await _updateTaskStats(uid);
-  }
-
-  Future<void> _updateTaskStats(String uid) async {
+  Future<Map<String, dynamic>> _updateTaskStats(String uid) async {
     final allTasks = await _col().get();
     final completed = await _col().where("completed", isEqualTo: true).get();
 
-    await _userDoc(uid).update({
-      "stats.totalTasks": allTasks.docs.length,
-      "stats.completedTasks": completed.docs.length,
-    });
+    final stats = {
+      "totalTasks": allTasks.docs.length,
+      "completedTasks": completed.docs.length,
+    };
+
+    await _userDoc(uid).set({"stats": stats}, SetOptions(merge: true));
+
+    return stats;
   }
 }

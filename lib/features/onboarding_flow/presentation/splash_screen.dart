@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:plan_ex_app/core/app_widgets/app_common_text_widget.dart';
 import 'package:plan_ex_app/core/constants/app_assets.dart';
+import 'package:plan_ex_app/core/constants/app_colors.dart';
 import 'package:plan_ex_app/core/routes/app_routes.dart';
-import 'package:plan_ex_app/features/dashboard_flow/data/repositories/account_repository.dart';
+import 'package:plan_ex_app/features/dashboard_flow/provider/account_provider.dart';
 import 'package:provider/provider.dart';
 
 class SplashPage extends StatefulWidget {
@@ -42,14 +44,22 @@ class _SplashPageState extends State<SplashPage>
 
   void _checkAuthState() async {
     final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
+    if (user == null || !user.emailVerified) {
       Navigator.pushReplacementNamed(context, AppRoutes.login);
-    } else {
-      final accountRepository = context.read<AccountRepository>();
-      await accountRepository.getUser(user.uid);
+      return;
+    }
+    final accountProvider = context.read<AccountProvider>();
+    try {
+      
+      await accountProvider.loadSettingsData();
+      await accountProvider.loadAccountBasicInfo();
       if (mounted) {
         Navigator.pushReplacementNamed(context, AppRoutes.home);
       }
+    } catch (_) {
+      accountProvider.clearCache();
+      await FirebaseAuth.instance.signOut();
+      if (mounted) Navigator.pushReplacementNamed(context, AppRoutes.login);
     }
   }
 
@@ -62,13 +72,39 @@ class _SplashPageState extends State<SplashPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: AppColors.authThemeColor,
       body: Center(
         child: ScaleTransition(
           scale: _scaleAnimation,
           child: FadeTransition(
             opacity: _fadeAnimation,
-            child: Image.asset(appLogoBlack, width: 140),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 4),
+                  margin: EdgeInsets.only(right: 4, top: 8),
+                  decoration: BoxDecoration(
+                    color: AppColors.whiteColor,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: textWidget(
+                    text: 'LNP',
+                    context: context,
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.authThemeColor,
+                  ),
+                ),
+                Image.asset(
+                  appLogoBlack,
+                  height: 88,
+                  // fit: BoxFit.contain,
+                  color: AppColors.whiteColor,
+                ),
+              ],
+            ),
           ),
         ),
       ),

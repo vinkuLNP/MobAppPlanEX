@@ -18,17 +18,26 @@ class NotesScreen extends StatelessWidget {
       floatingActionButton: provider.multiSelectMode
           ? FloatingActionButton.extended(
               label: textWidget(
+                context: context,
                 text: "Delete (${provider.selectedNoteIds.length})",
                 color: AppColors.whiteColor,
               ),
-              icon: const Icon(Icons.delete, color: AppColors.whiteColor),
+              icon: const Icon(
+                Icons.delete_outlined,
+                color: AppColors.whiteColor,
+              ),
               backgroundColor: AppColors.errorColor.withValues(alpha: 0.9),
-              onPressed: () => provider.deleteSelected(),
+              onPressed:provider.isDeleting ? null :  () => provider.deleteSelected(),
             )
           : FloatingActionButton.extended(
-              label: textWidget(text: "New Note"),
+              backgroundColor: AppColors.authThemeColor,
+              label: textWidget(
+                context: context,
+                text: "New Note",
+                color: AppColors.whiteColor,
+              ),
               icon: const Icon(Icons.add),
-              onPressed: () {
+              onPressed:provider.isDeleting ? null :  () {
                 if (!provider.isPro && provider.notes.length >= 5) {
                   showUpgradeDialog(
                     context,
@@ -57,15 +66,17 @@ class NotesScreen extends StatelessWidget {
                           decoration: InputDecoration(
                             hintText: "Search notes...",
                             prefixIcon: const Icon(Icons.search, size: 20),
-                            fillColor: AppColors.lightGrey.withValues(
-                              alpha: 0.7,
-                            ),
+                            fillColor: Theme.of(context).shadowColor,
                             enabledBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide(
-                                color: AppColors.lightGrey.withValues(
-                                  alpha: 0.7,
-                                ),
+                                color: Theme.of(context).shadowColor,
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: Theme.of(context).shadowColor,
                               ),
                             ),
                             border: InputBorder.none,
@@ -82,7 +93,7 @@ class NotesScreen extends StatelessWidget {
                       height: 48,
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       decoration: BoxDecoration(
-                        color: AppColors.lightGrey.withValues(alpha: 0.7),
+                        color: Theme.of(context).shadowColor,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: DropdownButton<String>(
@@ -107,7 +118,7 @@ class NotesScreen extends StatelessWidget {
                             .map(
                               (c) => DropdownMenuItem(
                                 value: c,
-                                child: textWidget(text: c),
+                                child: textWidget(context: context, text: c),
                               ),
                             )
                             .toList(),
@@ -125,14 +136,16 @@ class NotesScreen extends StatelessWidget {
                       height: 48,
                       width: 48,
                       decoration: BoxDecoration(
-                        color: AppColors.lightGrey.withValues(alpha: 0.7),
+                        color: Theme.of(context).shadowColor,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: IconButton(
                         icon: Icon(
-                          Icons.delete,
+                          provider.multiSelectMode
+                              ? Icons.close
+                              : Icons.delete_outlined,
                           color: provider.multiSelectMode
-                              ? AppColors.greyishColor
+                              ? Theme.of(context).hintColor
                               : AppColors.errorColor.withValues(alpha: 0.9),
                         ),
                         onPressed: provider.multiSelectMode
@@ -146,33 +159,76 @@ class NotesScreen extends StatelessWidget {
 
               Expanded(
                 child: provider.filteredNotes.isEmpty
-                    ? Center(child: textWidget(text: "No notes yet"))
-                    : ListView.builder(
-                        itemCount: provider.filteredNotes.length,
-                        itemBuilder: (context, i) {
-                          final n = provider.filteredNotes[i];
-                          return NoteCard(
-                            note: n,
-                            isSelected: provider.selectedNoteIds.contains(n.id),
-                            multiSelectMode: provider.multiSelectMode,
-                            onSelectToggle: () =>
-                                provider.toggleSelection(n.id),
-
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => NoteEditorScreen(note: n),
-                                ),
-                              );
-                            },
-                            onDelete: () => provider.delete(n.id),
-                          );
+                    ? Center(
+                        child: textWidget(
+                          context: context,
+                          text: "No notes yet",
+                        ),
+                      )
+                    : GestureDetector(
+                        onTap: () {
+                          if (provider.multiSelectMode) {
+                            provider.disableMultiSelectMode();
+                          }
                         },
+                        child: ListView.builder(
+                          itemCount: provider.filteredNotes.length,
+                          itemBuilder: (context, i) {
+                            final n = provider.filteredNotes[i];
+                            return Column(
+                              children: [
+                                NoteCard(
+                                  note: n,
+                                  isSelected: provider.selectedNoteIds.contains(
+                                    n.id,
+                                  ),
+                                  multiSelectMode: provider.multiSelectMode,
+                                  onSelectToggle: () =>
+                                      provider.toggleSelection(n.id),
+
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => NoteEditorScreen(
+                                          note: n,
+                                          isViewOnly: true,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  onDelete: () => provider.delete(n.id),
+                                ),
+                                i >= provider.filteredNotes.length - 1
+                                    ? SizedBox(height: 80)
+                                    : SizedBox(),
+                              ],
+                            );
+                          },
+                        ),
                       ),
               ),
             ],
           ),
+
+    if (provider.isDeleting)
+      Container(
+        color: Colors.black.withOpacity(0.4),
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: const [
+              CircularProgressIndicator(),
+              SizedBox(height: 12),
+              Text(
+                "Deleting notes...",
+                style: TextStyle(color: Colors.white, fontSize: 16),
+              ),
+            ],
+          ),
+        ),
+      ),
+
         ],
       ),
     );

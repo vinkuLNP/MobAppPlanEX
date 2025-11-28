@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_button.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_text_widget.dart';
@@ -5,6 +7,7 @@ import 'package:plan_ex_app/core/app_widgets/input_fields.dart';
 import 'package:plan_ex_app/core/constants/app_colors.dart';
 import 'package:plan_ex_app/core/extensions/context_extensions.dart';
 import 'package:plan_ex_app/core/routes/app_routes.dart';
+import 'package:plan_ex_app/core/routes/auth_flow_navigation.dart';
 import 'package:plan_ex_app/features/auth_flow/providers/auth_provider.dart';
 import 'package:plan_ex_app/features/auth_flow/widgets/app_header.dart';
 import 'package:provider/provider.dart';
@@ -19,9 +22,11 @@ class ForgotPasswordScreen extends StatefulWidget {
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final emailCtrl = TextEditingController();
   final formKey = GlobalKey<FormState>();
+
+
   @override
   Widget build(BuildContext context) {
-    final auth = context.watch<AuthProvider>();
+    final auth = context.watch<AuthUserProvider>();
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
@@ -37,7 +42,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 children: [
                   const AppHeader(title: 'Forgot password'),
                   if (auth.error != null)
-                    textWidget(text: auth.error!, color: Colors.red),
+                    textWidget(
+                      text: auth.error!,
+                      color: Colors.red,
+                      context: context,
+                    ),
                   AppInputField(
                     label: "Email",
                     controller: auth.signInEmailCtrl,
@@ -50,31 +59,90 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       }
                     },
                   ),
+                  context.gap20,
+
+                  if (auth.resetLinkSent)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: Column(
+                        children: [
+                          textWidget(
+                            text: "Reset link sent successfully!",
+                            color: AppColors.authThemeColor,
+                            fontWeight: FontWeight.w600,
+                            context: context,
+                          ),
+                          const SizedBox(height: 4),
+                          textWidget(
+                            text:
+                                "Please check your email and return to login.",
+                            color: Colors.grey,
+                            context: context,
+                          ),
+                        ],
+                      ),
+                    ),
+
                   context.gap40,
                   auth.isLoading
                       ? const CircularProgressIndicator()
                       : AppButton(
-                          onTap: () async {
-                            if (!formKey.currentState!.validate()) return;
+                          onTap: (auth.cooldown > 0)
+                              ? null
+                              : () async {
+                                  if (!formKey.currentState!.validate()) return;
 
-                            await context.read<AuthProvider>().resetPassword(
-                              emailCtrl.text.trim(),
-                            );
-                          },
-                          text: 'Send reset link',
+                                  final success = await context
+                                      .read<AuthUserProvider>()
+                                      .resetPassword(
+                                        auth.signInEmailCtrl.text.trim(),
+                                      );
+                                  if (success && context.mounted) {
+                                    auth.startCooldown();
+
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          "Password reset link has been sent to your email",
+                                        ),
+                                        behavior: SnackBarBehavior.floating,
+                                      ),
+                                    );
+                                  } else {
+                                    auth.startCooldown();
+
+                                    if (context.mounted) {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                         SnackBar(
+                                          content: Text(
+                                          auth.error.toString(),
+                                          ),
+                                          // backgroundColor: Colors.green,
+                                          behavior: SnackBarBehavior.floating,
+                                        ),
+                                      );
+                                    }
+                                  }
+                                },
+                          text:auth.cooldown > 0
+            ? "Resend in ${auth.cooldown}s"
+            : 'Send reset link',
                           fontSize: 14,
                           textColor: AppColors.backgroundColor,
                         ),
                   context.gap20,
                   TextButton(
                     onPressed: () =>
-                        Navigator.pushNamed(context, AppRoutes.login),
+                       authFlowNavigate(context, AppRoutes.login),
                     child: textWidget(
                       text: 'Back to login',
                       textDecoration: TextDecoration.underline,
                       fontWeight: FontWeight.w600,
                       textDecorationColor: AppColors.authThemeColor,
                       color: AppColors.authThemeColor,
+                      context: context,
                     ),
                   ),
                 ],

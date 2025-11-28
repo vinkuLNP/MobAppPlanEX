@@ -26,7 +26,7 @@ class AppHeader extends StatelessWidget {
           color: isDark ? Colors.white : Colors.black,
         ),
         context.gap20,
-        textWidget(text: title),
+        textWidget(context: context,text: title),
         context.gap40,
       ],
     );

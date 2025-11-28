@@ -50,7 +50,12 @@ class NotesService {
 
     final count = snap.docs.length;
 
-    await _userDoc(uid).update({"stats.totalNotes": count});
+    await _userDoc(uid).set({
+  "stats": {
+    "totalNotes": count
+  }
+}, SetOptions(merge: true));
+
     return count;
   }
 }
