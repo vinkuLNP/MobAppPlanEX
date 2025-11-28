@@ -10,7 +10,6 @@ import 'package:plan_ex_app/features/dashboard_flow/data/database/supabase_servi
 import 'package:plan_ex_app/features/dashboard_flow/data/models/recurrence_model.dart';
 import 'package:plan_ex_app/features/dashboard_flow/domain/entities/recurrence_entity.dart';
 import 'package:plan_ex_app/features/dashboard_flow/presentation/widgets/custom_appbar.dart';
-import 'package:plan_ex_app/features/dashboard_flow/presentation/widgets/pro_badge.dart';
 import 'package:plan_ex_app/features/dashboard_flow/provider/task_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
@@ -34,7 +33,7 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
   bool savingTask = false;
 
   DateTime? dueDate;
-  String priority = 'medium';
+  String priority = 'MEDIUM';
   Color selectedColor = ColorsUtil.palette.first;
   List<String> attachments = [];
   List<String> tags = [];
@@ -122,6 +121,18 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
                   onTap: uploading
                       ? null
                       : () async {
+                                final title = titleCtrl.text.trim();
+
+        if (title.isEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Task title is required'),
+            ),
+          );
+          return;
+        }
+
+
                           setState(() => savingTask = true);
                           try {
                             final newTask = TaskEntity(
@@ -173,6 +184,7 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
     readOnly: isViewOnly,
     minLines: 1,
     maxLines: 7,
+    maxLength: 100,
     style: appTextStyle(context: context, fontSize: 14),
     decoration: InputDecoration(
       labelText: 'Task title',
@@ -182,27 +194,78 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
     ),
   );
 
-  Widget _tagField() => TextField(
-    controller: tagCtrl,
-    readOnly: isViewOnly,
-    enabled: !isViewOnly,
-    style: appTextStyle(
+Widget _tagField() => Column(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    textWidget(context: context, text: 'Tags', fontWeight: FontWeight.w600),
+    const SizedBox(height: 8),
+
+    SizedBox(
+      width: double.infinity,
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          ...tags.map(
+            (tag) => Chip(
+              label: Text(tag),
+              deleteIcon: isViewOnly ? null : const Icon(Icons.close),
+              onDeleted: isViewOnly
+                  ? null
+                  : () => setState(() => tags.remove(tag)),
+            ),
+          ),
+
+          if (!isViewOnly)
+            ActionChip(
+              label: const Text('+ Add tag'),
+              onPressed: () => _showAddTagDialog(),
+            ),
+        ],
+      ),
+    ),
+  ],
+);
+
+  void _showAddTagDialog() {
+    final ctrl = TextEditingController();
+
+    showDialog(
       context: context,
-      fontSize: 18,
-      fontWeight: FontWeight.w600,
-    ),
-    decoration: InputDecoration(
-      filled: false,
-      labelText: 'Add Tag',
-      labelStyle: appTextStyle(context: context, fontSize: 14),
-      border: InputBorder.none,
-    ),
-  );
+      builder: (context) => AlertDialog(
+        title: const Text('Add Tag'),
+        content: TextField(
+          controller: ctrl,
+          maxLength: 20,
+          autofocus: true,
+          decoration: const InputDecoration(hintText: 'Enter tag name'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+
+          AppButton(
+            text: 'Add',
+            onTap: () {
+              final tag = ctrl.text.trim();
+              if (tag.isNotEmpty && !tags.contains(tag)) {
+                setState(() => tags.add(tag));
+              }
+              Navigator.pop(context);
+            },
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _descriptionField() => TextField(
     controller: descCtrl,
     readOnly: isViewOnly,
     minLines: 4,
+    maxLength: 2000,
     maxLines: null,
     decoration: InputDecoration(
       filled: false,
@@ -240,7 +303,7 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
       DropdownButton<String>(
         value: priority,
         iconDisabledColor: Colors.grey,
-        items: ['low', 'medium', 'high']
+        items: ['LOW', 'MEDIUM', 'HIGH']
             .map(
               (e) => DropdownMenuItem(
                 value: e,
@@ -287,14 +350,14 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
           Flexible(
             child: textWidget(
               context: context,
-            
+
               text: 'Make this a recurring task',
               fontWeight: FontWeight.w500,
             ),
           ),
           SizedBox(width: 5),
-          ProBadge(),
 
+          // ProBadge(),
           const Spacer(),
         ],
       ),
@@ -350,8 +413,8 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
             text: 'Attachments',
             fontWeight: FontWeight.w600,
           ),
-          if (!provider.isPro) ProBadge(),
-          if (!isViewOnly && provider.isPro)
+          // if (!provider.isPro) ProBadge(),
+          if (!isViewOnly && provider.isPro && attachments.length < 10)
             TextButton.icon(
               onPressed: _pickAndUploadFile,
               icon: Icon(Icons.upload_file, color: Theme.of(context).hintColor),
@@ -429,18 +492,18 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
       initialDate: dueDate ?? DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
-        builder: (context, child) {
-      return Theme(
-        data: Theme.of(context).copyWith(
-          textButtonTheme: TextButtonThemeData(
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).hintColor,
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(context).hintColor,
+              ),
             ),
           ),
-        ),
-        child: child!,
-      );
-    },
+          child: child!,
+        );
+      },
     );
     if (p != null) setState(() => dueDate = p);
   }

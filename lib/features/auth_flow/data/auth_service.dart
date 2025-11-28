@@ -63,7 +63,7 @@ class AuthService {
       ];
 
       if (invalidCredentialCodes.contains(e.code)) {
-        return "Invalid email or password.";
+        return "Invalid email or password!";
       }
 
       return e.message;

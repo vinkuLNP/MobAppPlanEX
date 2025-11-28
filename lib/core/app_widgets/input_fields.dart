@@ -10,9 +10,15 @@ class AppInputField extends StatelessWidget {
   final TextInputType keyboardType;
   final String? Function(String?)? validator;
   final Function(String?)? onChanged;
+  final Function(String?)? onFieldSubmitted;
+
   final String? hint;
   final int? maxLength;
   final int? maxLines;
+  final FocusNode? focusNode;
+  final VoidCallback? onTap;
+
+  final AutovalidateMode? autovalidateMode;
 
   final bool? readOnly;
   final List<TextInputFormatter>? inputFormatters;
@@ -27,8 +33,12 @@ class AppInputField extends StatelessWidget {
     this.readOnly = false,
     this.hint,
     this.maxLength,
+    this.onTap,
+    this.focusNode,
+    this.autovalidateMode,
     this.maxLines,
     super.key,
+    this.onFieldSubmitted
   });
 
   @override
@@ -44,6 +54,10 @@ class AppInputField extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         TextFormField(
+          focusNode:focusNode ,
+          onTap: onTap,
+          onFieldSubmitted: onFieldSubmitted,
+          autovalidateMode: autovalidateMode,
           controller: controller,
           style: appTextStyle(context: context, fontSize: 12),
           keyboardType: keyboardType,
@@ -98,7 +112,12 @@ class AppPasswordField extends StatelessWidget {
   final String label;
   final TextEditingController controller;
   final bool obscure;
+  final VoidCallback? onTap;
+  final Function(String?)? onFieldSubmitted;
+
+  final AutovalidateMode? autovalidateMode;
   final VoidCallback onToggle;
+  final FocusNode? focusNode;
   final String? Function(String?)? validator;
   final Function(String?)? onChanged;
   const AppPasswordField({
@@ -107,7 +126,11 @@ class AppPasswordField extends StatelessWidget {
     required this.obscure,
     required this.onToggle,
     this.validator,
+    this.autovalidateMode,
+    this.focusNode,
+    this.onTap,
     this.onChanged,
+    this.onFieldSubmitted,
     super.key,
   });
 
@@ -127,6 +150,10 @@ class AppPasswordField extends StatelessWidget {
         TextFormField(
           controller: controller,
           obscureText: obscure,
+          focusNode: focusNode,
+          onFieldSubmitted: onFieldSubmitted,
+          onTap: onTap,
+          autovalidateMode: autovalidateMode,
           onChanged: onChanged,
           style: appTextStyle(context: context, fontSize: 12),
           decoration: InputDecoration(

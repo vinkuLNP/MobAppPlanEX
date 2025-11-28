@@ -65,7 +65,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ProSwitchTile(
                         title: 'Dark Mode',
                         description:
-                            'Toggle between light and dark themes (Pro feature)',
+                            'Toggle between light and dark themes',
                         value: user.darkMode,
                         isPremium: true,
                         onChanged: (v) => provider.toggleSetting('darkMode', v,context),
@@ -75,7 +75,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ProSwitchTile(
                         title: 'Show Creation Dates',
                         description:
-                            'Display when notes and tasks were created (Pro feature)',
+                            'Display when notes and tasks were created',
                         value: user.showCreationDates,
                         isPremium: provider.isPremium,
                         onChanged: (v) =>
@@ -100,7 +100,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ProSwitchTile(
                         title: 'Daily Summary',
                         description:
-                            'Receive daily task summary notifications (Pro feature)',
+                            'Receive daily task summary notifications',
                         value: user.dailySummary,
                         isPremium: provider.isPremium,
                         onChanged: (v) =>
@@ -111,7 +111,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ProSwitchTile(
                         title: 'Task Reminders',
                         description:
-                            'Get notified about upcoming task due dates (Pro feature)',
+                            'Get notified about upcoming task due dates',
                         value: user.taskReminders,
                         isPremium: provider.isPremium,
                         onChanged: (v) =>
@@ -121,7 +121,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ProSwitchTile(
                         title: 'Overdue Alerts',
                         description:
-                            'Daily alerts for overdue tasks until completed (Pro feature)',
+                            'Daily alerts for overdue tasks until completed',
                         value: user.overdueAlerts,
                         isPremium: provider.isPremium,
                         onChanged: (v) =>
@@ -136,7 +136,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   child: ProSwitchTile(
                     title: 'Auto Save',
                     description:
-                        'Automatically save changes as you type (Pro feature)',
+                        'Automatically save changes as you type',
                     value: user.autoSave,
                     isPremium: provider.isPremium,
                     onChanged: (v) => provider.toggleSetting('autoSave', v,context),

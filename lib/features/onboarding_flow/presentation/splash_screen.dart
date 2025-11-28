@@ -100,7 +100,6 @@ class _SplashPageState extends State<SplashPage>
                 Image.asset(
                   appLogoBlack,
                   height: 88,
-                  // fit: BoxFit.contain,
                   color: AppColors.whiteColor,
                 ),
               ],

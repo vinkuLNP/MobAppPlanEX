@@ -7,8 +7,28 @@ import 'package:plan_ex_app/features/dashboard_flow/presentation/widgets/note_ed
 import 'package:plan_ex_app/features/dashboard_flow/provider/notes_provider.dart';
 import 'package:provider/provider.dart';
 
-class NotesScreen extends StatelessWidget {
+class NotesScreen extends StatefulWidget {
   const NotesScreen({super.key});
+
+  @override
+  State<NotesScreen> createState() => _NotesScreenState();
+}
+
+class _NotesScreenState extends State<NotesScreen> {
+  final FocusNode _searchFocus = FocusNode();
+  @override
+  void initState() {
+    super.initState();
+    _searchFocus.addListener(() {
+      setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchFocus.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,8 +46,10 @@ class NotesScreen extends StatelessWidget {
                 Icons.delete_outlined,
                 color: AppColors.whiteColor,
               ),
-              backgroundColor: AppColors.errorColor.withValues(alpha: 0.9),
-              onPressed:provider.isDeleting ? null :  () => provider.deleteSelected(),
+              backgroundColor: AppColors.errorColor,
+              onPressed: provider.isDeleting
+                  ? null
+                  : () => provider.deleteSelected(),
             )
           : FloatingActionButton.extended(
               backgroundColor: AppColors.authThemeColor,
@@ -37,19 +59,21 @@ class NotesScreen extends StatelessWidget {
                 color: AppColors.whiteColor,
               ),
               icon: const Icon(Icons.add),
-              onPressed:provider.isDeleting ? null :  () {
-                if (!provider.isPro && provider.notes.length >= 5) {
-                  showUpgradeDialog(
-                    context,
-                    'Free users can create only 5 notes. Upgrade to Pro for unlimited notes, attachments and categories.',
-                  );
-                  return;
-                }
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => NoteEditorScreen()),
-                );
-              },
+              onPressed: provider.isDeleting
+                  ? null
+                  : () {
+                      if (!provider.isPro && provider.notes.length >= 5) {
+                        showUpgradeDialog(
+                          context,
+                          'Free users can create only 5 notes. Upgrade to Pro for unlimited notes, attachments and categories.',
+                        );
+                        return;
+                      }
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => NoteEditorScreen()),
+                      );
+                    },
             ),
       body: Stack(
         children: [
@@ -63,6 +87,7 @@ class NotesScreen extends StatelessWidget {
                       child: SizedBox(
                         height: 48,
                         child: TextField(
+                          focusNode: _searchFocus,
                           decoration: InputDecoration(
                             hintText: "Search notes...",
                             prefixIcon: const Icon(Icons.search, size: 20),
@@ -91,66 +116,59 @@ class NotesScreen extends StatelessWidget {
                     padding: const EdgeInsets.only(right: 8),
                     child: Container(
                       height: 48,
+                      width: MediaQuery.of(context).size.width * 0.35,
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       decoration: BoxDecoration(
                         color: Theme.of(context).shadowColor,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: DropdownButton<String>(
-                        value: provider.selectedCategory,
-                        underline: const SizedBox(),
-                        isExpanded: false,
-                        icon: Row(
-                          children: const [
-                            Icon(Icons.filter_list),
-                            SizedBox(width: 4),
-                            Icon(Icons.arrow_drop_down),
-                          ],
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: provider.selectedCategory,
+                          isExpanded: true,
+                          icon: const Icon(Icons.arrow_drop_down),
+
+                          onTap: () {
+                            FocusManager.instance.primaryFocus?.unfocus();
+                          },
+
+                          selectedItemBuilder: (context) {
+                            return provider.categories.map((c) {
+                              return Row(
+                                children: [
+                                  Icon(
+                                    Icons.filter_list,
+                                    size: 18,
+                                    color: Theme.of(context).hintColor,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      provider.selectedCategory,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }).toList();
+                          },
+
+                          items: provider.categories
+                              .map(
+                                (c) => DropdownMenuItem(
+                                  value: c,
+                                  child: Text(
+                                    c,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              )
+                              .toList(),
+
+                          onChanged: (v) {
+                            if (v != null) provider.filter(v);
+                          },
                         ),
-
-                        selectedItemBuilder: (context) {
-                          return provider.categories.map((c) {
-                            return const SizedBox.shrink();
-                          }).toList();
-                        },
-
-                        items: provider.categories
-                            .map(
-                              (c) => DropdownMenuItem(
-                                value: c,
-                                child: textWidget(context: context, text: c),
-                              ),
-                            )
-                            .toList(),
-
-                        onChanged: (v) {
-                          if (v != null) provider.filter(v);
-                        },
-                      ),
-                    ),
-                  ),
-
-                  Padding(
-                    padding: const EdgeInsets.only(right: 12),
-                    child: Container(
-                      height: 48,
-                      width: 48,
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).shadowColor,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: IconButton(
-                        icon: Icon(
-                          provider.multiSelectMode
-                              ? Icons.close
-                              : Icons.delete_outlined,
-                          color: provider.multiSelectMode
-                              ? Theme.of(context).hintColor
-                              : AppColors.errorColor.withValues(alpha: 0.9),
-                        ),
-                        onPressed: provider.multiSelectMode
-                            ? provider.disableMultiSelectMode
-                            : provider.enableMultiSelectMode,
                       ),
                     ),
                   ),
@@ -211,24 +229,23 @@ class NotesScreen extends StatelessWidget {
             ],
           ),
 
-    if (provider.isDeleting)
-      Container(
-        color: Colors.black.withOpacity(0.4),
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: const [
-              CircularProgressIndicator(),
-              SizedBox(height: 12),
-              Text(
-                "Deleting notes...",
-                style: TextStyle(color: Colors.white, fontSize: 16),
+          if (provider.isDeleting)
+            Container(
+              color: Colors.black.withValues(alpha: 0.4),
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 12),
+                    Text(
+                      "Deleting notes...",
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                  ],
+                ),
               ),
-            ],
-          ),
-        ),
-      ),
-
+            ),
         ],
       ),
     );

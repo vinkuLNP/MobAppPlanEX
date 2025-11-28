@@ -1,10 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:photo_view/photo_view.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_button.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_text_widget.dart';
 import 'package:plan_ex_app/core/app_widgets/input_fields.dart';
 import 'package:plan_ex_app/core/constants/app_colors.dart';
+import 'package:plan_ex_app/core/routes/app_routes.dart';
+import 'package:plan_ex_app/core/utils/app_logger.dart';
 import 'package:plan_ex_app/features/dashboard_flow/provider/account_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -32,7 +35,7 @@ class _AccountScreenState extends State<AccountScreen> {
   Widget build(BuildContext context) {
     return Consumer<AccountProvider>(
       builder: (context, provider, _) {
-        final user = provider.user;
+        // final user = provider.user;
         return Scaffold(
           body: Stack(
             children: [
@@ -44,7 +47,14 @@ class _AccountScreenState extends State<AccountScreen> {
                       child: Column(
                         children: [
                           GestureDetector(
-                            onTap: () => _showPickAvatarSheet(provider),
+                            onTap: () {
+                              if (provider.localImagePath != null ||
+                                  provider.avatarUrl != null) {
+                                _viewAvatar(context, provider);
+                              } else {
+                                _showPickAvatarSheet(provider);
+                              }
+                            },
                             child: _avatarImage(provider),
                           ),
                           const SizedBox(height: 8),
@@ -87,7 +97,7 @@ class _AccountScreenState extends State<AccountScreen> {
 
                     const SizedBox(height: 20),
 
-                    _card(
+                    /*                  _card(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -138,7 +148,7 @@ class _AccountScreenState extends State<AccountScreen> {
                         ],
                       ),
                     ),
-
+ */
                     const SizedBox(height: 20),
 
                     _card(
@@ -235,6 +245,7 @@ class _AccountScreenState extends State<AccountScreen> {
     if (want != true) return;
 
     final resultCode = await provider.deleteAccount(passwordForReauth: null);
+    AppLogger.logString(resultCode.toString());
     if (resultCode == null) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -246,6 +257,9 @@ class _AccountScreenState extends State<AccountScreen> {
             ),
           ),
         );
+                 Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil(AppRoutes.login, (route) => false);
       }
     } else if (resultCode == 'requires-recent-login' ||
         resultCode == 'user-not-found') {
@@ -261,6 +275,7 @@ class _AccountScreenState extends State<AccountScreen> {
             ),
           ),
         );
+
       }
     }
   }
@@ -359,6 +374,20 @@ class _AccountScreenState extends State<AccountScreen> {
     );
   }
 
+  void _viewAvatar(BuildContext context, AccountProvider provider) {
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: PhotoView(
+          imageProvider: provider.localImagePath != null
+              ? FileImage(File(provider.localImagePath!))
+              : NetworkImage(provider.avatarUrl!) as ImageProvider,
+        ),
+      ),
+    );
+  }
+
   void _showPickAvatarSheet(AccountProvider provider) {
     showModalBottomSheet(
       context: context,
@@ -374,7 +403,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 ),
                 onTap: () {
                   Navigator.of(ctx).pop();
-                  provider.pickAndUploadAvatar(ImageSource.gallery);
+                  provider.pickAndUploadAvatar(ImageSource.gallery, context);
                 },
               ),
               ListTile(
@@ -382,7 +411,7 @@ class _AccountScreenState extends State<AccountScreen> {
                 title: textWidget(context: context, text: 'Take a photo'),
                 onTap: () {
                   Navigator.of(ctx).pop();
-                  provider.pickAndUploadAvatar(ImageSource.camera);
+                  provider.pickAndUploadAvatar(ImageSource.camera, context);
                 },
               ),
             ],

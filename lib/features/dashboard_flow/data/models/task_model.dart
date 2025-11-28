@@ -42,7 +42,7 @@ class TaskModel extends TaskEntity {
       completed: data['completed'] ?? false,
       color: data['color'] ?? 0xFFB388FF,
       attachments: List<String>.from(data['attachments'] ?? []),
-      priority: data['priority'] ?? 'medium',
+      priority: data['priority'] ?? 'MEDIUM',
       tags: List<String>.from(data['tags'] ?? []),
       recurrence: RecurrenceModel.fromMap(
         data['recurrence'] as Map<String, dynamic>?,
