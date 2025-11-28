@@ -103,6 +103,8 @@ class EmailVerificationScreen extends StatelessWidget {
                                     AppRoutes.home,
                                   );
                                 }
+                                              authProvider.clearControllers();
+
                               } else {
                                 if (authProvider.error != null) {
                                   if (context.mounted) {

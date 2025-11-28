@@ -5,6 +5,7 @@ import 'package:plan_ex_app/core/app_widgets/app_common_text_widget.dart';
 import 'package:plan_ex_app/core/app_widgets/input_fields.dart';
 import 'package:plan_ex_app/core/constants/app_assets.dart';
 import 'package:plan_ex_app/core/constants/app_colors.dart';
+import 'package:plan_ex_app/core/constants/app_enums.dart';
 import 'package:plan_ex_app/core/constants/app_text_style.dart';
 import 'package:plan_ex_app/core/routes/app_routes.dart';
 import 'package:plan_ex_app/core/routes/auth_flow_navigation.dart';
@@ -24,6 +25,45 @@ class SignInScreen extends StatefulWidget {
 
 class _SignInScreenState extends State<SignInScreen> {
   final formKey = GlobalKey<FormState>();
+  final FocusNode emailFocus = FocusNode();
+  final FocusNode passFocus = FocusNode();
+  bool isSubmitted = false;
+  bool forceValidation = false;
+  bool hasInteracted = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    emailFocus.addListener(() {
+      setState(() {
+        activeField = emailFocus.hasFocus
+            ? ActiveField.email
+            : ActiveField.none;
+        if (hasInteracted) {
+          formKey.currentState?.validate();
+        }
+      });
+    });
+
+    passFocus.addListener(() {
+      setState(() {
+        activeField = passFocus.hasFocus
+            ? ActiveField.password
+            : ActiveField.none;
+        if (hasInteracted) {
+          formKey.currentState?.validate();
+        }
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    emailFocus.dispose();
+    passFocus.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,14 +90,13 @@ class _SignInScreenState extends State<SignInScreen> {
                             padding: context.pagePadding,
                             child: Form(
                               key: formKey,
-                              autovalidateMode: provider.autoValidate
-                                  ? AutovalidateMode.onUserInteraction
-                                  : AutovalidateMode.disabled,
+                              autovalidateMode: AutovalidateMode.disabled,
                               child: Column(
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
                                   const AppHeader(
-                                    title: "Your Personal Productivity Companion",
+                                    title:
+                                        "Your Personal Productivity Companion",
                                     onTap: false,
                                   ),
                                   Expanded(
@@ -78,28 +117,92 @@ class _SignInScreenState extends State<SignInScreen> {
                                         AppInputField(
                                           label: "Email",
                                           controller: provider.signInEmailCtrl,
+                                          focusNode: emailFocus,
                                           keyboardType:
                                               TextInputType.emailAddress,
                                           hint: "example@gmail.com",
-                                          validator: provider.validateEmail,
+                                          onFieldSubmitted: (_) {
+                                            FocusScope.of(
+                                              context,
+                                            ).requestFocus(passFocus);
+                                          },
+                                          validator: (value) {
+                                            if (activeField ==
+                                                ActiveField.email) {
+                                              return null;
+                                            }
+
+                                            if (value == null ||
+                                                value.isEmpty) {
+                                              return "Please enter email";
+                                            }
+
+                                            return provider.validateEmail(
+                                              value,
+                                            );
+                                          },
+                                          onTap: () {
+                                            setState(() {
+                                              activeField = ActiveField.email;
+                                            });
+                                          },
                                           onChanged: (_) {
-                                            if (provider.autoValidate) {
+                                            if (isSubmitted) {
                                               formKey.currentState?.validate();
                                             }
                                           },
+                                          autovalidateMode: hasInteracted
+                                              ? (emailFocus.hasFocus
+                                                    ? AutovalidateMode.disabled
+                                                    : AutovalidateMode.always)
+                                              : AutovalidateMode.disabled,
                                         ),
                                         context.gap8,
                                         AppPasswordField(
                                           label: "Password",
                                           controller: provider.signInPassCtrl,
                                           obscure: provider.signInObscure,
-                                          onToggle: provider.toggleSignInObscure,
-                                          validator: provider.validatePassword,
+                                          onFieldSubmitted: (_) {
+                                            FocusScope.of(
+                                              context,
+                                            ).requestFocus(emailFocus);
+                                          },
+                                          focusNode: passFocus,
+                                          onToggle:
+                                              provider.toggleSignInObscure,
+                                          validator: (value) {
+                                            if (activeField ==
+                                                ActiveField.password) {
+                                              return null;
+                                            }
+
+                                            if (value == null ||
+                                                value.isEmpty) {
+                                              return "Please enter password";
+                                            }
+                                            if (value.length < 6) {
+                                              return "Password must be at least 6 characters";
+                                            }
+
+                                            return provider
+                                                .validateSignINPassword(value);
+                                          },
+                                          onTap: () {
+                                            setState(() {
+                                              activeField =
+                                                  ActiveField.password;
+                                            });
+                                          },
                                           onChanged: (_) {
-                                            if (provider.autoValidate) {
+                                            if (isSubmitted) {
                                               formKey.currentState?.validate();
                                             }
                                           },
+                                          autovalidateMode: hasInteracted
+                                              ? (passFocus.hasFocus
+                                                    ? AutovalidateMode.disabled
+                                                    : AutovalidateMode.always)
+                                              : AutovalidateMode.disabled,
                                         ),
                                         Align(
                                           alignment: Alignment.centerRight,
@@ -127,7 +230,20 @@ class _SignInScreenState extends State<SignInScreen> {
                                         AppButton(
                                           text: "Login",
                                           onTap: () async {
-                                            AppLogger.logString('Button tapped');
+                                            setState(() {
+                                              isSubmitted = true;
+                                              hasInteracted = true;
+                                              activeField = ActiveField.none;
+                                              lastActiveField =
+                                                  ActiveField.none;
+                                            });
+provider.clearError();
+                                            await Future.delayed(Duration.zero);
+
+                                            AppLogger.logString(
+                                              'Button tapped',
+                                            );
+
                                             final valid =
                                                 formKey.currentState
                                                     ?.validate() ??
@@ -136,16 +252,12 @@ class _SignInScreenState extends State<SignInScreen> {
                                               'Form Valid: $valid',
                                             );
                                             if (!valid) {
-                                              provider.enableAutoValidate();
                                               return;
                                             }
-      
+
                                             final status = await provider
                                                 .signIn();
                                             if (status == "verified") {
-                                              provider.signInEmailCtrl.clear();
-                                              provider.signInPassCtrl.clear();
-      
                                               await accountProvider
                                                   .loadAccountBasicInfo();
                                               await accountProvider
@@ -156,6 +268,7 @@ class _SignInScreenState extends State<SignInScreen> {
                                                   AppRoutes.home,
                                                 );
                                               }
+                                              provider.clearControllers();
                                             } else if (status == "unverified" &&
                                                 context.mounted) {
                                               Navigator.pushReplacementNamed(
@@ -178,7 +291,8 @@ class _SignInScreenState extends State<SignInScreen> {
                                               text: "Didn't have an account? ",
                                               style: appTextStyle(
                                                 context: context,
-                                                color: Theme.of(context).hintColor
+                                                color: Theme.of(context)
+                                                    .hintColor
                                                     .withValues(alpha: 0.6),
                                                 fontSize: 14,
                                               ),
@@ -189,11 +303,13 @@ class _SignInScreenState extends State<SignInScreen> {
                                                     context: context,
                                                     fontSize: 14,
                                                     textDecorationColor:
-                                                        AppColors.authThemeColor,
-                                                    color:
-                                                        AppColors.authThemeColor,
+                                                        AppColors
+                                                            .authThemeColor,
+                                                    color: AppColors
+                                                        .authThemeColor,
                                                     textDecoration:
-                                                        TextDecoration.underline,
+                                                        TextDecoration
+                                                            .underline,
                                                     fontWeight: FontWeight.w600,
                                                   ),
                                                 ),
@@ -253,6 +369,7 @@ class _SignInScreenState extends State<SignInScreen> {
                                                   AppRoutes.home,
                                                 );
                                               }
+                                                provider.clearControllers();
                                             } else if (status == "cancelled" &&
                                                 context.mounted) {
                                               ScaffoldMessenger.of(
@@ -276,7 +393,8 @@ class _SignInScreenState extends State<SignInScreen> {
                                                     content: textWidget(
                                                       context: context,
                                                       text: status,
-                                                      color: AppColors.whiteColor,
+                                                      color:
+                                                          AppColors.whiteColor,
                                                     ),
                                                   ),
                                                 );
@@ -299,7 +417,7 @@ class _SignInScreenState extends State<SignInScreen> {
                                             onTap: () async {
                                               final status = await provider
                                                   .appleSignIn();
-      
+
                                               if (status == "success") {
                                                 await accountProvider
                                                     .loadAccountBasicInfo();
@@ -311,7 +429,10 @@ class _SignInScreenState extends State<SignInScreen> {
                                                     AppRoutes.home,
                                                   );
                                                 }
-                                              } else if (status == "cancelled" &&
+                                                                                          provider.clearControllers();
+
+                                              } else if (status ==
+                                                      "cancelled" &&
                                                   context.mounted) {
                                                 ScaffoldMessenger.of(
                                                   context,
@@ -321,7 +442,8 @@ class _SignInScreenState extends State<SignInScreen> {
                                                       context: context,
                                                       text:
                                                           "Apple Sign-In cancelled",
-                                                      color: AppColors.whiteColor,
+                                                      color:
+                                                          AppColors.whiteColor,
                                                     ),
                                                   ),
                                                 );
@@ -334,8 +456,8 @@ class _SignInScreenState extends State<SignInScreen> {
                                                       content: textWidget(
                                                         context: context,
                                                         text: status,
-                                                        color:
-                                                            AppColors.whiteColor,
+                                                        color: AppColors
+                                                            .whiteColor,
                                                       ),
                                                     ),
                                                   );
@@ -365,7 +487,7 @@ class _SignInScreenState extends State<SignInScreen> {
                         ),
                       ),
                     ),
-      
+
                     if (provider.isLoading)
                       Positioned.fill(
                         child: Container(

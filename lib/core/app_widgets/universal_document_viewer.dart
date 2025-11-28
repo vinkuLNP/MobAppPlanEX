@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:plan_ex_app/core/app_widgets/app_common_text_widget.dart';
 
 class UniversalDocumentViewer extends StatefulWidget {
   final String fileUrl;
@@ -20,15 +21,11 @@ class _UniversalDocumentViewerState extends State<UniversalDocumentViewer> {
         "https://docs.google.com/gview?embedded=true&url=${widget.fileUrl}";
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Document Viewer"),
-      ),
+      appBar: AppBar(title: const Text("Document Viewer")),
       body: Stack(
         children: [
           InAppWebView(
-            initialUrlRequest: URLRequest(
-              url: WebUri(googleViewerUrl),
-            ),
+            initialUrlRequest: URLRequest(url: WebUri(googleViewerUrl)),
             onProgressChanged: (controller, progressValue) {
               setState(() {
                 progress = progressValue / 100;
@@ -38,16 +35,18 @@ class _UniversalDocumentViewerState extends State<UniversalDocumentViewer> {
 
           if (progress < 1)
             Container(
-              color: Colors.black.withOpacity(0.1),
+              color: Theme.of(context).scaffoldBackgroundColor,
               child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                     CircularProgressIndicator(color: Theme.of(context).hintColor,),
+                    CircularProgressIndicator(
+                      color: Theme.of(context).hintColor,
+                    ),
                     const SizedBox(height: 12),
-                    Text(
-                      "Loading document...",
-                      style: Theme.of(context).textTheme.bodyMedium,
+                    textWidget(
+                      context: context,
+                      text: "Loading document...",
                     ),
                   ],
                 ),

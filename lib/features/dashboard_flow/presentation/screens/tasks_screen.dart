@@ -157,7 +157,8 @@ class TasksScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           color: Theme.of(context).cardColor,
         ),
-        child: Column( mainAxisSize: MainAxisSize.max,
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             textWidget(
@@ -484,12 +485,13 @@ class TasksScreen extends StatelessWidget {
       height: 22,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.grey, width: 2),
-        color: isChecked ? Colors.grey : Colors.transparent,
+        border: Border.all(
+          color: isChecked ? Colors.grey : Colors.green,
+          width: 2,
+        ),
+        color: isChecked ? Colors.grey : Colors.green,
       ),
-      child: isChecked
-          ? const Icon(Icons.check, size: 14, color: Colors.white)
-          : null,
+      child: const Icon(Icons.check, size: 16, color: Colors.white),
     );
   }
 }

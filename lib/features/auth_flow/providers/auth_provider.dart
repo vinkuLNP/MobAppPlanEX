@@ -61,31 +61,32 @@ class AuthUserProvider extends ChangeNotifier {
     return null;
   }
 
+  String? validateSignINPassword(String? v) {
+    if (v == null || v.trim().isEmpty) {
+      return "Password is required";
+    }
+    return null;
+  }
+
   String? validatePassword(String? v) {
     if (v == null || v.isEmpty) {
       return 'Please enter password';
     }
 
-    List<String> errors = [];
-
     if (v.length < 6) {
-      errors.add("Password must be at least 6 characters long");
+      return "Password must be at least 6 characters";
     }
     if (!RegExp(r'[A-Z]').hasMatch(v)) {
-      errors.add("Add at least 1 uppercase letter");
+      return "Add at least 1 uppercase letter";
     }
     if (!RegExp(r'[a-z]').hasMatch(v)) {
-      errors.add("Add at least 1 lowercase letter");
+      return "Add at least 1 lowercase letter";
     }
     if (!RegExp(r'[0-9]').hasMatch(v)) {
-      errors.add("Add at least 1 number");
+      return "Add at least 1 number";
     }
     if (!RegExp(r'[!@#\$&*~]').hasMatch(v)) {
-      errors.add("Add at least 1 special character (!@#\$&*~)");
-    }
-
-    if (errors.isNotEmpty) {
-      return errors.join('\n');
+      return "Add at least 1 special character (!@#\$&*~)";
     }
 
     return null;
@@ -124,17 +125,25 @@ class AuthUserProvider extends ChangeNotifier {
     return "error";
   }
 
-  final emailCtrl = TextEditingController();
-  final passCtrl = TextEditingController();
-  final formKey = GlobalKey<FormState>();
-
   @override
   void dispose() {
-    emailCtrl.dispose();
-    passCtrl.dispose();
-  _cooldownTimer?.cancel();
+    _cooldownTimer?.cancel();
 
     super.dispose();
+  }
+
+  void clearControllers() {
+    signInEmailCtrl.clear();
+    signInPassCtrl.clear();
+    error = null;
+    signUpNameCtrl.clear();
+    signUpEmailCtrl.clear();
+    signUpPassCtrl.clear();
+    signUpConfirmCtrl.clear();
+    signInObscure = true;
+    signUpObscure = true;
+    signUpConfirmObscure = true;
+    notifyListeners();
   }
 
   Future<bool> signUp() async {
@@ -169,17 +178,16 @@ class AuthUserProvider extends ChangeNotifier {
       notifyListeners();
     });
   }
+
   void restoreCooldown() {
-  if (_cooldownEnd == null) return;
+    if (_cooldownEnd == null) return;
 
-  final remaining = _cooldownEnd!.difference(DateTime.now()).inSeconds;
-  if (remaining > 0) {
-    cooldown = remaining;
-    startCooldown();
+    final remaining = _cooldownEnd!.difference(DateTime.now()).inSeconds;
+    if (remaining > 0) {
+      cooldown = remaining;
+      startCooldown();
+    }
   }
-}
-
-
 
   Future<bool> sendVerification() async {
     _setLoading(true);

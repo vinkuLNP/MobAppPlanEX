@@ -57,10 +57,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 const AppHeader(title: "Create your account"),
 
                                 if (provider.error != null)
-                                 textWidget( context: context, text: 
-                                    provider.error!,
-                                    color: Colors.red),
-                            
+                                  textWidget(
+                                    context: context,
+                                    text: provider.error!,
+                                    color: Colors.red,
+                                  ),
 
                                 AppInputField(
                                   label: "Full Name",
@@ -68,8 +69,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   controller: provider.signUpNameCtrl,
                                   validator: (v) =>
                                       v == null || v.trim().isEmpty
-                                      ? "Required"
-                                      : null,
+                                      ? "Required" 
+                                      : v.length < 3 ? "Atleast 3 characters req" : null,
                                 ),
                                 context.gap8,
 
@@ -132,20 +133,23 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   child: RichText(
                                     text: TextSpan(
                                       text: "Already have an account? ",
-                                      style: appTextStyle(context: context,
-                                        color: Theme.of(context).hintColor.withValues(alpha: 0.6),
+                                      style: appTextStyle(
+                                        context: context,
+                                        color: Theme.of(
+                                          context,
+                                        ).hintColor.withValues(alpha: 0.6),
                                         fontSize: 14,
                                       ),
                                       children: [
                                         TextSpan(
                                           text: "Sign In!",
-                                          style: appTextStyle(context: context,
+                                          style: appTextStyle(
+                                            context: context,
                                             fontSize: 14,
 
-                                             textDecorationColor:
-                                                      AppColors.authThemeColor,
-                                                  color:
-                                                      AppColors.authThemeColor,
+                                            textDecorationColor:
+                                                AppColors.authThemeColor,
+                                            color: AppColors.authThemeColor,
                                             textDecoration:
                                                 TextDecoration.underline,
                                             fontWeight: FontWeight.w600,
@@ -171,7 +175,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         padding: const EdgeInsets.symmetric(
                                           horizontal: 8.0,
                                         ),
-                                        child: textWidget( context: context, 
+                                        child: textWidget(
+                                          context: context,
                                           text: "or",
                                           color: AppColors.greyishColor,
                                         ),
@@ -193,25 +198,28 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                     final status = await provider
                                         .googleSignIn();
 
-                                    if (status == "success" ) {
-                                            await accountProvider
-                                                .loadAccountBasicInfo();
-                                            await accountProvider
-                                                .loadSettingsData();
-                                            if (context.mounted) {
-                                              Navigator.pushReplacementNamed(
-                                                context,
-                                                AppRoutes.home,
-                                              );
-                                            }
+                                    if (status == "success") {
+                                      await accountProvider
+                                          .loadAccountBasicInfo();
+                                      await accountProvider.loadSettingsData();
+                                      if (context.mounted) {
+                                        Navigator.pushReplacementNamed(
+                                          context,
+                                          AppRoutes.home,
+                                        );
+                                          
+                                              provider.clearControllers();
+                                      }
                                     } else if (status == "cancelled" &&
                                         context.mounted) {
                                       ScaffoldMessenger.of(
                                         context,
                                       ).showSnackBar(
-                                         SnackBar(
-                                          content:textWidget( context: context, text: 
-                                            "Google Sign-Up cancelled",color: AppColors.whiteColor
+                                        SnackBar(
+                                          content: textWidget(
+                                            context: context,
+                                            text: "Google Sign-Up cancelled",
+                                            color: AppColors.whiteColor,
                                           ),
                                         ),
                                       );
@@ -220,7 +228,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         ScaffoldMessenger.of(
                                           context,
                                         ).showSnackBar(
-                                          SnackBar(content:textWidget( context: context, text: status,color: AppColors.whiteColor)),
+                                          SnackBar(
+                                            content: textWidget(
+                                              context: context,
+                                              text: status,
+                                              color: AppColors.whiteColor,
+                                            ),
+                                          ),
                                         );
                                       }
                                     }
@@ -242,25 +256,28 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                       final status = await provider
                                           .appleSignIn();
 
-                                      if (status == "success" ) {
-                                            await accountProvider
-                                                .loadAccountBasicInfo();
-                                            await accountProvider
-                                                .loadSettingsData();
-                                            if (context.mounted) {
-                                              Navigator.pushReplacementNamed(
-                                                context,
-                                                AppRoutes.home,
-                                              );
-                                            }
+                                      if (status == "success") {
+                                        await accountProvider
+                                            .loadAccountBasicInfo();
+                                        await accountProvider
+                                            .loadSettingsData();
+                                        if (context.mounted) {
+                                          Navigator.pushReplacementNamed(
+                                            context,
+                                            AppRoutes.home,
+                                          );
+                                        }
+                                          provider.clearControllers();
                                       } else if (status == "cancelled" &&
                                           context.mounted) {
                                         ScaffoldMessenger.of(
                                           context,
                                         ).showSnackBar(
-                                           SnackBar(
-                                            content:textWidget( context: context, text: 
-                                              "Apple Sign-In cancelled",color: AppColors.whiteColor
+                                          SnackBar(
+                                            content: textWidget(
+                                              context: context,
+                                              text: "Apple Sign-In cancelled",
+                                              color: AppColors.whiteColor,
                                             ),
                                           ),
                                         );
@@ -269,7 +286,13 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                           ScaffoldMessenger.of(
                                             context,
                                           ).showSnackBar(
-                                            SnackBar(content:textWidget( context: context, text: status,color: AppColors.whiteColor)),
+                                            SnackBar(
+                                              content: textWidget(
+                                                context: context,
+                                                text: status,
+                                                color: AppColors.whiteColor,
+                                              ),
+                                            ),
                                           );
                                         }
                                       }

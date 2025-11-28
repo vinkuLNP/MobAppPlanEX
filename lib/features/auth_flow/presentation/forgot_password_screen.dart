@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_button.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_text_widget.dart';
@@ -119,7 +117,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                           content: Text(
                                           auth.error.toString(),
                                           ),
-                                          // backgroundColor: Colors.green,
                                           behavior: SnackBarBehavior.floating,
                                         ),
                                       );
