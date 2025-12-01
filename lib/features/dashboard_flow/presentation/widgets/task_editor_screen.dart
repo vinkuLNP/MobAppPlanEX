@@ -121,17 +121,16 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
                   onTap: uploading
                       ? null
                       : () async {
-                                final title = titleCtrl.text.trim();
+                          final title = titleCtrl.text.trim();
 
-        if (title.isEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Task title is required'),
-            ),
-          );
-          return;
-        }
-
+                          if (title.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Task title is required'),
+                              ),
+                            );
+                            return;
+                          }
 
                           setState(() => savingTask = true);
                           try {
@@ -194,38 +193,38 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
     ),
   );
 
-Widget _tagField() => Column(
-  crossAxisAlignment: CrossAxisAlignment.start,
-  children: [
-    textWidget(context: context, text: 'Tags', fontWeight: FontWeight.w600),
-    const SizedBox(height: 8),
+  Widget _tagField() => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      textWidget(context: context, text: 'Tags', fontWeight: FontWeight.w600),
+      const SizedBox(height: 8),
 
-    SizedBox(
-      width: double.infinity,
-      child: Wrap(
-        spacing: 8,
-        runSpacing: 8,
-        children: [
-          ...tags.map(
-            (tag) => Chip(
-              label: Text(tag),
-              deleteIcon: isViewOnly ? null : const Icon(Icons.close),
-              onDeleted: isViewOnly
-                  ? null
-                  : () => setState(() => tags.remove(tag)),
+      SizedBox(
+        width: double.infinity,
+        child: Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            ...tags.map(
+              (tag) => Chip(
+                label: Text(tag),
+                deleteIcon: isViewOnly ? null : const Icon(Icons.close),
+                onDeleted: isViewOnly
+                    ? null
+                    : () => setState(() => tags.remove(tag)),
+              ),
             ),
-          ),
 
-          if (!isViewOnly)
-            ActionChip(
-              label: const Text('+ Add tag'),
-              onPressed: () => _showAddTagDialog(),
-            ),
-        ],
+            if (!isViewOnly)
+              ActionChip(
+                label: const Text('+ Add tag'),
+                onPressed: () => _showAddTagDialog(),
+              ),
+          ],
+        ),
       ),
-    ),
-  ],
-);
+    ],
+  );
 
   void _showAddTagDialog() {
     final ctrl = TextEditingController();
@@ -422,6 +421,15 @@ Widget _tagField() => Column(
             ),
         ],
       ),
+      Padding(
+        padding: const EdgeInsets.only(top: 4),
+        child: textWidget(
+          context: context,
+          text: "Supported formats: JPG, PNG, PDF, DOC",
+          fontSize: 12,
+          color: Colors.grey.shade600,
+        ),
+      ),
       if (attachments.isEmpty)
         Padding(
           padding: const EdgeInsets.only(top: 8),
@@ -446,7 +454,11 @@ Widget _tagField() => Column(
   );
 
   Future<void> _pickAndUploadFile() async {
-    final r = await FilePicker.platform.pickFiles(withData: false);
+    final r = await FilePicker.platform.pickFiles(
+      withData: false,
+      type: FileType.custom,
+      allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx'],
+    );
     if (r == null) return;
     final path = r.files.single.path;
     if (path == null) return;

@@ -100,7 +100,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
     controller: titleCtrl,
     minLines: 1,
     maxLines: 7,
-     maxLength: 100,
+    maxLength: 100,
     readOnly: widget.isViewOnly,
     style: appTextStyle(context: context, fontSize: 14),
     decoration: InputDecoration(
@@ -133,7 +133,7 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
                 },
           child: CircleAvatar(backgroundColor: selectedColor, radius: 16),
         ),
-        SizedBox(width: 6,),
+        SizedBox(width: 6),
         textWidget(
           context: context,
           text: "Category",
@@ -152,18 +152,19 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
       ],
     );
   }
+
   Widget _categoryDropdown(NotesProvider provider) {
     final cats = provider.categories.where((c) => c != "All").toList();
 
- if (!cats.contains("General")) {
-    cats.insert(0, "General");
-  }
+    if (!cats.contains("General")) {
+      cats.insert(0, "General");
+    }
     if (!cats.contains(categoryCtrl.text)) {
       cats.add(categoryCtrl.text);
     }
-if (categoryCtrl.text.isEmpty) {
-    categoryCtrl.text = "General";
-  }
+    if (categoryCtrl.text.isEmpty) {
+      categoryCtrl.text = "General";
+    }
     return DropdownButton<String>(
       underline: const SizedBox.shrink(),
       isExpanded: true,
@@ -185,7 +186,12 @@ if (categoryCtrl.text.isEmpty) {
         ...cats.map(
           (c) => DropdownMenuItem(
             value: c,
-            child: textWidget(context: context, text: c,maxLine: 1,textOverflow: TextOverflow.ellipsis),
+            child: textWidget(
+              context: context,
+              text: c,
+              maxLine: 1,
+              textOverflow: TextOverflow.ellipsis,
+            ),
           ),
         ),
 
@@ -195,7 +201,9 @@ if (categoryCtrl.text.isEmpty) {
             children: [
               Icon(Icons.add, size: 18),
               SizedBox(width: 6),
-              Flexible(child: textWidget(context: context, text: "Add new category")),
+              Flexible(
+                child: textWidget(context: context, text: "Add new category"),
+              ),
             ],
           ),
         ),
@@ -212,8 +220,8 @@ if (categoryCtrl.text.isEmpty) {
         title: textWidget(context: context, text: "New Category"),
         content: TextField(
           controller: ctrl,
- maxLength: 20,
-  textCapitalization: TextCapitalization.sentences,
+          maxLength: 20,
+          textCapitalization: TextCapitalization.sentences,
           decoration: const InputDecoration(hintText: "Enter category name"),
         ),
         actions: [
@@ -223,14 +231,13 @@ if (categoryCtrl.text.isEmpty) {
           ),
           TextButton(
             onPressed: () {
-              final formatted =
-    ctrl.text.trim().isEmpty ? null :
-    ctrl.text.trim()[0].toUpperCase() + ctrl.text.trim().substring(1);
+              final formatted = ctrl.text.trim().isEmpty
+                  ? null
+                  : ctrl.text.trim()[0].toUpperCase() +
+                        ctrl.text.trim().substring(1);
 
-Navigator.pop(context, formatted);
-
-
-            } ,
+              Navigator.pop(context, formatted);
+            },
             child: textWidget(context: context, text: "Add"),
           ),
         ],
@@ -253,7 +260,6 @@ Navigator.pop(context, formatted);
     ),
   );
 
-
   Widget _attachmentsSection(NotesProvider provider) {
     final pro = provider.isPro;
 
@@ -269,8 +275,8 @@ Navigator.pop(context, formatted);
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
-            // if (!pro) ProBadge(),
 
+            // if (!pro) ProBadge(),
             if (pro && !widget.isViewOnly && attachments.length < 10)
               TextButton.icon(
                 onPressed: _pickAndUploadFile,
@@ -283,15 +289,15 @@ Navigator.pop(context, formatted);
               ),
           ],
         ),
-Padding(
-  padding: const EdgeInsets.only(top: 4),
-  child: textWidget(
-    context: context,
-    text: "Supported formats: JPG, PNG, PDF, DOC",
-    fontSize: 12,
-    color: Colors.grey.shade600,
-  ),
-),
+        Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: textWidget(
+            context: context,
+            text: "Supported formats: JPG, PNG, PDF, DOC",
+            fontSize: 12,
+            color: Colors.grey.shade600,
+          ),
+        ),
 
         if (attachments.isEmpty)
           Padding(
@@ -320,8 +326,11 @@ Padding(
   }
 
   Future<void> _pickAndUploadFile() async {
-    final result = await FilePicker.platform.pickFiles(withData: false, type: FileType.custom,
-    allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx'],);
+    final result = await FilePicker.platform.pickFiles(
+      withData: false,
+      type: FileType.custom,
+      allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx'],
+    );
     if (result == null) return;
 
     final filePath = result.files.single.path;

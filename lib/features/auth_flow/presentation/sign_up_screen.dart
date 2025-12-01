@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_button.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_text_widget.dart';
@@ -24,6 +22,16 @@ class SignUpScreen extends StatefulWidget {
 
 class _SignUpScreenState extends State<SignUpScreen> {
   final formKey = GlobalKey<FormState>();
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final provider = context.read<AuthUserProvider>();
+        provider.clearError();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -69,8 +77,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   controller: provider.signUpNameCtrl,
                                   validator: (v) =>
                                       v == null || v.trim().isEmpty
-                                      ? "Required" 
-                                      : v.length < 3 ? "Atleast 3 characters req" : null,
+                                      ? "Required"
+                                      : v.length < 3
+                                      ? "Atleast 3 characters req"
+                                      : null,
                                 ),
                                 context.gap8,
 
@@ -113,13 +123,30 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                       return;
                                     }
 
-                                    final ok = await provider.signUp();
+                                    final result = await provider.signUp();
 
-                                    if (ok && context.mounted) {
+                                    if (result == null && context.mounted) {
                                       Navigator.pushReplacementNamed(
                                         context,
                                         AppRoutes.verifyEmail,
                                       );
+                                    } else if (result ==
+                                        "unverified-existing") {
+                                      if (context.mounted) {
+                                        Navigator.pushReplacementNamed(
+                                          context,
+                                          AppRoutes.verifyEmail,
+                                        );
+                                      }
+                                    }
+                                    else if (result ==
+                                        "already-verified") {
+                                      if (context.mounted) {
+                                        Navigator.pushReplacementNamed(
+                                          context,
+                                          AppRoutes.verifyEmail,
+                                        );
+                                      }
                                     }
                                   },
                                   text: "Sign Up",
@@ -207,8 +234,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                           context,
                                           AppRoutes.home,
                                         );
-                                          
-                                              provider.clearControllers();
+
+                                        provider.clearControllers();
                                       }
                                     } else if (status == "cancelled" &&
                                         context.mounted) {
@@ -249,7 +276,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 ),
 
                                 const SizedBox(height: 16),
-                                if (Platform.isIOS)
+                                /*    if (Platform.isIOS)
                                   AppButton(
                                     text: "Sign Up with Apple",
                                     onTap: () async {
@@ -267,7 +294,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                             AppRoutes.home,
                                           );
                                         }
-                                          provider.clearControllers();
+                                        provider.clearControllers();
                                       } else if (status == "cancelled" &&
                                           context.mounted) {
                                         ScaffoldMessenger.of(
@@ -310,6 +337,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                     textColor: AppColors.black,
                                     isBorder: true,
                                   ),
+                             */
                               ],
                             ),
                           ),

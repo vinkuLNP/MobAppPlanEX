@@ -9,7 +9,6 @@ import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 class AuthService {
   final _auth = FirebaseAuth.instance;
   final usersRef = FirebaseFirestore.instance.collection('users');
-
   Future<String?> signUp({
     required String fullName,
     required String email,
@@ -22,15 +21,30 @@ class AuthService {
       );
       final user = cred.user;
       if (user == null) return "Something went wrong";
-      await cred.user?.updateDisplayName(fullName);
-      await cred.user?.sendEmailVerification();
+
+      await user.updateDisplayName(fullName);
+      await user.sendEmailVerification();
       await createUserDocument(user, fullName: fullName);
 
       return null;
     } on FirebaseAuthException catch (e) {
+      if (e.code == "email-already-in-use") {
+        final existingUser = _auth.currentUser;
+
+        if (existingUser != null) {
+          if (!existingUser.emailVerified) {
+            await existingUser.sendEmailVerification();
+            return "unverified-existing";
+          }
+          return "already-verified";
+        }
+
+        return "already-verified";
+      }
+
       return e.message;
-    } catch (e) {
-      return 'Something went wrong';
+    } catch (_) {
+      return "Something went wrong";
     }
   }
 
@@ -80,7 +94,7 @@ class AuthService {
       return null;
     } catch (e) {
       AppLogger.error(e.toString());
-      return 'Could not send verification email.';
+      return 'Verification link has already been sent to your email. For another verification email, Try again later.';
     }
   }
 

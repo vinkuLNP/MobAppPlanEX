@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_button.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_text_widget.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_widgets.dart';
@@ -187,6 +188,7 @@ class TasksScreen extends StatelessWidget {
         !t.completed &&
         t.dueDate!.isBefore(DateTime.now());
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final createdAt = DateFormat.yMMMd().add_jm().format(t.createdAt);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -338,6 +340,15 @@ class TasksScreen extends StatelessWidget {
                           color: isOverdue ? Colors.red : Colors.blueGrey,
                         ),
                       ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: buildCreationDateWidget(
+                        context,
+                        date: createdAt,
+                        showLabel: true,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
                   ],
                 ),
                 trailing: PopupMenuButton<String>(

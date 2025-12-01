@@ -32,24 +32,26 @@ class NotificationService {
       iOS: iosSettings,
     );
 
-    await _notifications.initialize(settings,    onDidReceiveNotificationResponse: (NotificationResponse response) {
-      _handleNotificationTap(response);
-    },
-);
+    await _notifications.initialize(
+      settings,
+      onDidReceiveNotificationResponse: (NotificationResponse response) {
+        _handleNotificationTap(response);
+      },
+    );
   }
-static void _handleNotificationTap(NotificationResponse response) {
-  final context = navigatorKey.currentContext;
-  if (context == null) return;
 
-  Navigator.of(context).pushNamedAndRemoveUntil(
-    AppRoutes.home,
-    (route) => false,
-  );
+  static void _handleNotificationTap(NotificationResponse response) {
+    final context = navigatorKey.currentContext;
+    if (context == null) return;
 
-  Future.delayed(const Duration(milliseconds: 300), () {
-    homeScreenTaskTabStream.add(1);
-  });
-}
+    Navigator.of(
+      context,
+    ).pushNamedAndRemoveUntil(AppRoutes.home, (route) => false);
+
+    Future.delayed(const Duration(milliseconds: 300), () {
+      homeScreenTaskTabStream.add(1);
+    });
+  }
 
   static int generateTaskNotificationId(String taskId) => taskId.hashCode;
 
@@ -201,9 +203,9 @@ static void _handleNotificationTap(NotificationResponse response) {
     final overdueTime = DateTime(
       dueDate.year,
       dueDate.month,
-      dueDate.day,
+      dueDate.day + 1,
       10,
-      25,
+      30,
     );
 
     final tzTime = tz.TZDateTime.from(overdueTime, tz.local);
@@ -226,4 +228,3 @@ static void _handleNotificationTap(NotificationResponse response) {
     );
   }
 }
-

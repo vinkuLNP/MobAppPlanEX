@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_button.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_text_widget.dart';
@@ -56,6 +55,13 @@ class _SignInScreenState extends State<SignInScreen> {
         }
       });
     });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (mounted) {
+      final provider = context.read<AuthUserProvider>();
+      provider.clearError();
+    }
+  });
+
   }
 
   @override
@@ -71,6 +77,7 @@ class _SignInScreenState extends State<SignInScreen> {
       canPop: false,
       child: Consumer<AuthUserProvider>(
         builder: (context, provider, _) {
+   
           final accountProvider = context.read<AccountProvider>();
           return LayoutBuilder(
             builder: (context, constraints) {
@@ -237,7 +244,7 @@ class _SignInScreenState extends State<SignInScreen> {
                                               lastActiveField =
                                                   ActiveField.none;
                                             });
-provider.clearError();
+                                            provider.clearError();
                                             await Future.delayed(Duration.zero);
 
                                             AppLogger.logString(
@@ -369,7 +376,7 @@ provider.clearError();
                                                   AppRoutes.home,
                                                 );
                                               }
-                                                provider.clearControllers();
+                                              provider.clearControllers();
                                             } else if (status == "cancelled" &&
                                                 context.mounted) {
                                               ScaffoldMessenger.of(
@@ -411,7 +418,7 @@ provider.clearError();
                                           isBorder: true,
                                         ),
                                         const SizedBox(height: 16),
-                                        if (Platform.isIOS)
+                                    /*    if (Platform.isIOS)
                                           AppButton(
                                             text: "Login with Apple",
                                             onTap: () async {
@@ -429,8 +436,7 @@ provider.clearError();
                                                     AppRoutes.home,
                                                   );
                                                 }
-                                                                                          provider.clearControllers();
-
+                                                provider.clearControllers();
                                               } else if (status ==
                                                       "cancelled" &&
                                                   context.mounted) {
@@ -477,7 +483,7 @@ provider.clearError();
                                             textColor: AppColors.black,
                                             isBorder: true,
                                           ),
-                                      ],
+                                    */  ],
                                     ),
                                   ),
                                 ],

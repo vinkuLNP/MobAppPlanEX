@@ -174,7 +174,7 @@ class _AccountScreenState extends State<AccountScreen> {
 
                           AppButton(
                             text: 'Delete Account Forever',
-                            onTap: () => _confirmDelete(provider),
+                            onTap: () => _confirmDelete(provider, context),
                           ),
                         ],
                       ),
@@ -216,7 +216,10 @@ class _AccountScreenState extends State<AccountScreen> {
     );
   }
 
-  Future<void> _confirmDelete(AccountProvider provider) async {
+  Future<void> _confirmDelete(
+    AccountProvider provider,
+    BuildContext mainContext,
+  ) async {
     final want = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -232,7 +235,9 @@ class _AccountScreenState extends State<AccountScreen> {
             child: textWidget(context: context, text: 'Cancel'),
           ),
           TextButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
+            onPressed: () {
+              Navigator.of(ctx).pop(true);
+            },
             child: textWidget(
               context: context,
               text: 'Delete',
@@ -243,39 +248,43 @@ class _AccountScreenState extends State<AccountScreen> {
       ),
     );
     if (want != true) return;
-
-    final resultCode = await provider.deleteAccount(passwordForReauth: null);
-    AppLogger.logString(resultCode.toString());
-    if (resultCode == null) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: textWidget(
-              context: context,
-              color: Theme.of(context).cardColor,
-              text: 'Account deleted',
+    if (mainContext.mounted) {
+      final resultCode = await provider.deleteAccount(
+        mainContext,
+        passwordForReauth: null,
+      );
+      AppLogger.logString(resultCode.toString());
+      if (resultCode == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: Colors.black,
+              content: textWidget(
+                context: context,
+                color: Colors.white,
+                text: 'Account deleted',
+              ),
             ),
-          ),
-        );
-                 Navigator.of(
-          context,
-        ).pushNamedAndRemoveUntil(AppRoutes.login, (route) => false);
-      }
-    } else if (resultCode == 'requires-recent-login' ||
-        resultCode == 'user-not-found') {
-      _showReauthDialog(provider);
-    } else {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: textWidget(
-              context: context,
-              color: Theme.of(context).cardColor,
-              text: 'Delete failed: $resultCode',
+          );
+          Navigator.of(
+            context,
+          ).pushNamedAndRemoveUntil(AppRoutes.login, (route) => false);
+        }
+      } else if (resultCode == 'requires-recent-login' ||
+          resultCode == 'user-not-found') {
+        _showReauthDialog(provider);
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: textWidget(
+                context: context,
+                color: Theme.of(context).cardColor,
+                text: 'Delete failed: $resultCode',
+              ),
             ),
-          ),
-        );
-
+          );
+        }
       }
     }
   }
@@ -294,7 +303,13 @@ class _AccountScreenState extends State<AccountScreen> {
               text:
                   'For security, please enter your password to delete the account.',
             ),
-            TextField(controller: passwordCtrl, obscureText: true),
+            AppPasswordField(
+              label: '',
+              controller: passwordCtrl,
+              obscure: provider.accountPassObscure,
+
+              onToggle: provider.toggleAccountPassObscure,
+            ),
           ],
         ),
         actions: [
@@ -304,8 +319,9 @@ class _AccountScreenState extends State<AccountScreen> {
           ),
           TextButton(
             onPressed: () async {
-              Navigator.of(ctx).pop();
+              Navigator.of(ctx).pop(true);
               final res = await provider.deleteAccount(
+                context,
                 passwordForReauth: passwordCtrl.text.trim(),
               );
               if (res == null) {
