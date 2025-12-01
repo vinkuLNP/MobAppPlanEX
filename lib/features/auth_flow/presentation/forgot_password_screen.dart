@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_button.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_text_widget.dart';
@@ -23,7 +21,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final emailCtrl = TextEditingController();
   final formKey = GlobalKey<FormState>();
 
+ @override
+  void initState() {
+    super.initState();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (mounted) {
+      final provider = context.read<AuthUserProvider>();
+      provider.clearError();
+    }
+  });
 
+  }
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthUserProvider>();
@@ -119,7 +127,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                           content: Text(
                                           auth.error.toString(),
                                           ),
-                                          // backgroundColor: Colors.green,
                                           behavior: SnackBarBehavior.floating,
                                         ),
                                       );

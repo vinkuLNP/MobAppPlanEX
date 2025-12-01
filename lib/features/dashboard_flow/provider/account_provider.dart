@@ -1,8 +1,13 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:image_editor_plus/image_editor_plus.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_text_widget.dart';
+import 'package:plan_ex_app/core/constants/app_colors.dart';
 import 'package:plan_ex_app/core/notifications/notification_service.dart';
 import 'package:plan_ex_app/core/routes/app_routes.dart';
 import 'package:plan_ex_app/core/utils/app_logger.dart';
@@ -101,7 +106,13 @@ class AccountProvider extends ChangeNotifier {
     emailController.text = user?.email ?? '';
 
     if (user?.photoUrl != null && user?.photoUrl != '' && !avatarResolvedOnce) {
-      avatarUrl = await repository.getFreshAvatarUrl(user!.photoUrl!);
+      final photo = user!.photoUrl!;
+
+      if (photo.startsWith('http')) {
+        avatarUrl = photo;
+      } else {
+        avatarUrl = await repository.getFreshAvatarUrl(photo);
+      }
       avatarResolvedOnce = true;
     }
     initialAccountLoaded = true;
@@ -163,7 +174,10 @@ class AccountProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> pickAndUploadAvatar(ImageSource source) async {
+  Future<void> pickAndUploadAvatar(
+    ImageSource source,
+    BuildContext context,
+  ) async {
     final uid = authUser?.uid;
     if (uid == null) return;
     _setProcessing(true);
@@ -177,11 +191,25 @@ class AccountProvider extends ChangeNotifier {
       _setProcessing(false);
       return;
     }
+    final editedImage = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            ImageEditor(image: File(picked.path).readAsBytesSync()),
+      ),
+    );
 
-    localImagePath = picked.path;
+    if (editedImage == null) {
+      _setProcessing(false);
+      return;
+    }
+
+    final editedFile = await File(picked.path).writeAsBytes(editedImage);
+
+    localImagePath = editedFile.path;
     notifyListeners();
 
-    final file = File(picked.path);
+    final file = File(editedFile.path);
     final oldPath = user?.photoUrl;
     final newPath = await repository.uploadAvatar(uid, file);
     await repository.updateAvatar(uid, newPath);
@@ -197,8 +225,15 @@ class AccountProvider extends ChangeNotifier {
   }
 
   Future<String?> getAvatarUrl() async {
-    if (user?.photoUrl == null) return null;
-    return await repository.getFreshAvatarUrl(user!.photoUrl!);
+    if (user?.photoUrl == null || user!.photoUrl!.isEmpty) return null;
+
+    final photo = user!.photoUrl!;
+
+    if (photo.startsWith('http')) {
+      return photo;
+    }
+
+    return await repository.getFreshAvatarUrl(photo);
   }
 
   Future<void> toggleSetting(
@@ -208,6 +243,35 @@ class AccountProvider extends ChangeNotifier {
   ) async {
     final uid = authUser?.uid;
     if (uid == null) return;
+
+    if (value &&
+        (key == 'dailySummary' ||
+            key == 'taskReminders' ||
+            key == 'overdueAlerts')) {
+      final notificationAllowed =
+          await NotificationService.requestPermissionIfNeeded();
+
+      if (!notificationAllowed && context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: AppColors.black,
+            content: textWidget(
+              context: context,
+              color: AppColors.whiteColor,
+              text:
+                  "Notifications are disabled. Please enable them in Settings to use this feature.",
+            ),
+            action: SnackBarAction(
+              label: "Open Settings",
+              onPressed: () {
+                openAppSettings();
+              },
+            ),
+          ),
+        );
+        return;
+      }
+    }
     _setProcessing(true);
     final settings = {
       'darkMode': user?.darkMode ?? false,
@@ -334,42 +398,86 @@ class AccountProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<String?> deleteAccount({required String? passwordForReauth}) async {
-    final firebaseUser = authUser;
-    final uid = firebaseUser?.uid;
-    if (uid == null) return 'No user signed in';
+  Future<String?> deleteAccount(
+    BuildContext context, {
+    String? passwordForReauth,
+  }) async {
+    final firebaseUser = FirebaseAuth.instance.currentUser;
+
+    if (firebaseUser == null) {
+      // await _forceLogout(context);
+      return 'Requires Re-Login';
+    }
+
+    final uid = firebaseUser.uid;
     _setProcessing(true);
+
     try {
-      if (passwordForReauth != null && firebaseUser?.email != null) {
+      if (firebaseUser.providerData.any((p) => p.providerId == 'google.com')) {
+        final google = GoogleSignIn.instance;
+        await google.initialize();
+
+        final completer = Completer<GoogleSignInAuthenticationEvent>();
+
+        final sub = google.authenticationEvents.listen(
+          (event) {
+            if (!completer.isCompleted) completer.complete(event);
+          },
+          onError: (e) {
+            if (!completer.isCompleted) completer.completeError(e);
+          },
+        );
+
+        await google.authenticate();
+        final event = await completer.future;
+        await sub.cancel();
+
+        final GoogleSignInAccount? googleUser = switch (event) {
+          GoogleSignInAuthenticationEventSignIn() => event.user,
+          GoogleSignInAuthenticationEventSignOut() => null,
+        };
+
+        if (googleUser == null) return 'Google re-auth cancelled';
+
+        final googleAuth = googleUser.authentication;
+
+        final credential = GoogleAuthProvider.credential(
+          idToken: googleAuth.idToken,
+        );
+
+        await firebaseUser.reauthenticateWithCredential(credential);
+      } else if (passwordForReauth != null && firebaseUser.email != null) {
         final cred = EmailAuthProvider.credential(
-          email: firebaseUser!.email!,
+          email: firebaseUser.email!,
           password: passwordForReauth,
         );
         await firebaseUser.reauthenticateWithCredential(cred);
       }
 
-      if (user?.photoUrl != null) {
+      if (user?.photoUrl != null && user!.photoUrl!.isNotEmpty) {
         await repository.deleteAvatarByPath(user!.photoUrl!);
       }
 
       await repository.deleteUserDocument(uid);
-      await repository.logout();
-      await FirebaseAuth.instance.signOut();
-      await firebaseUser!.delete();
-      user = null;
-      _setProcessing(false);
+
+      await firebaseUser.delete();
+
+      await _forceLogout(context);
+
       return null;
-    } on FirebaseAuthException catch (e) {
-      return e.code;
     } catch (e) {
+      await _forceLogout(context);
+      if (e is FirebaseAuthException) return e.code;
       return e.toString();
     } finally {
       _setProcessing(false);
     }
   }
-clearCache(){
-  repository.logout();
-}
+
+  clearCache() {
+    repository.logout();
+  }
+
   ThemeMode _localThemeMode = ThemeMode.light;
 
   ThemeMode get themeMode {
@@ -379,26 +487,49 @@ clearCache(){
     return _localThemeMode;
   }
 
+  bool accountPassObscure = true;
+  void toggleAccountPassObscure() {
+    accountPassObscure = !accountPassObscure;
+    notifyListeners();
+  }
+
+  Future<void> clearUser(BuildContext context) async {
+    _localThemeMode = ThemeMode.light;
+    user = null;
+    Provider.of<NotesProvider>(context, listen: false).clearNotes();
+    Provider.of<TasksProvider>(context, listen: false).clearTasks();
+    nameController.clear();
+    emailController.clear();
+    avatarResolvedOnce = false;
+    initialAccountLoaded = false;
+    localImagePath = null;
+
+    avatarUrl = '';
+    accountLoading = false;
+    settingsLoading = false;
+    saving = false;
+    repository.logout();
+
+    await FirebaseAuth.instance.signOut();
+
+    notifyListeners();
+  }
+
+  Future<void> _forceLogout(BuildContext context) async {
+    try {
+      await clearUser(context);
+    } catch (_) {}
+
+    if (context.mounted) {
+      Navigator.of(
+        context,
+      ).pushNamedAndRemoveUntil(AppRoutes.login, (route) => false);
+    }
+  }
+
   Future<void> logout(BuildContext context) async {
     try {
-      _localThemeMode = ThemeMode.light;
-      user = null;
-      Provider.of<NotesProvider>(context, listen: false).clearNotes();
-      Provider.of<TasksProvider>(context, listen: false).clearTasks();
-      nameController.clear();
-      emailController.clear();
-      avatarResolvedOnce = false;
-      initialAccountLoaded = false;
-      localImagePath = null;
-
-      avatarUrl = '';
-      accountLoading = false;
-      settingsLoading = false;
-      saving = false;
-      await FirebaseAuth.instance.signOut();
-
-      repository.logout();
-      notifyListeners();
+      await clearUser(context);
       if (context.mounted) {
         Navigator.of(
           context,

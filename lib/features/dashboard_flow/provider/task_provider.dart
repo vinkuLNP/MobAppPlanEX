@@ -82,22 +82,48 @@ class TasksProvider extends ChangeNotifier {
         )
         .length;
   }
-
   int get thisWeek {
-    final now = DateTime.now();
+  final now = DateTime.now();
 
-    final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+  final startOfWeek = DateTime(
+  now.year,
+  now.month,
+  now.day - (now.weekday - 1),
+  0,
+  0,
+  0,
+);
 
-    final endOfWeek = startOfWeek.add(const Duration(days: 6));
+  final endOfWeek = startOfWeek.add(const Duration(days: 7));
 
-    return tasks.where((t) {
-      if (!t.completed || t.dueDate == null) return false;
+  int count = 0;
 
-      final d = t.dueDate!;
-      return d.isAfter(startOfWeek.subtract(const Duration(seconds: 1))) &&
-          d.isBefore(endOfWeek.add(const Duration(days: 1)));
-    }).length;
+  for (var t in tasks) {
+
+    if (!t.completed) {
+      continue;
+    }
+
+    if (t.dueDate == null) {
+      continue;
+    }
+
+    final d = t.dueDate!;
+
+    final afterCheck = d.isAfter(startOfWeek.subtract(const Duration(seconds: 1)));
+    final beforeCheck = d.isBefore(endOfWeek.add(const Duration(days: 1)));
+
+
+    if (afterCheck && beforeCheck) {
+      count++;
+    } else {
+    }
   }
+
+
+  return count;
+}
+
 
   void clearTasks() {
     tasks.clear();

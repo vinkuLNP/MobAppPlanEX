@@ -47,20 +47,14 @@ class AppTheme {
       hintColor: AppColors.black,
       highlightColor: Colors.grey.shade300,
 
-
-  textSelectionTheme: const TextSelectionThemeData(
-    cursorColor: Colors.black,
-  ),
-
-
+      textSelectionTheme: const TextSelectionThemeData(
+        cursorColor: Colors.black,
+      ),
     );
   }
 
   static ThemeData darkTheme(BuildContext context) {
-    final softPrimary = lighten(
-      Colors.black,
-      0.25,
-    ); 
+    final softPrimary = lighten(Colors.black, 0.25);
     final deepBackground = lighten(Colors.black, 0.05);
 
     return ThemeData(
@@ -80,7 +74,7 @@ class AppTheme {
 
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-       fillColor: const Color(0xFF111426),
+        fillColor: const Color(0xFF111426),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
@@ -102,9 +96,9 @@ class AppTheme {
           elevation: 0,
         ),
       ),
-  textSelectionTheme: const TextSelectionThemeData(
-    cursorColor: Colors.white,
-  ),
+      textSelectionTheme: const TextSelectionThemeData(
+        cursorColor: Colors.white,
+      ),
       hintColor: Colors.white60,
       highlightColor: softPrimary.withValues(alpha: 0.2),
       shadowColor: const Color.fromARGB(255, 65, 63, 63).withValues(alpha: 0.4),

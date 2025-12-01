@@ -64,22 +64,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       SizedBox(height: 10),
                       ProSwitchTile(
                         title: 'Dark Mode',
-                        description:
-                            'Toggle between light and dark themes (Pro feature)',
+                        description: 'Toggle between light and dark themes',
                         value: user.darkMode,
                         isPremium: true,
-                        onChanged: (v) => provider.toggleSetting('darkMode', v,context),
+                        onChanged: (v) =>
+                            provider.toggleSetting('darkMode', v, context),
                         onUpgradeTap: () {},
                       ),
 
                       ProSwitchTile(
                         title: 'Show Creation Dates',
                         description:
-                            'Display when notes and tasks were created (Pro feature)',
+                            'Display when notes and tasks were created',
                         value: user.showCreationDates,
                         isPremium: provider.isPremium,
-                        onChanged: (v) =>
-                            provider.toggleSetting('showCreationDates', v,context),
+                        onChanged: (v) => provider.toggleSetting(
+                          'showCreationDates',
+                          v,
+                          context,
+                        ),
                         onUpgradeTap: () {},
                       ),
                     ],
@@ -99,50 +102,49 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       SizedBox(height: 10),
                       ProSwitchTile(
                         title: 'Daily Summary',
-                        description:
-                            'Receive daily task summary notifications (Pro feature)',
+                        description: 'Receive daily task summary notifications',
                         value: user.dailySummary,
                         isPremium: provider.isPremium,
                         onChanged: (v) =>
-                            provider.toggleSetting('dailySummary', v,context),
+                            provider.toggleSetting('dailySummary', v, context),
                         onUpgradeTap: () {},
                       ),
 
                       ProSwitchTile(
                         title: 'Task Reminders',
                         description:
-                            'Get notified about upcoming task due dates (Pro feature)',
+                            'Get notified about upcoming task due dates',
                         value: user.taskReminders,
                         isPremium: provider.isPremium,
                         onChanged: (v) =>
-                            provider.toggleSetting('taskReminders', v,context),
+                            provider.toggleSetting('taskReminders', v, context),
                         onUpgradeTap: () {},
                       ),
                       ProSwitchTile(
                         title: 'Overdue Alerts',
                         description:
-                            'Daily alerts for overdue tasks until completed (Pro feature)',
+                            'Daily alerts for overdue tasks until completed',
                         value: user.overdueAlerts,
                         isPremium: provider.isPremium,
                         onChanged: (v) =>
-                            provider.toggleSetting('overdueAlerts', v,context),
+                            provider.toggleSetting('overdueAlerts', v, context),
                         onUpgradeTap: () {},
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
+                /* const SizedBox(height: 20),
                 _card(
                   child: ProSwitchTile(
                     title: 'Auto Save',
                     description:
-                        'Automatically save changes as you type (Pro feature)',
+                        'Automatically save changes as you type',
                     value: user.autoSave,
                     isPremium: provider.isPremium,
                     onChanged: (v) => provider.toggleSetting('autoSave', v,context),
                     onUpgradeTap: () {},
                   ),
-                ),
+                ),*/
                 const SizedBox(height: 20),
 
                 _card(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_button.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_text_widget.dart';
+import 'package:plan_ex_app/core/app_widgets/app_common_widgets.dart';
 import 'package:plan_ex_app/core/constants/app_colors.dart';
 import 'package:plan_ex_app/features/dashboard_flow/domain/entities/note_entity.dart';
 import 'package:plan_ex_app/features/dashboard_flow/presentation/widgets/note_editor_screen.dart';
@@ -157,10 +158,9 @@ class NoteCard extends StatelessWidget {
                         ),
                       ),
                       const Spacer(),
-                      textWidget(
-                        context: context,
-                        text: date,
-                        fontSize: 11,
+                      buildCreationDateWidget(
+                        context,
+                        date: date,
                         color: Colors.grey.shade500,
                       ),
                     ],
