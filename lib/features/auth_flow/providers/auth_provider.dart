@@ -146,15 +146,22 @@ class AuthUserProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> signUp() async {
+  Future<String?> signUp() async {
     _setLoading(true);
-    error = await _service.signUp(
+    final result = await _service.signUp(
       fullName: signUpNameCtrl.text.trim(),
       email: signUpEmailCtrl.text.trim(),
       password: signUpPassCtrl.text,
     );
+    if (result == "unverified-existing") {
+      error = "You are not verified yet.";
+    } else if (result == "already-verified") {
+      error = "You are already verified user. Kindly proceed with Login.";
+    } else {
+      error = result;
+    }
     _setLoading(false);
-    return error == null;
+    return error;
   }
 
   int cooldown = 0;

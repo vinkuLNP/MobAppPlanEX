@@ -16,6 +16,11 @@ class EmailVerificationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthUserProvider>();
+    
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    auth.clearError();
+  });
+
 
     return Scaffold(
       resizeToAvoidBottomInset: true,

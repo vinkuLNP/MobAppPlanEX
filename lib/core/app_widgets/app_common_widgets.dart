@@ -7,6 +7,8 @@ import 'package:plan_ex_app/core/constants/app_colors.dart';
 import 'package:plan_ex_app/core/utils/app_logger.dart';
 import 'package:plan_ex_app/core/utils/colors_utils.dart';
 import 'package:plan_ex_app/features/dashboard_flow/presentation/widgets/image_preview_screen.dart';
+import 'package:plan_ex_app/features/dashboard_flow/provider/account_provider.dart';
+import 'package:provider/provider.dart';
 
 void showUpgradeDialog(BuildContext context, String subtitle) {
   showDialog(
@@ -181,5 +183,37 @@ void _showSnack(BuildContext context, String msg) {
         text: msg,
       ),
     ),
+  );
+}
+
+Widget buildCreationDateWidget(
+  BuildContext context, {
+  required String date,
+  Color? color,
+  double fontSize = 11,
+  bool showLabel = false,
+}) {
+  final showCreatedDate =
+      context.read<AccountProvider>().user?.showCreationDates ?? false;
+
+  if (!showCreatedDate) return const SizedBox.shrink();
+
+  return Row(
+    children: [
+      showLabel
+          ? textWidget(
+              context: context,
+              text: 'Created At: ',
+              fontSize: 10,
+              color: Colors.grey.shade500,
+            )
+          : const SizedBox.shrink(),
+      textWidget(
+        context: context,
+        text: date,
+        fontSize: fontSize,
+        color: color ?? Colors.grey,
+      ),
+    ],
   );
 }

@@ -21,7 +21,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final emailCtrl = TextEditingController();
   final formKey = GlobalKey<FormState>();
 
+ @override
+  void initState() {
+    super.initState();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (mounted) {
+      final provider = context.read<AuthUserProvider>();
+      provider.clearError();
+    }
+  });
 
+  }
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthUserProvider>();

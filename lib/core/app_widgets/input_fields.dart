@@ -184,7 +184,7 @@ class AppPasswordField extends StatelessWidget {
             suffixIcon: IconButton(
               icon: Icon(
                 obscure ? Icons.visibility_off : Icons.visibility,
-                color: Colors.black.withValues(alpha: 0.6),
+                color:Theme.of(context).brightness == Brightness.dark ? Colors.white.withValues(alpha: 0.6): Colors.black.withValues(alpha: 0.6),
               ),
               onPressed: onToggle,
             ),

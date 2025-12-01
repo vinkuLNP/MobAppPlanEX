@@ -230,7 +230,7 @@ class AccountProvider extends ChangeNotifier {
     final photo = user!.photoUrl!;
 
     if (photo.startsWith('http')) {
-      return photo; 
+      return photo;
     }
 
     return await repository.getFreshAvatarUrl(photo);
@@ -264,7 +264,7 @@ class AccountProvider extends ChangeNotifier {
             action: SnackBarAction(
               label: "Open Settings",
               onPressed: () {
-                openAppSettings(); 
+                openAppSettings();
               },
             ),
           ),
@@ -398,21 +398,22 @@ class AccountProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<String?> deleteAccount({String? passwordForReauth}) async {
+  Future<String?> deleteAccount(
+    BuildContext context, {
+    String? passwordForReauth,
+  }) async {
     final firebaseUser = FirebaseAuth.instance.currentUser;
 
-
     if (firebaseUser == null) {
-      return 'No user signed in';
+      // await _forceLogout(context);
+      return 'Requires Re-Login';
     }
 
     final uid = firebaseUser.uid;
     _setProcessing(true);
 
     try {
-
       if (firebaseUser.providerData.any((p) => p.providerId == 'google.com')) {
-
         final google = GoogleSignIn.instance;
         await google.initialize();
 
@@ -453,27 +454,20 @@ class AccountProvider extends ChangeNotifier {
         await firebaseUser.reauthenticateWithCredential(cred);
       }
 
-
       if (user?.photoUrl != null && user!.photoUrl!.isNotEmpty) {
         await repository.deleteAvatarByPath(user!.photoUrl!);
       }
 
       await repository.deleteUserDocument(uid);
 
-
       await firebaseUser.delete();
 
-
-      await repository.logout();
-
-      await FirebaseAuth.instance.signOut();
-
-      user = null;
+      await _forceLogout(context);
 
       return null;
-    } on FirebaseAuthException catch (e) {
-      return e.code;
     } catch (e) {
+      await _forceLogout(context);
+      if (e is FirebaseAuthException) return e.code;
       return e.toString();
     } finally {
       _setProcessing(false);
@@ -493,26 +487,49 @@ class AccountProvider extends ChangeNotifier {
     return _localThemeMode;
   }
 
+  bool accountPassObscure = true;
+  void toggleAccountPassObscure() {
+    accountPassObscure = !accountPassObscure;
+    notifyListeners();
+  }
+
+  Future<void> clearUser(BuildContext context) async {
+    _localThemeMode = ThemeMode.light;
+    user = null;
+    Provider.of<NotesProvider>(context, listen: false).clearNotes();
+    Provider.of<TasksProvider>(context, listen: false).clearTasks();
+    nameController.clear();
+    emailController.clear();
+    avatarResolvedOnce = false;
+    initialAccountLoaded = false;
+    localImagePath = null;
+
+    avatarUrl = '';
+    accountLoading = false;
+    settingsLoading = false;
+    saving = false;
+    repository.logout();
+
+    await FirebaseAuth.instance.signOut();
+
+    notifyListeners();
+  }
+
+  Future<void> _forceLogout(BuildContext context) async {
+    try {
+      await clearUser(context);
+    } catch (_) {}
+
+    if (context.mounted) {
+      Navigator.of(
+        context,
+      ).pushNamedAndRemoveUntil(AppRoutes.login, (route) => false);
+    }
+  }
+
   Future<void> logout(BuildContext context) async {
     try {
-      _localThemeMode = ThemeMode.light;
-      user = null;
-      Provider.of<NotesProvider>(context, listen: false).clearNotes();
-      Provider.of<TasksProvider>(context, listen: false).clearTasks();
-      nameController.clear();
-      emailController.clear();
-      avatarResolvedOnce = false;
-      initialAccountLoaded = false;
-      localImagePath = null;
-
-      avatarUrl = '';
-      accountLoading = false;
-      settingsLoading = false;
-      saving = false;
-      await FirebaseAuth.instance.signOut();
-
-      repository.logout();
-      notifyListeners();
+      await clearUser(context);
       if (context.mounted) {
         Navigator.of(
           context,

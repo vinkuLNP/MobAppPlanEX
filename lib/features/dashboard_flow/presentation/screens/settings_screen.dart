@@ -64,11 +64,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       SizedBox(height: 10),
                       ProSwitchTile(
                         title: 'Dark Mode',
-                        description:
-                            'Toggle between light and dark themes',
+                        description: 'Toggle between light and dark themes',
                         value: user.darkMode,
                         isPremium: true,
-                        onChanged: (v) => provider.toggleSetting('darkMode', v,context),
+                        onChanged: (v) =>
+                            provider.toggleSetting('darkMode', v, context),
                         onUpgradeTap: () {},
                       ),
 
@@ -78,8 +78,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             'Display when notes and tasks were created',
                         value: user.showCreationDates,
                         isPremium: provider.isPremium,
-                        onChanged: (v) =>
-                            provider.toggleSetting('showCreationDates', v,context),
+                        onChanged: (v) => provider.toggleSetting(
+                          'showCreationDates',
+                          v,
+                          context,
+                        ),
                         onUpgradeTap: () {},
                       ),
                     ],
@@ -99,12 +102,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       SizedBox(height: 10),
                       ProSwitchTile(
                         title: 'Daily Summary',
-                        description:
-                            'Receive daily task summary notifications',
+                        description: 'Receive daily task summary notifications',
                         value: user.dailySummary,
                         isPremium: provider.isPremium,
                         onChanged: (v) =>
-                            provider.toggleSetting('dailySummary', v,context),
+                            provider.toggleSetting('dailySummary', v, context),
                         onUpgradeTap: () {},
                       ),
 
@@ -115,7 +117,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         value: user.taskReminders,
                         isPremium: provider.isPremium,
                         onChanged: (v) =>
-                            provider.toggleSetting('taskReminders', v,context),
+                            provider.toggleSetting('taskReminders', v, context),
                         onUpgradeTap: () {},
                       ),
                       ProSwitchTile(
@@ -125,13 +127,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         value: user.overdueAlerts,
                         isPremium: provider.isPremium,
                         onChanged: (v) =>
-                            provider.toggleSetting('overdueAlerts', v,context),
+                            provider.toggleSetting('overdueAlerts', v, context),
                         onUpgradeTap: () {},
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 20),
+                /* const SizedBox(height: 20),
                 _card(
                   child: ProSwitchTile(
                     title: 'Auto Save',
@@ -142,7 +144,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     onChanged: (v) => provider.toggleSetting('autoSave', v,context),
                     onUpgradeTap: () {},
                   ),
-                ),
+                ),*/
                 const SizedBox(height: 20),
 
                 _card(
