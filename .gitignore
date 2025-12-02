@@ -43,6 +43,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+/android/key.properties
 
 /assets/env
 .env
@@ -59,4 +60,5 @@ ios/Flutter/.last_build_id
 ios/Flutter/flutter_export_environment.sh
 ios/Flutter/ephemeral/
 
+/keystore
 

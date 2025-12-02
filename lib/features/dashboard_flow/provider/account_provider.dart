@@ -191,37 +191,39 @@ class AccountProvider extends ChangeNotifier {
       _setProcessing(false);
       return;
     }
-    final editedImage = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) =>
-            ImageEditor(image: File(picked.path).readAsBytesSync()),
-      ),
-    );
+    if (context.mounted) {
+      final editedImage = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) =>
+              ImageEditor(image: File(picked.path).readAsBytesSync()),
+        ),
+      );
 
-    if (editedImage == null) {
+      if (editedImage == null) {
+        _setProcessing(false);
+        return;
+      }
+
+      final editedFile = await File(picked.path).writeAsBytes(editedImage);
+
+      localImagePath = editedFile.path;
+      notifyListeners();
+
+      final file = File(editedFile.path);
+      final oldPath = user?.photoUrl;
+      final newPath = await repository.uploadAvatar(uid, file);
+      await repository.updateAvatar(uid, newPath);
+
+      if (oldPath != null && oldPath.isNotEmpty) {
+        await repository.deleteAvatarByPath(oldPath);
+      }
+      avatarUrl = await repository.getFreshAvatarUrl(newPath);
+      user = user?.copyWith(photoUrl: newPath);
+      avatarResolvedOnce = true;
       _setProcessing(false);
-      return;
+      notifyListeners();
     }
-
-    final editedFile = await File(picked.path).writeAsBytes(editedImage);
-
-    localImagePath = editedFile.path;
-    notifyListeners();
-
-    final file = File(editedFile.path);
-    final oldPath = user?.photoUrl;
-    final newPath = await repository.uploadAvatar(uid, file);
-    await repository.updateAvatar(uid, newPath);
-
-    if (oldPath != null && oldPath.isNotEmpty) {
-      await repository.deleteAvatarByPath(oldPath);
-    }
-    avatarUrl = await repository.getFreshAvatarUrl(newPath);
-    user = user?.copyWith(photoUrl: newPath);
-    avatarResolvedOnce = true;
-    _setProcessing(false);
-    notifyListeners();
   }
 
   Future<String?> getAvatarUrl() async {
@@ -462,11 +464,11 @@ class AccountProvider extends ChangeNotifier {
 
       await firebaseUser.delete();
 
-      await _forceLogout(context);
+      if (context.mounted) await _forceLogout(context);
 
       return null;
     } catch (e) {
-      await _forceLogout(context);
+      if (context.mounted) await _forceLogout(context);
       if (e is FirebaseAuthException) return e.code;
       return e.toString();
     } finally {
