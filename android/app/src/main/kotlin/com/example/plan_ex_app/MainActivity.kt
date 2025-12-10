@@ -1,4 +1,4 @@
-package com.example.plan_ex_app
+package com.lnpinfo.planexapp
 
 import io.flutter.embedding.android.FlutterActivity
 

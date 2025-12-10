@@ -50,8 +50,8 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDirxsscanwagyhtfCd-N9s5lGQo1lPh0A',
-    appId: '1:1045154677922:android:2fd518742f1cbf261bc3fb',
+    apiKey: 'AIzaSyCpw7ujasbpUqcWoaJgDSFJJth5YWC-Swk',
+    appId: '1:1045154677922:android:73302b4df4b1f7321bc3fb',
     messagingSenderId: '1045154677922',
     projectId: 'planex-4cc13',
     storageBucket: 'planex-4cc13.firebasestorage.app',
@@ -59,24 +59,24 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyDQ-oeIlq8AJt1gWvAMERj-z_KBUfBdxhg',
-    appId: '1:1045154677922:ios:538eff61372df66b1bc3fb',
+    appId: '1:1045154677922:ios:3992429b837e21821bc3fb',
     messagingSenderId: '1045154677922',
     projectId: 'planex-4cc13',
     storageBucket: 'planex-4cc13.firebasestorage.app',
-    androidClientId: '1045154677922-7pnshdo17anklo2hnm1jlvkci04dejq3.apps.googleusercontent.com',
-    iosClientId: '1045154677922-nq4l1d31cg0lu2ravoomn3j9c9aedgpq.apps.googleusercontent.com',
-    iosBundleId: 'com.example.planExApp',
+    androidClientId: '1045154677922-0ea835bqe9h7hvdtbn41n8bb03hbgej5.apps.googleusercontent.com',
+    iosClientId: '1045154677922-bi3tvvas3jdms0rt27sa4f39adfmgk6m.apps.googleusercontent.com',
+    iosBundleId: 'com.lnpinfo.planexapp',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
     apiKey: 'AIzaSyDQ-oeIlq8AJt1gWvAMERj-z_KBUfBdxhg',
-    appId: '1:1045154677922:ios:538eff61372df66b1bc3fb',
+    appId: '1:1045154677922:ios:3992429b837e21821bc3fb',
     messagingSenderId: '1045154677922',
     projectId: 'planex-4cc13',
     storageBucket: 'planex-4cc13.firebasestorage.app',
-    androidClientId: '1045154677922-7pnshdo17anklo2hnm1jlvkci04dejq3.apps.googleusercontent.com',
-    iosClientId: '1045154677922-nq4l1d31cg0lu2ravoomn3j9c9aedgpq.apps.googleusercontent.com',
-    iosBundleId: 'com.example.planExApp',
+    androidClientId: '1045154677922-0ea835bqe9h7hvdtbn41n8bb03hbgej5.apps.googleusercontent.com',
+    iosClientId: '1045154677922-bi3tvvas3jdms0rt27sa4f39adfmgk6m.apps.googleusercontent.com',
+    iosBundleId: 'com.lnpinfo.planexapp',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(

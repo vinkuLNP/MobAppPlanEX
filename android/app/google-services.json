@@ -7,17 +7,17 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1045154677922:android:2fd518742f1cbf261bc3fb",
+        "mobilesdk_app_id": "1:1045154677922:android:73302b4df4b1f7321bc3fb",
         "android_client_info": {
-          "package_name": "com.example.plan_ex_app"
+          "package_name": "com.lnpinfo.planexapp"
         }
       },
       "oauth_client": [
         {
-          "client_id": "1045154677922-7pnshdo17anklo2hnm1jlvkci04dejq3.apps.googleusercontent.com",
+          "client_id": "1045154677922-0ea835bqe9h7hvdtbn41n8bb03hbgej5.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.example.plan_ex_app",
+            "package_name": "com.lnpinfo.planexapp",
             "certificate_hash": "c86a9cf8e02be456c92e602c365c1d978d20f2a8"
           }
         },
@@ -28,7 +28,7 @@
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDirxsscanwagyhtfCd-N9s5lGQo1lPh0A"
+          "current_key": "AIzaSyCpw7ujasbpUqcWoaJgDSFJJth5YWC-Swk"
         }
       ],
       "services": {
@@ -39,10 +39,10 @@
               "client_type": 3
             },
             {
-              "client_id": "1045154677922-nq4l1d31cg0lu2ravoomn3j9c9aedgpq.apps.googleusercontent.com",
+              "client_id": "1045154677922-bi3tvvas3jdms0rt27sa4f39adfmgk6m.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.example.planExApp"
+                "bundle_id": "com.lnpinfo.planexapp"
               }
             }
           ]

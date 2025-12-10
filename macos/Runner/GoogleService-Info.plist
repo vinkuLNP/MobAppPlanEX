@@ -3,11 +3,11 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>1045154677922-nq4l1d31cg0lu2ravoomn3j9c9aedgpq.apps.googleusercontent.com</string>
+	<string>1045154677922-bi3tvvas3jdms0rt27sa4f39adfmgk6m.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.1045154677922-nq4l1d31cg0lu2ravoomn3j9c9aedgpq</string>
+	<string>com.googleusercontent.apps.1045154677922-bi3tvvas3jdms0rt27sa4f39adfmgk6m</string>
 	<key>ANDROID_CLIENT_ID</key>
-	<string>1045154677922-7pnshdo17anklo2hnm1jlvkci04dejq3.apps.googleusercontent.com</string>
+	<string>1045154677922-0ea835bqe9h7hvdtbn41n8bb03hbgej5.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
 	<string>AIzaSyDQ-oeIlq8AJt1gWvAMERj-z_KBUfBdxhg</string>
 	<key>GCM_SENDER_ID</key>
@@ -15,7 +15,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.example.planExApp</string>
+	<string>com.lnpinfo.planexapp</string>
 	<key>PROJECT_ID</key>
 	<string>planex-4cc13</string>
 	<key>STORAGE_BUCKET</key>
@@ -31,6 +31,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:1045154677922:ios:538eff61372df66b1bc3fb</string>
+	<string>1:1045154677922:ios:3992429b837e21821bc3fb</string>
 </dict>
 </plist>
