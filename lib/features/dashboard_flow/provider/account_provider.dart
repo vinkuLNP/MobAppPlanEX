@@ -43,58 +43,39 @@ class AccountProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  bool requirePremium(BuildContext context) {
-    if (!isPremium) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: textWidget(
-            context: context,
-            color: Theme.of(context).cardColor,
-            text: 'This feature is available for Premium users only',
-          ),
-        ),
-      );
-      return false;
-    }
-    return true;
+  StreamSubscription<UserEntity>? _userSub;
+  bool _listening = false;
+  void startUserListener() {
+    final userDataId = FirebaseAuth.instance.currentUser!.uid;
+    if (_listening) return;
+    _listening = true;
+
+    _userSub = repository.watchUser(userDataId).listen((data) async {
+      user = data;
+
+      nameController.text = data.fullName;
+      emailController.text = data.email;
+
+      if (user?.photoUrl != null && user!.photoUrl!.isNotEmpty) {
+        avatarUrl = await repository.getFreshAvatarUrl(user!.photoUrl!);
+      } else {
+        avatarUrl = null;
+      }
+
+      notifyListeners();
+    });
   }
 
-  Widget premiumGuard({
-    required BuildContext context,
-    required Widget child,
-    Widget? lockedChild,
-  }) {
-    if (!isPremium) {
-      return lockedChild ??
-          Stack(
-            alignment: Alignment.center,
-            children: [
-              Opacity(opacity: 0.4, child: child),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                padding: const EdgeInsets.all(12),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.lock, color: Colors.white),
-                    SizedBox(width: 8),
-                    Text('Premium Only', style: TextStyle(color: Colors.white)),
-                  ],
-                ),
-              ),
-            ],
-          );
-    }
-    return child;
+  @override
+  void dispose() {
+    _userSub?.cancel();
+    super.dispose();
   }
 
-  Future<void> loadAccountBasicInfo() async {
+  Future<void> loadAccountBasicInfo({bool force = false}) async {
     final uid = authUser?.uid;
     if (uid == null) return;
-    if (initialAccountLoaded) return;
+    if (initialAccountLoaded && !force) return;
     accountLoading = true;
     notifyListeners();
 
@@ -104,23 +85,16 @@ class AccountProvider extends ChangeNotifier {
 
     nameController.text = user?.fullName ?? '';
     emailController.text = user?.email ?? '';
-
-    if (user?.photoUrl != null && user?.photoUrl != '' && !avatarResolvedOnce) {
-      final photo = user!.photoUrl!;
-
-      if (photo.startsWith('http')) {
-        avatarUrl = photo;
-      } else {
-        avatarUrl = await repository.getFreshAvatarUrl(photo);
-      }
-      avatarResolvedOnce = true;
+    if (user?.photoUrl != null && user!.photoUrl!.isNotEmpty) {
+      avatarUrl = await repository.getFreshAvatarUrl(user!.photoUrl!);
     }
+
     initialAccountLoaded = true;
     accountLoading = false;
     notifyListeners();
   }
 
-  Future<void> loadSettingsData() async {
+  Future<void> loadSettingsData({bool force = false}) async {
     final uid = authUser?.uid;
     if (uid == null) return;
 
@@ -130,9 +104,66 @@ class AccountProvider extends ChangeNotifier {
     final settings = await repository.getUser(uid);
 
     user = settings;
-
+    // await enforceNotificationPermissionOnHome();
     settingsLoading = false;
     notifyListeners();
+  }
+
+  Future<void> enforceNotificationPermissionOnHome({
+    required BuildContext context,
+  }) async {
+    final uid = authUser?.uid;
+    if (uid == null || user == null) return;
+
+    final notificationsEnabledInApp =
+        user!.dailySummary || user!.taskReminders || user!.overdueAlerts;
+
+    if (!notificationsEnabledInApp) return;
+
+    final hasPermission = await NotificationService.hasNotificationPermission();
+
+    if (hasPermission) return;
+
+    final granted = await NotificationService.requestPermissionIfNeeded();
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: textWidget(
+            text:
+                'Notifications are disabled on this device. '
+                'Enable them from system settings.',
+            context: context,
+            color: Colors.white,
+          ),
+          backgroundColor: Colors.black,
+          action: SnackBarAction(
+            label: 'Open Settings',
+            onPressed: openAppSettings,
+          ),
+        ),
+      );
+    }
+
+    if (!granted) {
+      await repository.updateSettings(uid, {
+        'darkMode': user!.darkMode,
+        'showCreationDates': user!.showCreationDates,
+        'dailySummary': false,
+        'taskReminders': false,
+        'overdueAlerts': false,
+        'autoSave': user!.autoSave,
+      });
+
+      await NotificationService.cancelAll();
+
+      user = user!.copyWith(
+        dailySummary: false,
+        taskReminders: false,
+        overdueAlerts: false,
+      );
+
+      notifyListeners();
+    }
   }
 
   Future<void> saveName(BuildContext context) async {
@@ -302,6 +333,54 @@ class AccountProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  bool requirePremium(BuildContext context) {
+    if (!isPremium) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: textWidget(
+            context: context,
+            color: Theme.of(context).cardColor,
+            text: 'This feature is available for Premium users only',
+          ),
+        ),
+      );
+      return false;
+    }
+    return true;
+  }
+
+  Widget premiumGuard({
+    required BuildContext context,
+    required Widget child,
+    Widget? lockedChild,
+  }) {
+    if (!isPremium) {
+      return lockedChild ??
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              Opacity(opacity: 0.4, child: child),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                padding: const EdgeInsets.all(12),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.lock, color: Colors.white),
+                    SizedBox(width: 8),
+                    Text('Premium Only', style: TextStyle(color: Colors.white)),
+                  ],
+                ),
+              ),
+            ],
+          );
+    }
+    return child;
+  }
+
   Future<void> handleNotificationChange(
     String key,
     bool value,
@@ -407,7 +486,6 @@ class AccountProvider extends ChangeNotifier {
     final firebaseUser = FirebaseAuth.instance.currentUser;
 
     if (firebaseUser == null) {
-      // await _forceLogout(context);
       return 'Requires Re-Login';
     }
 
@@ -456,12 +534,8 @@ class AccountProvider extends ChangeNotifier {
         await firebaseUser.reauthenticateWithCredential(cred);
       }
 
-      if (user?.photoUrl != null && user!.photoUrl!.isNotEmpty) {
-        await repository.deleteAvatarByPath(user!.photoUrl!);
-      }
-
       await repository.deleteUserDocument(uid);
-
+      deleteAvatar();
       await firebaseUser.delete();
 
       if (context.mounted) await _forceLogout(context);
@@ -473,6 +547,12 @@ class AccountProvider extends ChangeNotifier {
       return e.toString();
     } finally {
       _setProcessing(false);
+    }
+  }
+
+  void deleteAvatar() async {
+    if (user?.photoUrl != null && user!.photoUrl!.isNotEmpty) {
+      await repository.deleteAvatarByPath(user!.photoUrl!);
     }
   }
 

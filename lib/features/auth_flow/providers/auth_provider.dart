@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:plan_ex_app/core/utils/app_logger.dart';
 import 'package:plan_ex_app/features/auth_flow/data/auth_service.dart';
+import 'package:plan_ex_app/features/auth_flow/data/enum.dart';
 
 class AuthUserProvider extends ChangeNotifier {
   final AuthService _service = AuthService();
@@ -122,7 +123,7 @@ class AuthUserProvider extends ChangeNotifier {
     }
 
     error = result;
-    return "error";
+    return error!;
   }
 
   @override
@@ -146,22 +147,53 @@ class AuthUserProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<String?> signUp() async {
+  Future<SignUpStatus> signUp() async {
     _setLoading(true);
-    final result = await _service.signUp(
-      fullName: signUpNameCtrl.text.trim(),
-      email: signUpEmailCtrl.text.trim(),
-      password: signUpPassCtrl.text,
-    );
-    if (result == "unverified-existing") {
-      error = "You are not verified yet.";
-    } else if (result == "already-verified") {
-      error = "You are already verified user. Kindly proceed with Login.";
-    } else {
-      error = result;
+
+    try {
+      final status = await _service.signUp(
+        fullName: signUpNameCtrl.text.trim(),
+        email: signUpEmailCtrl.text.trim(),
+        password: signUpPassCtrl.text,
+      );
+      switch (status) {
+        case SignUpStatus.unverifiedExisting:
+          error = "You are not verified yet. Verification email sent.";
+          break;
+
+        case SignUpStatus.alreadyVerified:
+          error =
+              "This email is already registered and verified. Please login.";
+          break;
+
+        case SignUpStatus.tooManyRequests:
+          error = "Verification link already sent. Please check your email.";
+          break;
+
+        case SignUpStatus.resetPasswordSent:
+          error =
+              "Entered password is incorrect for email. Reset your password through link send to your email.";
+          break;
+
+        case SignUpStatus.failure:
+          error = "Something went wrong. Try again later.";
+          break;
+
+        case SignUpStatus.success:
+          error = null;
+          break;
+      }
+
+      return status;
+    } catch (e, s) {
+      debugPrint("SignUp error: $e");
+      debugPrintStack(stackTrace: s);
+
+      error = "Something went wrong. Please try again later.";
+      return SignUpStatus.failure;
+    } finally {
+      _setLoading(false);
     }
-    _setLoading(false);
-    return error;
   }
 
   int cooldown = 0;

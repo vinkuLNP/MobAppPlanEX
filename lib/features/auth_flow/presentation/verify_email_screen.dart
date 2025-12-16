@@ -16,11 +16,10 @@ class EmailVerificationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthUserProvider>();
-    
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    auth.clearError();
-  });
 
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      auth.clearError();
+    });
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
@@ -100,16 +99,14 @@ class EmailVerificationScreen extends StatelessWidget {
                                   .checkEmailVerified();
 
                               if (verified) {
-                                await accountProvider.loadAccountBasicInfo();
-                                await accountProvider.loadSettingsData();
+                                  accountProvider.startUserListener();
                                 if (context.mounted) {
                                   Navigator.pushReplacementNamed(
                                     context,
                                     AppRoutes.home,
                                   );
                                 }
-                                              authProvider.clearControllers();
-
+                                authProvider.clearControllers();
                               } else {
                                 if (authProvider.error != null) {
                                   if (context.mounted) {
@@ -133,7 +130,7 @@ class EmailVerificationScreen extends StatelessWidget {
                           context.gap20,
                           TextButton(
                             onPressed: () =>
-                            authFlowNavigate(context, AppRoutes.signup),
+                                authFlowNavigate(context, AppRoutes.signup),
                             child: textWidget(
                               context: context,
                               text: 'Back to Sign Up',

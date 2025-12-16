@@ -35,7 +35,6 @@ class _AccountScreenState extends State<AccountScreen> {
   Widget build(BuildContext context) {
     return Consumer<AccountProvider>(
       builder: (context, provider, _) {
-        // final user = provider.user;
         return Scaffold(
           body: Stack(
             children: [
@@ -95,60 +94,6 @@ class _AccountScreenState extends State<AccountScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 20),
-
-                    /*                  _card(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          textWidget(
-                            context: context,
-                            text: 'Subscriptions',
-                            fontWeight: FontWeight.bold,
-                          ),
-                          const SizedBox(height: 6),
-                          textWidget(
-                            context: context,
-                            text: user?.isPaid ?? false
-                                ? 'Premium features with unlimited storage'
-                                : 'Basic features with limited storage',
-                            fontSize: 13,
-                            color: Theme.of(
-                              context,
-                            ).hintColor.withValues(alpha: 0.6),
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Chip(
-                                label: textWidget(
-                                  context: context,
-                                  text: user?.isPaid ?? false
-                                      ? 'Premium User'
-                                      : 'Free User',
-                                ),
-                                backgroundColor: user?.isPaid ?? false
-                                    ? Theme.of(
-                                        context,
-                                      ).cardColor.withValues(alpha: 0.6)
-                                    : Theme.of(
-                                        context,
-                                      ).cardColor.withValues(alpha: 0.6),
-                              ),
-                              const Spacer(),
-                              if (user != null && !user.isPaid)
-                                Expanded(
-                                  child: AppButton(
-                                    text: 'Upgrade',
-                                    onTap: provider.upgrade,
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
- */
                     const SizedBox(height: 20),
 
                     _card(

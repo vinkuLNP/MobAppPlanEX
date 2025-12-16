@@ -50,9 +50,7 @@ class _SplashPageState extends State<SplashPage>
     }
     final accountProvider = context.read<AccountProvider>();
     try {
-      
-      await accountProvider.loadSettingsData();
-      await accountProvider.loadAccountBasicInfo();
+      accountProvider.startUserListener();
       if (mounted) {
         Navigator.pushReplacementNamed(context, AppRoutes.home);
       }
