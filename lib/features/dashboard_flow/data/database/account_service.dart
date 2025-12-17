@@ -9,6 +9,13 @@ import 'package:uuid/uuid.dart';
 class AccountService {
   final _db = FirebaseFirestore.instance.collection('users');
 
+  Stream<UserModel?> watchUser(String uid) {
+    return _db.doc(uid).snapshots().map((doc) {
+      if (!doc.exists) return null;
+      return UserModel.fromMap(doc.id, doc.data()!);
+    });
+  }
+
   Future<UserModel?> getUser(String uid) async {
     final doc = await _db.doc(uid).get();
     if (!doc.exists) return null;
@@ -32,11 +39,8 @@ class AccountService {
   }
 
   Future<void> updateStats(String uid, Map<String, dynamic> stats) async {
-  await _db.doc(uid).set({
-    'stats': stats,
-  }, SetOptions(merge: true));
-}
-
+    await _db.doc(uid).set({'stats': stats}, SetOptions(merge: true));
+  }
 
   Future<void> updateAvatar(String uid, String avatarUrl) async {
     await _db.doc(uid).update({'photoUrl': avatarUrl});
@@ -85,19 +89,16 @@ class AccountService {
 
   Future<void> deleteUserDocument(String uid) async {
     final userRef = _db.doc(uid);
-     final subCollections = [
-    'tasks',
-    'notes',
-  ]; 
+    final subCollections = ['tasks', 'notes'];
 
-  for (String collection in subCollections) {
-    final colRef = userRef.collection(collection);
-    final snapshots = await colRef.get();
+    for (String collection in subCollections) {
+      final colRef = userRef.collection(collection);
+      final snapshots = await colRef.get();
 
-    for (var doc in snapshots.docs) {
-      await doc.reference.delete();
+      for (var doc in snapshots.docs) {
+        await doc.reference.delete();
+      }
     }
-  }
     await userRef.delete();
   }
 }

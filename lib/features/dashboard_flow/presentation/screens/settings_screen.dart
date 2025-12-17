@@ -133,19 +133,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ],
                   ),
                 ),
-                /* const SizedBox(height: 20),
-                _card(
-                  child: ProSwitchTile(
-                    title: 'Auto Save',
-                    description:
-                        'Automatically save changes as you type',
-                    value: user.autoSave,
-                    isPremium: provider.isPremium,
-                    onChanged: (v) => provider.toggleSetting('autoSave', v,context),
-                    onUpgradeTap: () {},
-                  ),
-                ),*/
-                const SizedBox(height: 20),
+             const SizedBox(height: 20),
 
                 _card(
                   child: ListTile(
@@ -204,3 +192,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 }
+
+    /* const SizedBox(height: 20),
+                _card(
+                  child: ProSwitchTile(
+                    title: 'Auto Save',
+                    description:
+                        'Automatically save changes as you type',
+                    value: user.autoSave,
+                    isPremium: provider.isPremium,
+                    onChanged: (v) => provider.toggleSetting('autoSave', v,context),
+                    onUpgradeTap: () {},
+                  ),
+                ),*/
+               

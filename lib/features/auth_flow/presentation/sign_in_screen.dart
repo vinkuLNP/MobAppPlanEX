@@ -265,11 +265,8 @@ class _SignInScreenState extends State<SignInScreen> {
                                             final status = await provider
                                                 .signIn();
                                             if (status == "verified") {
-                                              await accountProvider
-                                                  .loadAccountBasicInfo();
-                                              await accountProvider
-                                                  .loadSettingsData();
                                               if (context.mounted) {
+                                                 accountProvider.startUserListener();
                                                 Navigator.pushReplacementNamed(
                                                   context,
                                                   AppRoutes.home,
@@ -366,10 +363,7 @@ class _SignInScreenState extends State<SignInScreen> {
                                             final status = await provider
                                                 .googleSignIn();
                                             if (status == "success") {
-                                              await accountProvider
-                                                  .loadAccountBasicInfo();
-                                              await accountProvider
-                                                  .loadSettingsData();
+                                             accountProvider.startUserListener();
                                               if (context.mounted) {
                                                 Navigator.pushReplacementNamed(
                                                   context,

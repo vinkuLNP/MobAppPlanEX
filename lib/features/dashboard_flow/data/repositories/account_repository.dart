@@ -11,6 +11,21 @@ class AccountRepository {
 
   AccountRepository(this.service, this.local);
 
+  Stream<UserEntity> watchUser(String uid) async* {
+    final cached = local.getUser();
+    if (cached != null && cached.uid == uid) {
+      yield cached;
+    }
+
+    await for (final user in service.watchUser(uid)) {
+      if (user == null) continue;
+
+      await local.saveUser(user);
+
+      yield user;
+    }
+  }
+
   Future<UserEntity> getUser(String uid) async {
     final cached = local.getUser();
     if (cached != null && cached.uid == uid) {
@@ -82,22 +97,31 @@ class AccountRepository {
     }
   }
 
-  Future<void> updateSettings(String uid, Map<String, dynamic> settings) async {
-    await service.updateSettings(uid, settings);
+  Future<void> updateSettings(String uid, Map<String, dynamic> partial) async {
+final current = local.getUser();
+  if (current == null) return;
+ final merged = {
+    'darkMode': partial['darkMode'] ?? current.darkMode,
+    'showCreationDates':
+        partial['showCreationDates'] ?? current.showCreationDates,
+    'dailySummary': partial['dailySummary'] ?? current.dailySummary,
+    'taskReminders': partial['taskReminders'] ?? current.taskReminders,
+    'overdueAlerts': partial['overdueAlerts'] ?? current.overdueAlerts,
+    'autoSave': partial['autoSave'] ?? current.autoSave,
+  };
 
-    final current = local.getUser();
-    if (current != null) {
+    await service.updateSettings(uid, merged);
+
       await local.saveUser(
         current.copyWith(
-          darkMode: settings['darkMode'],
-          showCreationDates: settings['showCreationDates'],
-          dailySummary: settings['dailySummary'],
-          taskReminders: settings['taskReminders'],
-          overdueAlerts: settings['overdueAlerts'],
-          autoSave: settings['autoSave'],
+          darkMode: merged['darkMode'],
+          showCreationDates: merged['showCreationDates'],
+          dailySummary: merged['dailySummary'],
+          taskReminders: merged['taskReminders'],
+          overdueAlerts: merged['overdueAlerts'],
+          autoSave: merged['autoSave'],
         ),
       );
-    }
   }
 
   Future<void> updateStats(String uid, Map<String, dynamic> stats) async {
@@ -119,8 +143,8 @@ class AccountRepository {
     await service.deleteUserDocument(uid);
     await local.clear();
   }
+
   Future<void> logout() async {
     await local.clear();
   }
 }
-

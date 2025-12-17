@@ -25,25 +25,27 @@ class TaskService {
   Future<Map<String, dynamic>> addTask(TaskModel model) async {
     final uid = FirebaseAuth.instance.currentUser!.uid;
     await _col().add(model.toMap());
-    return await _updateTaskStats(uid);
+    return await 
+    updateTaskStats(uid);
   }
 
   Future<Map<String, dynamic>> deleteTask(String id) async {
     final uid = FirebaseAuth.instance.currentUser!.uid;
     await _col().doc(id).delete();
-    return await _updateTaskStats(uid);
+    return await 
+    updateTaskStats(uid);
   }
 
   Future<Map<String, dynamic>> toggleComplete(String id, bool value) async {
     final uid = FirebaseAuth.instance.currentUser!.uid;
     await _col().doc(id).update({"completed": value});
-    return await _updateTaskStats(uid);
+    return await updateTaskStats(uid);
   }
 
   Future<void> updateTask(TaskModel model) =>
       _col().doc(model.id).update(model.toMap());
 
-  Future<Map<String, dynamic>> _updateTaskStats(String uid) async {
+  Future<Map<String, dynamic>> updateTaskStats(String uid) async {
     final allTasks = await _col().get();
     final completed = await _col().where("completed", isEqualTo: true).get();
 

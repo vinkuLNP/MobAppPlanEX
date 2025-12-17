@@ -171,7 +171,7 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
                         },
                 ),
               ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 50),
           ],
         ),
       ),

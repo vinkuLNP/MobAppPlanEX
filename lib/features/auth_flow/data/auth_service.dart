@@ -3,13 +3,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:plan_ex_app/core/utils/app_logger.dart';
+import 'package:plan_ex_app/features/auth_flow/data/enum.dart';
 import 'package:plan_ex_app/features/dashboard_flow/data/models/user_model.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class AuthService {
   final _auth = FirebaseAuth.instance;
   final usersRef = FirebaseFirestore.instance.collection('users');
-  Future<String?> signUp({
+
+  Future<SignUpStatus> signUp({
     required String fullName,
     required String email,
     required String password,
@@ -19,32 +21,54 @@ class AuthService {
         email: email.trim(),
         password: password,
       );
+
       final user = cred.user;
-      if (user == null) return "Something went wrong";
+      if (user == null) return SignUpStatus.failure;
 
       await user.updateDisplayName(fullName);
-      await user.sendEmailVerification();
-      await createUserDocument(user, fullName: fullName);
 
-      return null;
-    } on FirebaseAuthException catch (e) {
-      if (e.code == "email-already-in-use") {
-        final existingUser = _auth.currentUser;
-
-        if (existingUser != null) {
-          if (!existingUser.emailVerified) {
-            await existingUser.sendEmailVerification();
-            return "unverified-existing";
-          }
-          return "already-verified";
-        }
-
-        return "already-verified";
+      if (!user.emailVerified) {
+        await user.sendEmailVerification();
       }
 
-      return e.message;
+      await createUserDocument(user, fullName: fullName);
+
+      return SignUpStatus.success;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'email-already-in-use') {
+        try {
+          final loginCred = await _auth.signInWithEmailAndPassword(
+            email: email,
+            password: password,
+          );
+
+          final existingUser = loginCred.user;
+
+          if (existingUser != null && !existingUser.emailVerified) {
+            await existingUser.sendEmailVerification();
+            return SignUpStatus.unverifiedExisting;
+          }
+
+          return SignUpStatus.alreadyVerified;
+        } on FirebaseAuthException catch (loginError) {
+          if (loginError.code == 'wrong-password' ||
+              loginError.code == 'invalid-credential') {
+            await _auth.sendPasswordResetEmail(email: email);
+
+            return SignUpStatus.resetPasswordSent;
+          }
+
+          return SignUpStatus.failure;
+        }
+      }
+
+      if (e.code == 'too-many-requests') {
+        return SignUpStatus.tooManyRequests;
+      }
+
+      return SignUpStatus.failure;
     } catch (_) {
-      return "Something went wrong";
+      return SignUpStatus.failure;
     }
   }
 
@@ -59,7 +83,6 @@ class AuthService {
       );
 
       if (!cred.user!.emailVerified) {
-        await _auth.signOut();
         return "unverified";
       }
 
