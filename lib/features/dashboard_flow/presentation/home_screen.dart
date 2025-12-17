@@ -51,7 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
         await accountProvider.loadAccountBasicInfo();
         notesProvider.listenNotes();
         tasksProvider.listen();
-
+        if (mounted)  await accountProvider.enforceNotificationPermissionOnHome(context: context);
         await accountProvider.bootstrapNotifications(tasksProvider.tasks);
       }
     });

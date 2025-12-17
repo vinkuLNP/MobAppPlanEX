@@ -29,7 +29,6 @@ Widget svgAsset({
   image,
   width: width,
   height: height,
-  // colorFilter: ColorFilter.mode(color!, BlendMode.srcIn),
   fit: boxFit,
 );
 

@@ -8,6 +8,7 @@ import 'package:plan_ex_app/core/constants/app_text_style.dart';
 import 'package:plan_ex_app/core/extensions/context_extensions.dart';
 import 'package:plan_ex_app/core/routes/app_routes.dart';
 import 'package:plan_ex_app/core/routes/auth_flow_navigation.dart';
+import 'package:plan_ex_app/features/auth_flow/data/enum.dart';
 import 'package:plan_ex_app/features/auth_flow/providers/auth_provider.dart';
 import 'package:plan_ex_app/features/auth_flow/widgets/app_header.dart';
 import 'package:plan_ex_app/features/dashboard_flow/provider/account_provider.dart';
@@ -111,7 +112,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                 ),
 
                                 context.gap24,
-
                                 AppButton(
                                   onTap: () async {
                                     final valid =
@@ -123,30 +123,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                       return;
                                     }
 
-                                    final result = await provider.signUp();
+                                    final status = await provider.signUp();
 
-                                    if (result == null && context.mounted) {
+                                    if (!context.mounted) return;
+
+                                    if (status == SignUpStatus.success ||
+                                        status ==
+                                            SignUpStatus.unverifiedExisting ||
+                                        status ==
+                                            SignUpStatus.tooManyRequests) {
                                       Navigator.pushReplacementNamed(
                                         context,
                                         AppRoutes.verifyEmail,
                                       );
-                                    } else if (result ==
-                                        "unverified-existing") {
-                                      if (context.mounted) {
-                                        Navigator.pushReplacementNamed(
-                                          context,
-                                          AppRoutes.verifyEmail,
-                                        );
-                                      }
-                                    }
-                                    else if (result ==
-                                        "already-verified") {
-                                      if (context.mounted) {
-                                        Navigator.pushReplacementNamed(
-                                          context,
-                                          AppRoutes.verifyEmail,
-                                        );
-                                      }
                                     }
                                   },
                                   text: "Sign Up",
@@ -226,9 +215,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         .googleSignIn();
 
                                     if (status == "success") {
-                                      await accountProvider
-                                          .loadAccountBasicInfo();
-                                      await accountProvider.loadSettingsData();
+
+                                      accountProvider.startUserListener();
                                       if (context.mounted) {
                                         Navigator.pushReplacementNamed(
                                           context,

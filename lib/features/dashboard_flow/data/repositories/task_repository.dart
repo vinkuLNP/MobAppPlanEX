@@ -11,6 +11,7 @@ class TasksRepository {
   final AccountRepository accountRepository;
   TasksRepository(this.accountRepository);
   Stream<List<TaskEntity>> getTasks() => _service.watchTasks();
+  final uid = FirebaseAuth.instance.currentUser!.uid;
 
   Future<void> add(TaskEntity t) async {
     final stats = await _service.addTask(
@@ -28,7 +29,6 @@ class TasksRepository {
         recurrence: t.recurrence,
       ),
     );
-    final uid = FirebaseAuth.instance.currentUser!.uid;
 
     getTaskReminder(t);
 
@@ -56,11 +56,12 @@ class TasksRepository {
 
   Future<void> delete(String id) async {
     final stats = await _service.deleteTask(id);
-    final uid = FirebaseAuth.instance.currentUser!.uid;
     await accountRepository.updateStats(uid, stats);
   }
 
   Future<void> toggleComplete(TaskEntity task, bool value) async {
+    final uid = FirebaseAuth.instance.currentUser!.uid;
+
     await _service.toggleComplete(task.id, value);
 
     if (value == true && task.recurrence != null) {
@@ -83,6 +84,9 @@ class TasksRepository {
         );
       }
     }
+
+    final stats = await _service.updateTaskStats(uid);
+    await accountRepository.updateStats(uid, stats);
   }
 
   DateTime? _getNextRecurringDate(TaskEntity t) {
@@ -107,8 +111,6 @@ class TasksRepository {
   }
 
   Future<void> getTaskReminder(TaskEntity t) async {
-    final uid = FirebaseAuth.instance.currentUser!.uid;
-
     if (t.dueDate != null) {
       final user = await accountRepository.getUser(uid);
 

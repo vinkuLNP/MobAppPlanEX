@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:plan_ex_app/core/notifications/notification_streams.dart';
 import 'package:plan_ex_app/core/routes/app_routes.dart';
 import 'package:plan_ex_app/main.dart';
@@ -68,36 +69,37 @@ class NotificationService {
     final granted = await androidPlugin.requestExactAlarmsPermission();
     return granted ?? false;
   }
+static Future<bool> requestPermissionIfNeeded() async {
+  if (Platform.isAndroid) {
+    final status = await Permission.notification.status;
 
-  static Future<bool> requestPermissionIfNeeded() async {
-    bool granted = true;
+    if (status.isGranted) return true;
 
-    final iosPlugin = _notifications
-        .resolvePlatformSpecificImplementation<
-          IOSFlutterLocalNotificationsPlugin
-        >();
-
-    if (iosPlugin != null) {
-      final result = await iosPlugin.requestPermissions(
-        alert: true,
-        badge: true,
-        sound: true,
-      );
-      granted = result ?? false;
+    if (status.isDenied) {
+      final result = await Permission.notification.request();
+      return result.isGranted;
     }
 
-    final androidPlugin = _notifications
-        .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin
-        >();
-
-    if (androidPlugin != null) {
-      final result = await androidPlugin.requestNotificationsPermission();
-      granted = result ?? false;
+    if (status.isPermanentlyDenied) {
+      return false; 
     }
-
-    return granted;
   }
+
+  final iosPlugin = _notifications
+      .resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin>();
+
+  if (iosPlugin != null) {
+    final result = await iosPlugin.requestPermissions(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+    return result ?? false;
+  }
+
+  return true;
+}
 
   static Future<void> scheduleDailySummaryAt(
     TimeOfDay time,
@@ -226,5 +228,28 @@ class NotificationService {
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
     );
+  }
+
+  static Future<bool> hasNotificationPermission() async {
+    final iosPlugin = _notifications
+        .resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin
+        >();
+
+    if (iosPlugin != null) {
+      final settings = await iosPlugin.checkPermissions();
+      return settings?.isEnabled ?? false;
+    }
+
+    final androidPlugin = _notifications
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+
+    if (androidPlugin != null) {
+      return await androidPlugin.areNotificationsEnabled() ?? false;
+    }
+
+    return true;
   }
 }
