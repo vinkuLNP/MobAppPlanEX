@@ -87,7 +87,7 @@ class _AccountScreenState extends State<AccountScreen> {
                           ),
                           const SizedBox(height: 20),
                           AppButton(
-                            text: 'Save Changes',
+                            text: 'Save',
                             onTap: () => provider.saveName(context),
                           ),
                         ],
@@ -118,7 +118,7 @@ class _AccountScreenState extends State<AccountScreen> {
                           const SizedBox(height: 12),
 
                           AppButton(
-                            text: 'Delete Account Forever',
+                            text: 'Delete Account',
                             onTap: () => _confirmDelete(provider, context),
                           ),
                         ],

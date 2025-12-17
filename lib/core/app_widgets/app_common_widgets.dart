@@ -6,6 +6,7 @@ import 'package:plan_ex_app/core/app_widgets/universal_document_viewer.dart';
 import 'package:plan_ex_app/core/constants/app_colors.dart';
 import 'package:plan_ex_app/core/utils/app_logger.dart';
 import 'package:plan_ex_app/core/utils/colors_utils.dart';
+import 'package:plan_ex_app/features/auth_flow/providers/auth_provider.dart';
 import 'package:plan_ex_app/features/dashboard_flow/presentation/widgets/image_preview_screen.dart';
 import 'package:plan_ex_app/features/dashboard_flow/provider/account_provider.dart';
 import 'package:provider/provider.dart';
@@ -217,3 +218,31 @@ Widget buildCreationDateWidget(
     ],
   );
 }
+
+Widget authErrorTextWidget({
+  required BuildContext context,
+  required AuthUserProvider provider,
+}) => Container(
+  width: double.infinity,
+  margin: EdgeInsets.only(bottom: 8),
+  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+  decoration: BoxDecoration(
+    color: Colors.red.withValues(alpha: 0.12),
+    borderRadius: BorderRadius.circular(12),
+    border: Border.all(color: Colors.red.withValues(alpha: 0.6)),
+  ),
+  child: Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const Icon(Icons.error_outline, color: Colors.red, size: 20),
+      const SizedBox(width: 10),
+      Expanded(
+        child: textWidget(
+          text: provider.error!,
+          color: Colors.red,
+          context: context,
+        ),
+      ),
+    ],
+  ),
+);
