@@ -41,7 +41,10 @@ class EmailVerificationScreen extends StatelessWidget {
                       child: Column(
                         mainAxisSize: MainAxisSize.max,
                         children: [
-                          const AppHeader(title: 'Verify your email'),
+                          AppHeader(
+                            title: 'Verify your email',
+                            authUserProvider: auth,
+                          ),
                           Align(
                             alignment: Alignment.center,
                             child: textWidget(
@@ -51,7 +54,7 @@ class EmailVerificationScreen extends StatelessWidget {
                                   'A verification link was sent to ${auth.signUpEmailCtrl.text.trim()}.',
                             ),
                           ),
-                          context.gap40,
+                          context.gap20,
                           auth.isLoading
                               ? const CircularProgressIndicator()
                               : AppButton(
@@ -90,7 +93,7 @@ class EmailVerificationScreen extends StatelessWidget {
                                   },
                                   text: 'Resend verification email',
                                 ),
-                          context.gap40,
+                          context.gap20,
                           AppButton(
                             onTap: () async {
                               final authProvider = context
@@ -99,7 +102,7 @@ class EmailVerificationScreen extends StatelessWidget {
                                   .checkEmailVerified();
 
                               if (verified) {
-                                  accountProvider.startUserListener();
+                                accountProvider.startUserListener();
                                 if (context.mounted) {
                                   Navigator.pushReplacementNamed(
                                     context,
@@ -127,7 +130,7 @@ class EmailVerificationScreen extends StatelessWidget {
                             fontSize: 14,
                             textColor: AppColors.backgroundColor,
                           ),
-                          context.gap20,
+                          context.gap10,
                           TextButton(
                             onPressed: () =>
                                 authFlowNavigate(context, AppRoutes.signup),

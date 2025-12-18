@@ -320,6 +320,14 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
     children: [
       Row(
         children: [
+          isViewOnly
+              ? textWidget(context: context, text: 'Due Date')
+              : TextButton(
+                  onPressed: _pickDate,
+                  child: textWidget(context: context, text: 'Pick Due Date'),
+                ),
+          const Spacer(),
+
           textWidget(
             context: context,
 
@@ -327,13 +335,6 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
                 ? 'No due date'
                 : '${dueDate!.year}-${dueDate!.month}-${dueDate!.day}',
           ),
-          const Spacer(),
-          isViewOnly
-              ? textWidget(context: context, text: 'Due Date')
-              : TextButton(
-                  onPressed: _pickDate,
-                  child: textWidget(context: context, text: 'Pick Due Date'),
-                ),
         ],
       ),
       const SizedBox(height: 8),
@@ -354,10 +355,10 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
               fontWeight: FontWeight.w500,
             ),
           ),
-          SizedBox(width: 5),
+          // SizedBox(width: 5),
 
           // ProBadge(),
-          const Spacer(),
+          // const Spacer(),
         ],
       ),
       if (recurringEnabled)
@@ -380,20 +381,36 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
               ),
             ),
             const SizedBox(width: 8),
-            DropdownButton<RecurrenceUnit>(
-              value: recurrenceUnit,
-              iconDisabledColor: Colors.grey,
-              items: RecurrenceUnit.values
-                  .map(
-                    (u) => DropdownMenuItem(
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.grey[850],
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey[700]!),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<RecurrenceUnit>(
+                  value: recurrenceUnit,
+                  dropdownColor: Colors.grey[900],
+                  icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  items: RecurrenceUnit.values.map((u) {
+                    return DropdownMenuItem(
                       value: u,
-                      child: textWidget(context: context, text: u.name),
-                    ),
-                  )
-                  .toList(),
-              onChanged: isViewOnly
-                  ? null
-                  : (v) => setState(() => recurrenceUnit = v!),
+                      child: Text(
+                        u.name,
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    );
+                  }).toList(),
+                  onChanged: isViewOnly
+                      ? null
+                      : (v) => setState(() => recurrenceUnit = v!),
+                ),
+              ),
             ),
           ],
         ),

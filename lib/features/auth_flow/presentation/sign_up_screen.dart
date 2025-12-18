@@ -63,14 +63,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const AppHeader(title: "Create your account"),
-
-                                if (provider.error != null)
-                                  textWidget(
-                                    context: context,
-                                    text: provider.error!,
-                                    color: Colors.red,
-                                  ),
+                                AppHeader(
+                                  title: "Create your account",
+                                  authUserProvider: provider,
+                                ),
 
                                 AppInputField(
                                   label: "Full Name",
@@ -168,7 +164,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                             color: AppColors.authThemeColor,
                                             textDecoration:
                                                 TextDecoration.underline,
-                                            fontWeight: FontWeight.w600,
                                           ),
                                         ),
                                       ],
@@ -215,7 +210,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                         .googleSignIn();
 
                                     if (status == "success") {
-
                                       accountProvider.startUserListener();
                                       if (context.mounted) {
                                         Navigator.pushReplacementNamed(
@@ -263,7 +257,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   isBorder: true,
                                 ),
 
-                                const SizedBox(height: 16),
+                                const SizedBox(height: 40),
                                 /*    if (Platform.isIOS)
                                   AppButton(
                                     text: "Sign Up with Apple",

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_button.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_text_widget.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_widgets.dart';
+import 'package:plan_ex_app/core/constants/app_colors.dart';
 import 'package:plan_ex_app/core/constants/app_text_style.dart';
 import 'package:plan_ex_app/core/utils/colors_utils.dart';
 import 'package:plan_ex_app/features/dashboard_flow/presentation/widgets/custom_appbar.dart';
@@ -80,16 +81,23 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
             const SizedBox(height: 24),
 
             uploading
-                ? const LinearProgressIndicator(minHeight: 4)
+                ? Column(
+                    children: [
+                      LinearProgressIndicator(
+                        minHeight: 4,
+                        color: AppColors.authThemeColor,
+                      ),
+                      const SizedBox(height: 10),
+                    ],
+                  )
                 : const SizedBox.shrink(),
-            const SizedBox(height: 16),
             if (!widget.isViewOnly)
               AppButton(
                 isLoading: savingNote,
                 text: isEditing ? "Update Note" : "Create Note",
                 onTap: (uploading || savingNote) ? null : _saveNote,
               ),
-            SizedBox(height: 20),
+            SizedBox(height: 50),
           ],
         ),
       ),

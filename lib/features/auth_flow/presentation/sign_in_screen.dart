@@ -55,13 +55,12 @@ class _SignInScreenState extends State<SignInScreen> {
         }
       });
     });
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-    if (mounted) {
-      final provider = context.read<AuthUserProvider>();
-      provider.clearError();
-    }
-  });
-
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final provider = context.read<AuthUserProvider>();
+        provider.clearError();
+      }
+    });
   }
 
   @override
@@ -77,7 +76,6 @@ class _SignInScreenState extends State<SignInScreen> {
       canPop: false,
       child: Consumer<AuthUserProvider>(
         builder: (context, provider, _) {
-   
           final accountProvider = context.read<AccountProvider>();
           return LayoutBuilder(
             builder: (context, constraints) {
@@ -101,26 +99,15 @@ class _SignInScreenState extends State<SignInScreen> {
                               child: Column(
                                 mainAxisSize: MainAxisSize.max,
                                 children: [
-                                  const AppHeader(
+                                  AppHeader(
                                     title:
                                         "Your Personal Productivity Companion",
-                                    onTap: false,
+                                    authUserProvider: provider,
                                   ),
                                   Expanded(
                                     child: Column(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
-                                        if (provider.error != null)
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                              bottom: 16,
-                                            ),
-                                            child: textWidget(
-                                              context: context,
-                                              text: provider.error!,
-                                              color: AppColors.errorColor,
-                                            ),
-                                          ),
                                         AppInputField(
                                           label: "Email",
                                           controller: provider.signInEmailCtrl,
@@ -143,10 +130,7 @@ class _SignInScreenState extends State<SignInScreen> {
                                                 value.isEmpty) {
                                               return "Please enter email";
                                             }
-
-                                            return provider.validateEmail(
-                                              value,
-                                            );
+                                            return null;
                                           },
                                           onTap: () {
                                             setState(() {
@@ -187,9 +171,6 @@ class _SignInScreenState extends State<SignInScreen> {
                                                 value.isEmpty) {
                                               return "Please enter password";
                                             }
-                                            if (value.length < 6) {
-                                              return "Password must be at least 6 characters";
-                                            }
 
                                             return provider
                                                 .validateSignINPassword(value);
@@ -223,7 +204,7 @@ class _SignInScreenState extends State<SignInScreen> {
                                             },
                                             child: textWidget(
                                               context: context,
-                                              text: "Forgot password?",
+                                              text: "Forgot Password?",
                                               fontSize: 14,
                                               color: AppColors.authThemeColor,
                                               textDecorationColor:
@@ -235,7 +216,7 @@ class _SignInScreenState extends State<SignInScreen> {
                                         ),
                                         const SizedBox(height: 12),
                                         AppButton(
-                                          text: "Login",
+                                          text: "Sign In",
                                           onTap: () async {
                                             setState(() {
                                               isSubmitted = true;
@@ -266,7 +247,8 @@ class _SignInScreenState extends State<SignInScreen> {
                                                 .signIn();
                                             if (status == "verified") {
                                               if (context.mounted) {
-                                                 accountProvider.startUserListener();
+                                                accountProvider
+                                                    .startUserListener();
                                                 Navigator.pushReplacementNamed(
                                                   context,
                                                   AppRoutes.home,
@@ -314,7 +296,6 @@ class _SignInScreenState extends State<SignInScreen> {
                                                     textDecoration:
                                                         TextDecoration
                                                             .underline,
-                                                    fontWeight: FontWeight.w600,
                                                   ),
                                                 ),
                                               ],
@@ -358,12 +339,13 @@ class _SignInScreenState extends State<SignInScreen> {
                                           ),
                                         ),
                                         AppButton(
-                                          text: "Login with Google",
+                                          text: "Sign In with Google",
                                           onTap: () async {
                                             final status = await provider
                                                 .googleSignIn();
                                             if (status == "success") {
-                                             accountProvider.startUserListener();
+                                              accountProvider
+                                                  .startUserListener();
                                               if (context.mounted) {
                                                 Navigator.pushReplacementNamed(
                                                   context,
@@ -411,10 +393,11 @@ class _SignInScreenState extends State<SignInScreen> {
                                           textColor: AppColors.black,
                                           isBorder: true,
                                         ),
-                                        const SizedBox(height: 16),
-                                    /*    if (Platform.isIOS)
+                                        const SizedBox(height: 40),
+
+                                        /*    if (Platform.isIOS)
                                           AppButton(
-                                            text: "Login with Apple",
+                                            text: "Sign In with Apple",
                                             onTap: () async {
                                               final status = await provider
                                                   .appleSignIn();
@@ -477,7 +460,8 @@ class _SignInScreenState extends State<SignInScreen> {
                                             textColor: AppColors.black,
                                             isBorder: true,
                                           ),
-                                    */  ],
+                                    */
+                                      ],
                                     ),
                                   ),
                                 ],

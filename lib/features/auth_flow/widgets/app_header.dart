@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_text_widget.dart';
+import 'package:plan_ex_app/core/app_widgets/app_common_widgets.dart';
 import 'package:plan_ex_app/core/constants/app_assets.dart';
 import 'package:plan_ex_app/core/constants/app_colors.dart';
 import 'package:plan_ex_app/core/extensions/context_extensions.dart';
+import 'package:plan_ex_app/features/auth_flow/providers/auth_provider.dart';
 
 class AppHeader extends StatelessWidget {
   final String title;
-  final bool centered;
-  final bool onTap;
+  final AuthUserProvider authUserProvider;
   const AppHeader({
     super.key,
     required this.title,
-    this.centered = true,
-    this.onTap = true,
+    required this.authUserProvider,
   });
 
   @override
@@ -21,7 +21,7 @@ class AppHeader extends StatelessWidget {
       children: [
         context.gap40,
         Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
@@ -44,7 +44,9 @@ class AppHeader extends StatelessWidget {
         ),
         context.gap20,
         textWidget(context: context, text: title),
-        context.gap40,
+        context.gap20,
+        if (authUserProvider.error != null)
+          authErrorTextWidget(context: context, provider: authUserProvider),
       ],
     );
   }

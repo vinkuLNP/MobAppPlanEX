@@ -133,13 +133,48 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ],
                   ),
                 ),
-             const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
                 _card(
                   child: ListTile(
+                    dense: true,
+                    contentPadding: EdgeInsets.zero,
                     leading: const Icon(Icons.logout, color: Colors.red),
                     title: textWidget(context: context, text: 'Logout'),
-                    onTap: () => provider.logout(context),
+                    onTap: () async {
+                      final shouldLogout = await showDialog<bool>(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: textWidget(
+                            context: context,
+                            text: 'Confirm Logout',
+                          ),
+                          content: textWidget(
+                            context: context,
+                            text: 'Are you sure you want to logout?',
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(false),
+                              child: textWidget(
+                                context: context,
+                                text: 'Cancel',
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: () => Navigator.of(context).pop(true),
+                              child: textWidget(
+                                context: context,
+                                text: 'Logout',
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (shouldLogout == true) {
+                        if (context.mounted) provider.logout(context);
+                      }
+                    },
                   ),
                 ),
               ],
@@ -192,17 +227,3 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 }
-
-    /* const SizedBox(height: 20),
-                _card(
-                  child: ProSwitchTile(
-                    title: 'Auto Save',
-                    description:
-                        'Automatically save changes as you type',
-                    value: user.autoSave,
-                    isPremium: provider.isPremium,
-                    onChanged: (v) => provider.toggleSetting('autoSave', v,context),
-                    onUpgradeTap: () {},
-                  ),
-                ),*/
-               
