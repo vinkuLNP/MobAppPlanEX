@@ -57,7 +57,7 @@ class AccountProvider extends ChangeNotifier {
       emailController.text = data.email;
 
       if (user?.photoUrl != null && user!.photoUrl!.isNotEmpty) {
-        avatarUrl = await repository.getFreshAvatarUrl(user!.photoUrl!);
+        avatarUrl = await getAvatarUrl(user!.photoUrl!);
       } else {
         avatarUrl = null;
       }
@@ -86,7 +86,8 @@ class AccountProvider extends ChangeNotifier {
     nameController.text = user?.fullName ?? '';
     emailController.text = user?.email ?? '';
     if (user?.photoUrl != null && user!.photoUrl!.isNotEmpty) {
-      avatarUrl = await repository.getFreshAvatarUrl(user!.photoUrl!);
+      // avatarUrl = await getAvatarUrl();
+      avatarUrl = await getAvatarUrl(user!.photoUrl!);
     }
 
     initialAccountLoaded = true;
@@ -257,16 +258,11 @@ class AccountProvider extends ChangeNotifier {
     }
   }
 
-  Future<String?> getAvatarUrl() async {
-    if (user?.photoUrl == null || user!.photoUrl!.isEmpty) return null;
-
-    final photo = user!.photoUrl!;
-
-    if (photo.startsWith('http')) {
-      return photo;
+  Future<String?> getAvatarUrl(String photoUrl) async {
+    if (photoUrl.startsWith('http')) {
+      return photoUrl;
     }
-
-    return await repository.getFreshAvatarUrl(photo);
+    return await repository.getFreshAvatarUrl(photoUrl);
   }
 
   Future<void> toggleSetting(
