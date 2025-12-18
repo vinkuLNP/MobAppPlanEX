@@ -38,7 +38,7 @@ class AppInputField extends StatelessWidget {
     this.autovalidateMode,
     this.maxLines,
     super.key,
-    this.onFieldSubmitted
+    this.onFieldSubmitted,
   });
 
   @override
@@ -54,7 +54,7 @@ class AppInputField extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         TextFormField(
-          focusNode:focusNode ,
+          focusNode: focusNode,
           onTap: onTap,
           onFieldSubmitted: onFieldSubmitted,
           autovalidateMode: autovalidateMode,
@@ -153,10 +153,12 @@ class AppPasswordField extends StatelessWidget {
           focusNode: focusNode,
           onFieldSubmitted: onFieldSubmitted,
           onTap: onTap,
+
           autovalidateMode: autovalidateMode,
           onChanged: onChanged,
           style: appTextStyle(context: context, fontSize: 12),
           decoration: InputDecoration(
+            filled: false,
             hintText: '******',
             hintStyle: appTextStyle(
               context: context,
@@ -184,7 +186,9 @@ class AppPasswordField extends StatelessWidget {
             suffixIcon: IconButton(
               icon: Icon(
                 obscure ? Icons.visibility_off : Icons.visibility,
-                color:Theme.of(context).brightness == Brightness.dark ? Colors.white.withValues(alpha: 0.6): Colors.black.withValues(alpha: 0.6),
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white.withValues(alpha: 0.6)
+                    : Colors.black.withValues(alpha: 0.6),
               ),
               onPressed: onToggle,
             ),

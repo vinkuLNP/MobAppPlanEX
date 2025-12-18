@@ -25,9 +25,10 @@ class TasksScreen extends StatelessWidget {
         appBar: CustomAppBar(
           title: "Tasks",
           bottom: TabBar(
+            labelPadding: const EdgeInsets.symmetric(horizontal: 8),
             indicatorColor: AppColors.authThemeColor,
             labelStyle: appTextStyle(
-              fontSize: 15,
+              fontSize: 13,
               fontWeight: FontWeight.w600,
               context: context,
             ),
@@ -112,36 +113,81 @@ class TasksScreen extends StatelessWidget {
   }
 
   Widget _statsRow(TasksProvider prov, BuildContext context) {
+    final isSmallWidth = MediaQuery.of(context).size.width < 360;
+
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 7),
-      child: IntrinsicHeight(
-        child: Row(
-          children: [
-            _statCard(
-              "Completion",
-              "${prov.completionRate.toStringAsFixed(1)}%",
-              AppColors.authThemeColor,
-              context,
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: isSmallWidth
+          ? Column(
+              children: [
+                Row(
+                  children: [
+                    _statCard(
+                      "Done",
+                      "${prov.completionRate.toStringAsFixed(1)}%",
+                      AppColors.authThemeColor,
+                      context,
+                    ),
+                    const SizedBox(width: 8),
+                    _statCard(
+                      "Week",
+                      prov.thisWeek.toString(),
+                      Colors.blue,
+                      context,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    _statCard(
+                      "Month",
+                      prov.completedThisMonth.toString(),
+                      Colors.teal,
+                      context,
+                    ),
+                    const SizedBox(width: 8),
+                    _statCard(
+                      "Overdue",
+                      prov.overdue.toString(),
+                      Colors.redAccent,
+                      context,
+                    ),
+                  ],
+                ),
+              ],
+            )
+          : Row(
+              children: [
+                _statCard(
+                  "Done %",
+                  "${prov.completionRate.toStringAsFixed(1)}%",
+                  AppColors.authThemeColor,
+                  context,
+                ),
+                const SizedBox(width: 10),
+                _statCard(
+                  "Week",
+                  prov.thisWeek.toString(),
+                  Colors.blue,
+                  context,
+                ),
+                const SizedBox(width: 10),
+                _statCard(
+                  "Month",
+                  prov.completedThisMonth.toString(),
+                  Colors.teal,
+                  context,
+                ),
+                const SizedBox(width: 10),
+                _statCard(
+                  "Overdue",
+                  prov.overdue.toString(),
+                  Colors.redAccent,
+                  context,
+                ),
+              ],
             ),
-            const SizedBox(width: 10),
-            _statCard("Week", prov.thisWeek.toString(), Colors.blue, context),
-            const SizedBox(width: 10),
-            _statCard(
-              "Month",
-              prov.completedThisMonth.toString(),
-              Colors.teal,
-              context,
-            ),
-            const SizedBox(width: 10),
-            _statCard(
-              "Overdue",
-              prov.overdue.toString(),
-              Colors.redAccent,
-              context,
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -151,28 +197,32 @@ class TasksScreen extends StatelessWidget {
     Color color,
     BuildContext context,
   ) {
+    final isSmallWidth = MediaQuery.of(context).size.width < 360;
+
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 6),
+        padding: EdgeInsets.symmetric(
+          vertical: isSmallWidth ? 10 : 14,
+          horizontal: 6,
+        ),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           color: Theme.of(context).cardColor,
         ),
         child: Column(
-          mainAxisSize: MainAxisSize.max,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             textWidget(
               context: context,
               text: title,
-              fontSize: 12,
+              fontSize: isSmallWidth ? 11 : 12,
               color: Theme.of(context).hintColor,
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 4),
             textWidget(
               context: context,
               text: value,
-              fontSize: 18,
+              fontSize: isSmallWidth ? 16 : 18,
               fontWeight: FontWeight.bold,
               color: color,
             ),

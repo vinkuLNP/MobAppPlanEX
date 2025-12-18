@@ -19,21 +19,20 @@ extension AppContextExtensions on BuildContext {
 
   // PADDING & SPACING
   EdgeInsets get padding => const EdgeInsets.all(16);
-  EdgeInsets get horizontalPadding => const EdgeInsets.symmetric(horizontal: 16);
+  EdgeInsets get horizontalPadding =>
+      const EdgeInsets.symmetric(horizontal: 16);
   EdgeInsets get verticalPadding => const EdgeInsets.symmetric(vertical: 16);
-  EdgeInsets get pagePadding => const EdgeInsets.symmetric(horizontal: 20, vertical: 24);
+  EdgeInsets get pagePadding =>
+      const EdgeInsets.symmetric(horizontal: 20, vertical: 24);
   EdgeInsets get smallPadding => const EdgeInsets.all(8);
   EdgeInsets get largePadding => const EdgeInsets.all(24);
 
   // Shortcut for common spacing widgets
   SizedBox get gap8 => const SizedBox(height: 8);
+  SizedBox get gap10 => const SizedBox(height: 10);
   SizedBox get gap16 => const SizedBox(height: 16);
   SizedBox get gap20 => const SizedBox(height: 20);
   SizedBox get gap24 => const SizedBox(height: 24);
   SizedBox get gap40 => const SizedBox(height: 40);
   SizedBox get gap80 => const SizedBox(height: 80);
-
-
-
-
 }

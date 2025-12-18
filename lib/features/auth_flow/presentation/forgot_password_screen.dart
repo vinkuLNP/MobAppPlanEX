@@ -21,17 +21,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final emailCtrl = TextEditingController();
   final formKey = GlobalKey<FormState>();
 
- @override
+  @override
   void initState() {
     super.initState();
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-    if (mounted) {
-      final provider = context.read<AuthUserProvider>();
-      provider.clearError();
-    }
-  });
-
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final provider = context.read<AuthUserProvider>();
+        provider.clearError();
+      }
+    });
   }
+
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthUserProvider>();
@@ -48,13 +48,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const AppHeader(title: 'Forgot password'),
-                  if (auth.error != null)
-                    textWidget(
-                      text: auth.error!,
-                      color: Colors.red,
-                      context: context,
-                    ),
+                  AppHeader(title: 'Forgot password', authUserProvider: auth),
                   AppInputField(
                     label: "Email",
                     controller: auth.signInEmailCtrl,
@@ -91,7 +85,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       ),
                     ),
 
-                  context.gap40,
+                  context.gap20,
                   auth.isLoading
                       ? const CircularProgressIndicator()
                       : AppButton(
@@ -123,28 +117,25 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                       ScaffoldMessenger.of(
                                         context,
                                       ).showSnackBar(
-                                         SnackBar(
-                                          content: Text(
-                                          auth.error.toString(),
-                                          ),
+                                        SnackBar(
+                                          content: Text(auth.error.toString()),
                                           behavior: SnackBarBehavior.floating,
                                         ),
                                       );
                                     }
                                   }
                                 },
-                          text:auth.cooldown > 0
-            ? "Resend in ${auth.cooldown}s"
-            : 'Send reset link',
+                          text: auth.cooldown > 0
+                              ? "Resend in ${auth.cooldown}s"
+                              : 'Send Reset Link',
                           fontSize: 14,
                           textColor: AppColors.backgroundColor,
                         ),
-                  context.gap20,
+                  context.gap10,
                   TextButton(
-                    onPressed: () =>
-                       authFlowNavigate(context, AppRoutes.login),
+                    onPressed: () => authFlowNavigate(context, AppRoutes.login),
                     child: textWidget(
-                      text: 'Back to login',
+                      text: 'Back to Sign In',
                       textDecoration: TextDecoration.underline,
                       fontWeight: FontWeight.w600,
                       textDecorationColor: AppColors.authThemeColor,
