@@ -60,45 +60,49 @@ class _NoteEditorScreenState extends State<NoteEditorScreen> {
             ? "Edit Note"
             : "Create Note",
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            commonSectionCard(context: context, child: _titleField()),
-            const SizedBox(height: 16),
-            commonSectionCard(
-              context: context,
-              child: _colorCategoryRow(provider),
-            ),
-            const SizedBox(height: 16),
-            commonSectionCard(context: context, child: _contentField()),
-            const SizedBox(height: 16),
-            commonSectionCard(
-              context: context,
-              child: _attachmentsSection(provider),
-            ),
-            const SizedBox(height: 24),
-
-            uploading
-                ? Column(
-                    children: [
-                      LinearProgressIndicator(
-                        minHeight: 4,
-                        color: AppColors.authThemeColor,
-                      ),
-                      const SizedBox(height: 10),
-                    ],
-                  )
-                : const SizedBox.shrink(),
-            if (!widget.isViewOnly)
-              AppButton(
-                isLoading: savingNote,
-                text: isEditing ? "Update Note" : "Create Note",
-                onTap: (uploading || savingNote) ? null : _saveNote,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              commonSectionCard(context: context, child: _titleField()),
+              const SizedBox(height: 16),
+              commonSectionCard(
+                context: context,
+                child: _colorCategoryRow(provider),
               ),
-            SizedBox(height: 50),
-          ],
+              const SizedBox(height: 16),
+              commonSectionCard(context: context, child: _contentField()),
+              const SizedBox(height: 16),
+              commonSectionCard(
+                context: context,
+                child: _attachmentsSection(provider),
+              ),
+              const SizedBox(height: 24),
+
+              uploading
+                  ? Column(
+                      children: [
+                        LinearProgressIndicator(
+                          minHeight: 4,
+                          color: AppColors.authThemeColor,
+                        ),
+                        const SizedBox(height: 10),
+                      ],
+                    )
+                  : const SizedBox.shrink(),
+              if (!widget.isViewOnly)
+                AppButton(
+                  isLoading: savingNote,
+                  buttonBackgroundColor: (uploading || savingNote)
+                      ? AppColors.authThemeColor.withValues(alpha: 0.3)
+                      : AppColors.authThemeColor,
+                  text: isEditing ? "Update Note" : "Create Note",
+                  onTap: (uploading || savingNote) ? null : _saveNote,
+                ),
+            ],
+          ),
         ),
       ),
     );

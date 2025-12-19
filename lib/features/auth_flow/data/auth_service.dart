@@ -123,6 +123,12 @@ class AuthService {
 
   Future<String?> resetPassword(String email) async {
     try {
+      final e = email.trim();
+      final snap = await usersRef.where('email', isEqualTo: e).limit(1).get();
+
+      if (snap.docs.isEmpty) {
+        return "This email is not registered with LNP PlanEX. Please register first and create an account.";
+      }
       await _auth.sendPasswordResetEmail(email: email.trim());
       return null;
     } on FirebaseAuthException catch (e) {
