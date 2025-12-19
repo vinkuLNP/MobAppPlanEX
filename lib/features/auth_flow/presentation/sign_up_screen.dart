@@ -46,13 +46,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
               resizeToAvoidBottomInset: true,
               body: Stack(
                 children: [
-                  SingleChildScrollView(
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxWidth: 440,
-                        minHeight: constraints.maxHeight,
-                      ),
-                      child: IntrinsicHeight(
+                  SafeArea(
+                    child: SingleChildScrollView(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(maxWidth: 440),
                         child: Padding(
                           padding: context.pagePadding,
                           child: Form(
@@ -256,70 +253,6 @@ class _SignUpScreenState extends State<SignUpScreen> {
                                   textColor: AppColors.black,
                                   isBorder: true,
                                 ),
-
-                                const SizedBox(height: 40),
-                                /*    if (Platform.isIOS)
-                                  AppButton(
-                                    text: "Sign Up with Apple",
-                                    onTap: () async {
-                                      final status = await provider
-                                          .appleSignIn();
-
-                                      if (status == "success") {
-                                        await accountProvider
-                                            .loadAccountBasicInfo();
-                                        await accountProvider
-                                            .loadSettingsData();
-                                        if (context.mounted) {
-                                          Navigator.pushReplacementNamed(
-                                            context,
-                                            AppRoutes.home,
-                                          );
-                                        }
-                                        provider.clearControllers();
-                                      } else if (status == "cancelled" &&
-                                          context.mounted) {
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          SnackBar(
-                                            content: textWidget(
-                                              context: context,
-                                              text: "Apple Sign-In cancelled",
-                                              color: AppColors.whiteColor,
-                                            ),
-                                          ),
-                                        );
-                                      } else {
-                                        if (context.mounted) {
-                                          ScaffoldMessenger.of(
-                                            context,
-                                          ).showSnackBar(
-                                            SnackBar(
-                                              content: textWidget(
-                                                context: context,
-                                                text: status,
-                                                color: AppColors.whiteColor,
-                                              ),
-                                            ),
-                                          );
-                                        }
-                                      }
-                                    },
-
-                                    icon: const Icon(
-                                      Icons.apple,
-                                      color: Colors.black,
-                                    ),
-                                    imageSize: 20,
-                                    iconLeftMargin: 10,
-                                    showIcon: true,
-                                    buttonBackgroundColor: AppColors.whiteColor,
-                                    borderColor: AppColors.black,
-                                    textColor: AppColors.black,
-                                    isBorder: true,
-                                  ),
-                             */
                               ],
                             ),
                           ),

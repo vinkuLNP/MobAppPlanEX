@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_text_widget.dart';
 import 'package:plan_ex_app/core/app_widgets/app_common_widgets.dart';
+import 'package:plan_ex_app/core/constants/app_colors.dart';
 import 'package:plan_ex_app/core/constants/app_text_style.dart';
 import 'package:plan_ex_app/core/utils/app_logger.dart';
 import 'package:plan_ex_app/features/dashboard_flow/data/database/supabase_service.dart';
@@ -83,96 +84,100 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
             : 'Create Task',
       ),
 
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            commonSectionCard(context: context, child: _titleField()),
-            const SizedBox(height: 12),
-            commonSectionCard(context: context, child: _colorPriorityRow()),
-            const SizedBox(height: 12),
-            commonSectionCard(context: context, child: _descriptionField()),
-            const SizedBox(height: 12),
-            commonSectionCard(
-              context: context,
-              child: _dueAndRecurringRow(prov),
-            ),
-            const SizedBox(height: 12),
-            commonSectionCard(context: context, child: _tagField()),
-            const SizedBox(height: 12),
-            commonSectionCard(
-              context: context,
-              child: _attachmentsSection(prov),
-            ),
-            const SizedBox(height: 20),
-            if (uploading) const LinearProgressIndicator(minHeight: 4),
-            const SizedBox(height: 12),
-            if (!isViewOnly)
-              IgnorePointer(
-                ignoring: savingTask,
-                child: AppButton(
-                  isLoading: savingTask,
-                  text: savingTask
-                      ? (isEditing ? 'Saving...' : 'Creating...')
-                      : isEditing
-                      ? 'Save Changes'
-                      : 'Create Task',
-                  onTap: uploading
-                      ? null
-                      : () async {
-                          final title = titleCtrl.text.trim();
-
-                          if (title.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Task title is required'),
-                              ),
-                            );
-                            return;
-                          }
-
-                          setState(() => savingTask = true);
-                          try {
-                            final newTask = TaskEntity(
-                              id: widget.editing?.id ?? '',
-                              title: titleCtrl.text.trim(),
-                              description: descCtrl.text.trim(),
-                              createdAt:
-                                  widget.editing?.createdAt ?? DateTime.now(),
-                              dueDate: dueDate,
-                              completed: widget.editing?.completed ?? false,
-                              color: selectedColor.toARGB32(),
-                              attachments: attachments,
-                              priority: priority,
-                              tags: tags,
-                              recurrence: recurringEnabled
-                                  ? RecurrenceModel(
-                                      interval: recurrenceInterval,
-                                      unit: recurrenceUnit,
-                                    )
-                                  : null,
-                            );
-                            if (widget.editing == null) {
-                              await prov.addTask(newTask);
-                            } else {
-                              await prov.updateTask(newTask);
-                            }
-                            if (context.mounted) {
-                              Navigator.pop(context);
-                            }
-                          } catch (e) {
-                            AppLogger.error(e.toString());
-                          } finally {
-                            if (mounted) {
-                              setState(() => savingTask = false);
-                            }
-                          }
-                        },
-                ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              commonSectionCard(context: context, child: _titleField()),
+              const SizedBox(height: 12),
+              commonSectionCard(context: context, child: _colorPriorityRow()),
+              const SizedBox(height: 12),
+              commonSectionCard(context: context, child: _descriptionField()),
+              const SizedBox(height: 12),
+              commonSectionCard(
+                context: context,
+                child: _dueAndRecurringRow(prov),
               ),
-            const SizedBox(height: 50),
-          ],
+              const SizedBox(height: 12),
+              commonSectionCard(context: context, child: _tagField()),
+              const SizedBox(height: 12),
+              commonSectionCard(
+                context: context,
+                child: _attachmentsSection(prov),
+              ),
+              const SizedBox(height: 20),
+              if (uploading) const LinearProgressIndicator(minHeight: 4),
+              const SizedBox(height: 12),
+              if (!isViewOnly)
+                IgnorePointer(
+                  ignoring: savingTask,
+                  child: AppButton(
+                    isLoading: savingTask,
+                    buttonBackgroundColor: (uploading || savingTask)
+                        ? AppColors.authThemeColor.withValues(alpha: 0.3)
+                        : AppColors.authThemeColor,
+                    text: savingTask
+                        ? (isEditing ? 'Saving...' : 'Creating...')
+                        : isEditing
+                        ? 'Save Changes'
+                        : 'Create Task',
+                    onTap: uploading
+                        ? null
+                        : () async {
+                            final title = titleCtrl.text.trim();
+
+                            if (title.isEmpty) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Task title is required'),
+                                ),
+                              );
+                              return;
+                            }
+
+                            setState(() => savingTask = true);
+                            try {
+                              final newTask = TaskEntity(
+                                id: widget.editing?.id ?? '',
+                                title: titleCtrl.text.trim(),
+                                description: descCtrl.text.trim(),
+                                createdAt:
+                                    widget.editing?.createdAt ?? DateTime.now(),
+                                dueDate: dueDate,
+                                completed: widget.editing?.completed ?? false,
+                                color: selectedColor.toARGB32(),
+                                attachments: attachments,
+                                priority: priority,
+                                tags: tags,
+                                recurrence: recurringEnabled
+                                    ? RecurrenceModel(
+                                        interval: recurrenceInterval,
+                                        unit: recurrenceUnit,
+                                      )
+                                    : null,
+                              );
+                              if (widget.editing == null) {
+                                await prov.addTask(newTask);
+                              } else {
+                                await prov.updateTask(newTask);
+                              }
+                              if (context.mounted) {
+                                Navigator.pop(context);
+                              }
+                            } catch (e) {
+                              AppLogger.error(e.toString());
+                            } finally {
+                              if (mounted) {
+                                setState(() => savingTask = false);
+                              }
+                            }
+                          },
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );
