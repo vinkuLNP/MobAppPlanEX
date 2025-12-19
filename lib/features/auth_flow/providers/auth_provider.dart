@@ -234,7 +234,7 @@ class AuthUserProvider extends ChangeNotifier {
     return error == null;
   }
 
-  Future<bool> resetPassword(String email) async {
+  Future<String> resetPassword(String email) async {
     _setLoading(true);
     error = await _service.resetPassword(email);
     if (error == null) {
@@ -244,7 +244,7 @@ class AuthUserProvider extends ChangeNotifier {
     }
     _setLoading(false);
     notifyListeners();
-    return error == null;
+    return error.toString();
   }
 
   void clearResetState() {

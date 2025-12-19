@@ -8,6 +8,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool centerTitle;
   final Widget? leading;
   final PreferredSizeWidget? bottom;
+  final bool showBack;
 
   const CustomAppBar({
     super.key,
@@ -15,18 +16,20 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.actions,
     this.centerTitle = true,
     this.leading,
+    this.showBack = true,
     this.bottom,
   });
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
+      automaticallyImplyLeading: showBack,
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       elevation: 4,
       title: textWidget(
         context: context,
         text: title,
-        color:  Theme.of(context).textTheme.bodySmall!.color!,
+        color: Theme.of(context).textTheme.bodySmall!.color!,
         fontSize: 20,
         fontWeight: FontWeight.w600,
       ),

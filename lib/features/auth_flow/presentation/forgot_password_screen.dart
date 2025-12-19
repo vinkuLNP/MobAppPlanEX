@@ -36,114 +36,127 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthUserProvider>();
 
-    return Scaffold(
-      resizeToAvoidBottomInset: true,
-      body: SingleChildScrollView(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 440),
-          child: Padding(
-            padding: context.pagePadding,
-            child: Form(
-              key: formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  AppHeader(title: 'Forgot password', authUserProvider: auth),
-                  AppInputField(
-                    label: "Email",
-                    controller: auth.signInEmailCtrl,
-                    keyboardType: TextInputType.emailAddress,
-                    hint: "example@gmail.com",
-                    validator: auth.validateEmail,
-                    onChanged: (_) {
-                      if (auth.autoValidate) {
-                        formKey.currentState?.validate();
-                      }
-                    },
-                  ),
-                  context.gap20,
-
-                  if (auth.resetLinkSent)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 12),
-                      child: Column(
-                        children: [
-                          textWidget(
-                            text: "Reset link sent successfully!",
-                            color: AppColors.authThemeColor,
-                            fontWeight: FontWeight.w600,
-                            context: context,
-                          ),
-                          const SizedBox(height: 4),
-                          textWidget(
-                            text:
-                                "Please check your email and return to login.",
-                            color: Colors.grey,
-                            context: context,
-                          ),
-                        ],
-                      ),
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) return;
+        context.read<AuthUserProvider>().clearError();
+      },
+      child: Scaffold(
+        resizeToAvoidBottomInset: true,
+        body: SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 440),
+            child: Padding(
+              padding: context.pagePadding,
+              child: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AppHeader(title: 'Forgot password', authUserProvider: auth),
+                    AppInputField(
+                      label: "Email",
+                      controller: auth.signInEmailCtrl,
+                      keyboardType: TextInputType.emailAddress,
+                      hint: "example@gmail.com",
+                      validator: auth.validateEmail,
+                      onChanged: (_) {
+                        if (auth.autoValidate) {
+                          formKey.currentState?.validate();
+                        }
+                      },
                     ),
+                    context.gap20,
 
-                  context.gap20,
-                  auth.isLoading
-                      ? const CircularProgressIndicator()
-                      : AppButton(
-                          onTap: (auth.cooldown > 0)
-                              ? null
-                              : () async {
-                                  if (!formKey.currentState!.validate()) return;
+                    if (auth.resetLinkSent)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: Column(
+                          children: [
+                            textWidget(
+                              text: "Reset link sent successfully!",
+                              color: AppColors.authThemeColor,
+                              fontWeight: FontWeight.w600,
+                              context: context,
+                            ),
+                            const SizedBox(height: 4),
+                            textWidget(
+                              text:
+                                  "Please check your email and return to login.",
+                              color: Colors.grey,
+                              context: context,
+                            ),
+                          ],
+                        ),
+                      ),
 
-                                  final success = await context
-                                      .read<AuthUserProvider>()
-                                      .resetPassword(
-                                        auth.signInEmailCtrl.text.trim(),
-                                      );
-                                  if (success && context.mounted) {
-                                    auth.startCooldown();
+                    context.gap20,
+                    auth.isLoading
+                        ? const CircularProgressIndicator()
+                        : AppButton(
+                            onTap: (auth.cooldown > 0)
+                                ? null
+                                : () async {
+                                    if (!formKey.currentState!.validate())
+                                      return;
 
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          "Password reset link has been sent to your email",
-                                        ),
-                                        behavior: SnackBarBehavior.floating,
-                                      ),
-                                    );
-                                  } else {
-                                    auth.startCooldown();
+                                    final success = await context
+                                        .read<AuthUserProvider>()
+                                        .resetPassword(
+                                          auth.signInEmailCtrl.text.trim(),
+                                        );
+                                    if (success == "null" && context.mounted) {
+                                      auth.startCooldown();
 
-                                    if (context.mounted) {
                                       ScaffoldMessenger.of(
                                         context,
                                       ).showSnackBar(
-                                        SnackBar(
-                                          content: Text(auth.error.toString()),
+                                        const SnackBar(
+                                          content: Text(
+                                            "Password reset link has been sent to your email",
+                                          ),
                                           behavior: SnackBarBehavior.floating,
                                         ),
                                       );
+                                    } else {
+                                      auth.startCooldown();
+
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              auth.error.toString(),
+                                            ),
+                                            behavior: SnackBarBehavior.floating,
+                                          ),
+                                        );
+                                      }
                                     }
-                                  }
-                                },
-                          text: auth.cooldown > 0
-                              ? "Resend in ${auth.cooldown}s"
-                              : 'Send Reset Link',
-                          fontSize: 14,
-                          textColor: AppColors.backgroundColor,
-                        ),
-                  context.gap10,
-                  TextButton(
-                    onPressed: () => authFlowNavigate(context, AppRoutes.login),
-                    child: textWidget(
-                      text: 'Back to Sign In',
-                      textDecoration: TextDecoration.underline,
-                      fontWeight: FontWeight.w600,
-                      textDecorationColor: AppColors.authThemeColor,
-                      color: AppColors.authThemeColor,
-                      context: context,
+                                  },
+                            text: auth.cooldown > 0
+                                ? "Resend in ${auth.cooldown}s"
+                                : 'Send Reset Link',
+                            fontSize: 14,
+                            textColor: AppColors.backgroundColor,
+                          ),
+                    context.gap10,
+                    TextButton(
+                      onPressed: () =>
+                          authFlowNavigate(context, AppRoutes.login),
+                      child: textWidget(
+                        text: 'Back to Sign In',
+                        textDecoration: TextDecoration.underline,
+                        fontWeight: FontWeight.w600,
+                        textDecorationColor: AppColors.authThemeColor,
+                        color: AppColors.authThemeColor,
+                        context: context,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

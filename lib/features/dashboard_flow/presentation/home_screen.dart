@@ -22,15 +22,18 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
 
   final List<Map<String, dynamic>> _tabs = [
-    {'screen': NotesScreen(), 'appBar': CustomAppBar(title: "Notes")},
+    {
+      'screen': NotesScreen(),
+      'appBar': CustomAppBar(title: "Notes", showBack: false),
+    },
     {'screen': const TasksScreen()},
     {
       'screen': const AccountScreen(),
-      'appBar': const CustomAppBar(title: "Account"),
+      'appBar': const CustomAppBar(title: "Account", showBack: false),
     },
     {
       'screen': const SettingsScreen(),
-      'appBar': const CustomAppBar(title: "Settings"),
+      'appBar': const CustomAppBar(title: "Settings", showBack: false),
     },
   ];
   @override
@@ -51,7 +54,10 @@ class _HomeScreenState extends State<HomeScreen> {
         await accountProvider.loadAccountBasicInfo();
         notesProvider.listenNotes();
         tasksProvider.listen();
-        if (mounted)  await accountProvider.enforceNotificationPermissionOnHome(context: context);
+        if (mounted)
+          await accountProvider.enforceNotificationPermissionOnHome(
+            context: context,
+          );
         await accountProvider.bootstrapNotifications(tasksProvider.tasks);
       }
     });

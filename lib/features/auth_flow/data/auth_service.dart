@@ -128,9 +128,10 @@ class AuthService {
 
       if (snap.docs.isEmpty) {
         return "This email is not registered with LNP PlanEX. Please register first and create an account.";
+      } else {
+        await _auth.sendPasswordResetEmail(email: email.trim());
+        return null;
       }
-      await _auth.sendPasswordResetEmail(email: email.trim());
-      return null;
     } on FirebaseAuthException catch (e) {
       return e.message;
     } catch (e) {
