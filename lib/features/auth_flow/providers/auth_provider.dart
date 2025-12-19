@@ -288,7 +288,7 @@ class AuthUserProvider extends ChangeNotifier {
     _setLoading(false);
 
     if (result == null) return "success";
-
+    if (result == "in_progress") return "in_progress";
     if (result == "cancelled") return "cancelled";
 
     if (result.toLowerCase().contains('cancelled')) return 'cancelled';

@@ -139,60 +139,152 @@ class AuthService {
     }
   }
 
-  Future<String?> signInWithGoogle() async {
-    try {
-      final google = GoogleSignIn.instance;
+  // Future<String?> signInWithGoogle() async {
+  //   try {
+  //     final google = GoogleSignIn.instance;
 
+  //     await google.initialize();
+
+  //     final eventCompleter = Completer<GoogleSignInAuthenticationEvent>();
+
+  //     final sub = google.authenticationEvents.listen(
+  //       (event) {
+  //         if (!eventCompleter.isCompleted) {
+  //           eventCompleter.complete(event);
+  //         }
+  //       },
+  //       onError: (error) {
+  //         if (!eventCompleter.isCompleted) {
+  //           eventCompleter.completeError(error);
+  //         }
+  //       },
+  //     );
+
+  //     await google.authenticate();
+
+  //     final event = await eventCompleter.future;
+
+  //     await sub.cancel();
+
+  //     final GoogleSignInAccount? googleUser = switch (event) {
+  //       GoogleSignInAuthenticationEventSignIn() => event.user,
+  //       GoogleSignInAuthenticationEventSignOut() => null,
+  //     };
+
+  //     if (googleUser == null) {
+  //       return "cancelled";
+  //     }
+
+  //     final googleAuth = googleUser.authentication;
+  //     final credential = GoogleAuthProvider.credential(
+  //       idToken: googleAuth.idToken,
+  //     );
+
+  //     await _auth.signInWithCredential(credential);
+
+  //     final user = FirebaseAuth.instance.currentUser;
+  //     if (user != null && user.emailVerified) {
+  //       await createUserDocument(user);
+  //       return null;
+  //     } else if (user != null && !user.emailVerified) {
+  //       return "unverified";
+  //     } else {
+  //       return 'error';
+  //     }
+  //   } catch (e) {
+  //     return "Google sign-in failed: $e";
+  //   }
+  // }
+
+  bool _googleSigningIn = false;
+
+  Future<String?> signInWithGoogle() async {
+    if (_googleSigningIn) return "in_progress";
+    _googleSigningIn = true;
+
+    final google = GoogleSignIn.instance;
+
+    try {
       await google.initialize();
 
-      final eventCompleter = Completer<GoogleSignInAuthenticationEvent>();
+      Future<String?> attempt() async {
+        try {
+          await google.signOut();
+        } catch (_) {}
 
-      final sub = google.authenticationEvents.listen(
-        (event) {
-          if (!eventCompleter.isCompleted) {
-            eventCompleter.complete(event);
-          }
-        },
-        onError: (error) {
-          if (!eventCompleter.isCompleted) {
-            eventCompleter.completeError(error);
-          }
-        },
-      );
+        final completer = Completer<GoogleSignInAuthenticationEventSignIn>();
 
-      await google.authenticate();
+        final sub = google.authenticationEvents.listen(
+          (event) {
+            if (event is GoogleSignInAuthenticationEventSignIn &&
+                !completer.isCompleted) {
+              completer.complete(event);
+            }
+          },
+          onError: (error) {
+            if (!completer.isCompleted) {
+              completer.completeError(error);
+            }
+          },
+        );
 
-      final event = await eventCompleter.future;
+        await google.authenticate();
 
-      await sub.cancel();
+        final event = await completer.future;
+        await sub.cancel();
 
-      final GoogleSignInAccount? googleUser = switch (event) {
-        GoogleSignInAuthenticationEventSignIn() => event.user,
-        GoogleSignInAuthenticationEventSignOut() => null,
-      };
+        final googleUser = event.user;
+        final googleAuth = googleUser.authentication;
 
-      if (googleUser == null) {
-        return "cancelled";
+        if (googleAuth.idToken == null) {
+          return "missing_id_token";
+        }
+
+        final credential = GoogleAuthProvider.credential(
+          idToken: googleAuth.idToken,
+        );
+
+        await FirebaseAuth.instance.signInWithCredential(credential);
+
+        final user = FirebaseAuth.instance.currentUser;
+        if (user == null) return "error";
+
+        await createUserDocument(user);
+        return null; // success
       }
 
-      final googleAuth = googleUser.authentication;
-      final credential = GoogleAuthProvider.credential(
-        idToken: googleAuth.idToken,
-      );
+      try {
+        return await attempt();
+      } on GoogleSignInException catch (e) {
+        final msg = e.toString().toLowerCase();
+        final isReauth =
+            msg.contains("reauth") || msg.contains("account reauth failed");
 
-      await _auth.signInWithCredential(credential);
+        if (e.code == GoogleSignInExceptionCode.canceled && isReauth) {
+          try {
+            await google.disconnect();
+          } catch (_) {}
+          try {
+            await google.signOut();
+          } catch (_) {}
 
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null && user.emailVerified) {
-        await createUserDocument(user);
-        return null;
-      } else if (user != null && !user.emailVerified) {
-        return "unverified";
-      } else {
-        return 'error';
+          try {
+            return await attempt();
+          } catch (_) {
+            return "Google re-auth failed. Please try again.";
+          }
+        }
+
+        if (e.code == GoogleSignInExceptionCode.canceled) {
+          return "cancelled";
+        }
+
+        return "Google sign-in failed: ${e.description ?? e.toString()}";
       }
     } catch (e) {
       return "Google sign-in failed: $e";
+    } finally {
+      _googleSigningIn = false;
     }
   }
 

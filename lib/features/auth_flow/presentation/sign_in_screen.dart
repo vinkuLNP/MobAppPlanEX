@@ -85,306 +85,318 @@ class _SignInScreenState extends State<SignInScreen> {
                 body: Stack(
                   children: [
                     SafeArea(
-                      child: SingleChildScrollView(
-                        padding: EdgeInsets.only(
-                          bottom: MediaQuery.of(context).viewPadding.bottom,
-                        ),
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(maxWidth: 440),
-                          child: Padding(
-                            padding: context.pagePadding,
-                            child: Form(
-                              key: formKey,
-                              autovalidateMode: AutovalidateMode.disabled,
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  AppHeader(
-                                    title:
-                                        "Your Personal Productivity Companion",
-                                    authUserProvider: provider,
-                                  ),
-                                  Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      AppInputField(
-                                        label: "Email",
-                                        controller: provider.signInEmailCtrl,
-                                        focusNode: emailFocus,
-                                        keyboardType:
-                                            TextInputType.emailAddress,
-                                        hint: "example@gmail.com",
-                                        onFieldSubmitted: (_) {
-                                          FocusScope.of(
-                                            context,
-                                          ).requestFocus(passFocus);
-                                        },
-                                        validator: (value) {
-                                          if (activeField ==
-                                              ActiveField.email) {
-                                            return null;
-                                          }
-
-                                          if (value == null || value.isEmpty) {
-                                            return "Please enter email";
-                                          }
-                                          return null;
-                                        },
-                                        onTap: () {
-                                          setState(() {
-                                            activeField = ActiveField.email;
-                                          });
-                                        },
-                                        onChanged: (_) {
-                                          if (isSubmitted) {
-                                            formKey.currentState?.validate();
-                                          }
-                                        },
-                                        autovalidateMode: hasInteracted
-                                            ? (emailFocus.hasFocus
-                                                  ? AutovalidateMode.disabled
-                                                  : AutovalidateMode.always)
-                                            : AutovalidateMode.disabled,
-                                      ),
-                                      context.gap8,
-                                      AppPasswordField(
-                                        label: "Password",
-                                        controller: provider.signInPassCtrl,
-                                        obscure: provider.signInObscure,
-                                        onFieldSubmitted: (_) {
-                                          FocusScope.of(
-                                            context,
-                                          ).requestFocus(emailFocus);
-                                        },
-                                        focusNode: passFocus,
-                                        onToggle: provider.toggleSignInObscure,
-                                        validator: (value) {
-                                          if (activeField ==
-                                              ActiveField.password) {
-                                            return null;
-                                          }
-
-                                          if (value == null || value.isEmpty) {
-                                            return "Please enter password";
-                                          }
-
-                                          return provider
-                                              .validateSignINPassword(value);
-                                        },
-                                        onTap: () {
-                                          setState(() {
-                                            activeField = ActiveField.password;
-                                          });
-                                        },
-                                        onChanged: (_) {
-                                          if (isSubmitted) {
-                                            formKey.currentState?.validate();
-                                          }
-                                        },
-                                        autovalidateMode: hasInteracted
-                                            ? (passFocus.hasFocus
-                                                  ? AutovalidateMode.disabled
-                                                  : AutovalidateMode.always)
-                                            : AutovalidateMode.disabled,
-                                      ),
-                                      Align(
-                                        alignment: Alignment.centerRight,
-                                        child: TextButton(
-                                          onPressed: () {
-                                            provider.clearError();
-                                            Navigator.pushNamed(
+                      child: SizedBox.expand(
+                        child: SingleChildScrollView(
+                          keyboardDismissBehavior:
+                              ScrollViewKeyboardDismissBehavior.onDrag,
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(maxWidth: 440),
+                            child: Padding(
+                              padding: context.pagePadding,
+                              child: Form(
+                                key: formKey,
+                                autovalidateMode: AutovalidateMode.disabled,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    AppHeader(
+                                      title:
+                                          "Your Personal Productivity Companion",
+                                      authUserProvider: provider,
+                                    ),
+                                    Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        AppInputField(
+                                          label: "Email",
+                                          controller: provider.signInEmailCtrl,
+                                          focusNode: emailFocus,
+                                          keyboardType:
+                                              TextInputType.emailAddress,
+                                          hint: "example@gmail.com",
+                                          onFieldSubmitted: (_) {
+                                            FocusScope.of(
                                               context,
-                                              AppRoutes.forgot,
-                                            );
+                                            ).requestFocus(passFocus);
                                           },
-                                          child: textWidget(
-                                            context: context,
-                                            text: "Forgot Password?",
-                                            fontSize: 14,
-                                            color: AppColors.authThemeColor,
-                                            textDecorationColor:
-                                                AppColors.authThemeColor,
-                                            textDecoration:
-                                                TextDecoration.underline,
+                                          validator: (value) {
+                                            if (activeField ==
+                                                ActiveField.email) {
+                                              return null;
+                                            }
+
+                                            if (value == null ||
+                                                value.isEmpty) {
+                                              return "Please enter email";
+                                            }
+                                            return null;
+                                          },
+                                          onTap: () {
+                                            setState(() {
+                                              activeField = ActiveField.email;
+                                            });
+                                          },
+                                          onChanged: (_) {
+                                            if (isSubmitted) {
+                                              formKey.currentState?.validate();
+                                            }
+                                          },
+                                          autovalidateMode: hasInteracted
+                                              ? (emailFocus.hasFocus
+                                                    ? AutovalidateMode.disabled
+                                                    : AutovalidateMode.always)
+                                              : AutovalidateMode.disabled,
+                                        ),
+                                        context.gap8,
+                                        AppPasswordField(
+                                          label: "Password",
+                                          controller: provider.signInPassCtrl,
+                                          obscure: provider.signInObscure,
+                                          onFieldSubmitted: (_) {
+                                            FocusScope.of(
+                                              context,
+                                            ).requestFocus(emailFocus);
+                                          },
+                                          focusNode: passFocus,
+                                          onToggle:
+                                              provider.toggleSignInObscure,
+                                          validator: (value) {
+                                            if (activeField ==
+                                                ActiveField.password) {
+                                              return null;
+                                            }
+
+                                            if (value == null ||
+                                                value.isEmpty) {
+                                              return "Please enter password";
+                                            }
+
+                                            return provider
+                                                .validateSignINPassword(value);
+                                          },
+                                          onTap: () {
+                                            setState(() {
+                                              activeField =
+                                                  ActiveField.password;
+                                            });
+                                          },
+                                          onChanged: (_) {
+                                            if (isSubmitted) {
+                                              formKey.currentState?.validate();
+                                            }
+                                          },
+                                          autovalidateMode: hasInteracted
+                                              ? (passFocus.hasFocus
+                                                    ? AutovalidateMode.disabled
+                                                    : AutovalidateMode.always)
+                                              : AutovalidateMode.disabled,
+                                        ),
+                                        Align(
+                                          alignment: Alignment.centerRight,
+                                          child: TextButton(
+                                            onPressed: () {
+                                              provider.clearError();
+                                              Navigator.pushNamed(
+                                                context,
+                                                AppRoutes.forgot,
+                                              );
+                                            },
+                                            child: textWidget(
+                                              context: context,
+                                              text: "Forgot Password?",
+                                              fontSize: 14,
+                                              color: AppColors.authThemeColor,
+                                              textDecorationColor:
+                                                  AppColors.authThemeColor,
+                                              textDecoration:
+                                                  TextDecoration.underline,
+                                            ),
                                           ),
                                         ),
-                                      ),
-                                      const SizedBox(height: 12),
-                                      AppButton(
-                                        text: "Sign In",
-                                        onTap: () async {
-                                          setState(() {
-                                            isSubmitted = true;
-                                            hasInteracted = true;
-                                            activeField = ActiveField.none;
-                                            lastActiveField = ActiveField.none;
-                                          });
-                                          provider.clearError();
-                                          await Future.delayed(Duration.zero);
+                                        const SizedBox(height: 12),
+                                        AppButton(
+                                          text: "Sign In",
+                                          onTap: () async {
+                                            setState(() {
+                                              isSubmitted = true;
+                                              hasInteracted = true;
+                                              activeField = ActiveField.none;
+                                              lastActiveField =
+                                                  ActiveField.none;
+                                            });
+                                            provider.clearError();
+                                            await Future.delayed(Duration.zero);
 
-                                          AppLogger.logString('Button tapped');
+                                            AppLogger.logString(
+                                              'Button tapped',
+                                            );
 
-                                          final valid =
-                                              formKey.currentState
-                                                  ?.validate() ??
-                                              false;
-                                          AppLogger.logString(
-                                            'Form Valid: $valid',
-                                          );
-                                          if (!valid) {
-                                            return;
-                                          }
+                                            final valid =
+                                                formKey.currentState
+                                                    ?.validate() ??
+                                                false;
+                                            AppLogger.logString(
+                                              'Form Valid: $valid',
+                                            );
+                                            if (!valid) {
+                                              return;
+                                            }
 
-                                          final status = await provider
-                                              .signIn();
-                                          if (status == "verified") {
-                                            if (context.mounted) {
-                                              accountProvider
-                                                  .startUserListener();
-                                              Navigator.pushNamedAndRemoveUntil(
+                                            final status = await provider
+                                                .signIn();
+                                            if (status == "verified") {
+                                              if (context.mounted) {
+                                                accountProvider
+                                                    .startUserListener();
+                                                Navigator.pushReplacementNamed(
+                                                  context,
+                                                  AppRoutes.home,
+                                                );
+                                              }
+                                              provider.clearControllers();
+                                            } else if (status == "unverified" &&
+                                                context.mounted) {
+                                              Navigator.pushReplacementNamed(
                                                 context,
-                                                AppRoutes.home,
-                                                (route) => false,
+                                                AppRoutes.verifyEmail,
                                               );
                                             }
-                                            provider.clearControllers();
-                                          } else if (status == "unverified" &&
-                                              context.mounted) {
-                                            Navigator.pushReplacementNamed(
+                                          },
+                                        ),
+                                        TextButton(
+                                          onPressed: () {
+                                            provider.clearError();
+                                            authFlowNavigate(
                                               context,
-                                              AppRoutes.verifyEmail,
+                                              AppRoutes.signup,
                                             );
-                                          }
-                                        },
-                                      ),
-                                      TextButton(
-                                        onPressed: () {
-                                          provider.clearError();
-                                          authFlowNavigate(
-                                            context,
-                                            AppRoutes.signup,
-                                          );
-                                        },
-                                        child: RichText(
-                                          text: TextSpan(
-                                            text: "Didn't have an account? ",
-                                            style: appTextStyle(
-                                              context: context,
-                                              color: Theme.of(context).hintColor
-                                                  .withValues(alpha: 0.6),
-                                              fontSize: 14,
+                                          },
+                                          child: RichText(
+                                            text: TextSpan(
+                                              text: "Didn't have an account? ",
+                                              style: appTextStyle(
+                                                context: context,
+                                                color: Theme.of(context)
+                                                    .hintColor
+                                                    .withValues(alpha: 0.6),
+                                                fontSize: 14,
+                                              ),
+                                              children: [
+                                                TextSpan(
+                                                  text: "Sign Up!",
+                                                  style: appTextStyle(
+                                                    context: context,
+                                                    fontSize: 14,
+                                                    textDecorationColor:
+                                                        AppColors
+                                                            .authThemeColor,
+                                                    color: AppColors
+                                                        .authThemeColor,
+                                                    textDecoration:
+                                                        TextDecoration
+                                                            .underline,
+                                                  ),
+                                                ),
+                                              ],
                                             ),
+                                          ),
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                            bottom: 20,
+                                          ),
+                                          child: Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
                                             children: [
-                                              TextSpan(
-                                                text: "Sign Up!",
-                                                style: appTextStyle(
+                                              const SizedBox(
+                                                width: 80,
+                                                child: Divider(
+                                                  color: AppColors.greyishColor,
+                                                  thickness: 1,
+                                                ),
+                                              ),
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 8.0,
+                                                    ),
+                                                child: textWidget(
                                                   context: context,
-                                                  fontSize: 14,
-                                                  textDecorationColor:
-                                                      AppColors.authThemeColor,
-                                                  color:
-                                                      AppColors.authThemeColor,
-                                                  textDecoration:
-                                                      TextDecoration.underline,
+                                                  text: "or",
+                                                  color: AppColors.greyishColor,
+                                                ),
+                                              ),
+                                              const SizedBox(
+                                                width: 80,
+                                                child: Divider(
+                                                  color: AppColors.greyishColor,
+                                                  thickness: 1,
                                                 ),
                                               ),
                                             ],
                                           ),
                                         ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                          bottom: 20,
-                                        ),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            const SizedBox(
-                                              width: 80,
-                                              child: Divider(
-                                                color: AppColors.greyishColor,
-                                                thickness: 1,
-                                              ),
-                                            ),
-                                            Padding(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 8.0,
-                                                  ),
-                                              child: textWidget(
-                                                context: context,
-                                                text: "or",
-                                                color: AppColors.greyishColor,
-                                              ),
-                                            ),
-                                            const SizedBox(
-                                              width: 80,
-                                              child: Divider(
-                                                color: AppColors.greyishColor,
-                                                thickness: 1,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      AppButton(
-                                        text: "Sign In with Google",
-                                        onTap: () async {
-                                          final status = await provider
-                                              .googleSignIn();
-                                          if (status == "success") {
-                                            accountProvider.startUserListener();
-                                            if (context.mounted) {
-                                              Navigator.pushNamedAndRemoveUntil(
-                                                context,
-                                                AppRoutes.home,
-                                                (route) => false,
-                                              );
-                                            }
-                                            provider.clearControllers();
-                                          } else if (status == "cancelled" &&
-                                              context.mounted) {
-                                            ScaffoldMessenger.of(
-                                              context,
-                                            ).showSnackBar(
-                                              SnackBar(
-                                                content: textWidget(
-                                                  context: context,
-                                                  text:
-                                                      "Google Sign-In cancelled",
-                                                  color: AppColors.whiteColor,
-                                                ),
-                                              ),
-                                            );
-                                          } else {
-                                            if (context.mounted) {
+                                        AppButton(
+                                          text: "Sign In with Google",
+                                          onTap: () async {
+                                            final status = await provider
+                                                .googleSignIn();
+                                            if (status == "in_progress") return;
+                                            if (status == "success") {
+                                              accountProvider
+                                                  .startUserListener();
+                                              if (context.mounted) {
+                                                Navigator.pushReplacementNamed(
+                                                  context,
+                                                  AppRoutes.home,
+                                                );
+                                              }
+                                              provider.clearControllers();
+                                            } else if (status == "cancelled" &&
+                                                context.mounted) {
                                               ScaffoldMessenger.of(
                                                 context,
                                               ).showSnackBar(
                                                 SnackBar(
                                                   content: textWidget(
                                                     context: context,
-                                                    text: status,
+                                                    text:
+                                                        "Google Sign-In cancelled",
                                                     color: AppColors.whiteColor,
                                                   ),
                                                 ),
                                               );
+                                            } else {
+                                              if (context.mounted) {
+                                                ScaffoldMessenger.of(
+                                                  context,
+                                                ).showSnackBar(
+                                                  SnackBar(
+                                                    content: textWidget(
+                                                      context: context,
+                                                      text: status,
+                                                      color:
+                                                          AppColors.whiteColor,
+                                                    ),
+                                                  ),
+                                                );
+                                              }
                                             }
-                                          }
-                                        },
-                                        image: googleLogo,
-                                        imageSize: 20,
-                                        iconLeftMargin: 10,
-                                        buttonBackgroundColor:
-                                            AppColors.whiteColor,
-                                        borderColor: AppColors.black,
-                                        textColor: AppColors.black,
-                                        isBorder: true,
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                                          },
+                                          image: googleLogo,
+                                          imageSize: 20,
+                                          iconLeftMargin: 10,
+                                          buttonBackgroundColor:
+                                              AppColors.whiteColor,
+                                          borderColor: AppColors.black,
+                                          textColor: AppColors.black,
+                                          isBorder: true,
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
