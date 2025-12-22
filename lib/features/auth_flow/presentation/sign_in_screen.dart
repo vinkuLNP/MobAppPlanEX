@@ -241,9 +241,10 @@ class _SignInScreenState extends State<SignInScreen> {
                                             if (context.mounted) {
                                               accountProvider
                                                   .startUserListener();
-                                              Navigator.pushReplacementNamed(
+                                              Navigator.pushNamedAndRemoveUntil(
                                                 context,
                                                 AppRoutes.home,
+                                                (route) => false,
                                               );
                                             }
                                             provider.clearControllers();
@@ -335,9 +336,10 @@ class _SignInScreenState extends State<SignInScreen> {
                                           if (status == "success") {
                                             accountProvider.startUserListener();
                                             if (context.mounted) {
-                                              Navigator.pushReplacementNamed(
+                                              Navigator.pushNamedAndRemoveUntil(
                                                 context,
                                                 AppRoutes.home,
+                                                (route) => false,
                                               );
                                             }
                                             provider.clearControllers();

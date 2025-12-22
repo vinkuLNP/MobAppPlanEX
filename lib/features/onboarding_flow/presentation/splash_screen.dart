@@ -52,7 +52,11 @@ class _SplashPageState extends State<SplashPage>
     try {
       accountProvider.startUserListener();
       if (mounted) {
-        Navigator.pushReplacementNamed(context, AppRoutes.home);
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          AppRoutes.home,
+          (route) => false,
+        );
       }
     } catch (_) {
       accountProvider.clearCache();

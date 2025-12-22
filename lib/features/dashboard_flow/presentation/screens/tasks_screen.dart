@@ -24,6 +24,7 @@ class TasksScreen extends StatelessWidget {
       child: Scaffold(
         appBar: CustomAppBar(
           title: "Tasks",
+          showBack: false,
           bottom: TabBar(
             labelPadding: const EdgeInsets.symmetric(horizontal: 8),
             indicatorColor: AppColors.authThemeColor,
