@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "1045154677922-6p2hg1n3enq6qj2f7lkpvdbum30d3q7o.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.lnpinfo.planexapp",
+            "certificate_hash": "113b732a07eff0adc7cf50814a4707d5d58075f5"
+          }
+        },
+        {
           "client_id": "1045154677922-1nrpjnq9coctlser6chuvhjh20q58onr.apps.googleusercontent.com",
           "client_type": 3
         }

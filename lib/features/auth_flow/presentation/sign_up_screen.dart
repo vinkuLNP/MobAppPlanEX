@@ -54,218 +54,227 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 body: Stack(
                   children: [
                     SafeArea(
-                      child: SingleChildScrollView(
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(maxWidth: 440),
-                          child: Padding(
-                            padding: context.pagePadding,
-                            child: Form(
-                              key: formKey,
-                              autovalidateMode: provider.autoValidate
-                                  ? AutovalidateMode.onUserInteraction
-                                  : AutovalidateMode.disabled,
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  AppHeader(
-                                    title: "Create your account",
-                                    authUserProvider: provider,
-                                  ),
+                      child: SizedBox.expand(
+                        child: SingleChildScrollView(
+                          keyboardDismissBehavior:
+                              ScrollViewKeyboardDismissBehavior.onDrag,
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(maxWidth: 440),
+                            child: Padding(
+                              padding: context.pagePadding,
+                              child: Form(
+                                key: formKey,
+                                autovalidateMode: provider.autoValidate
+                                    ? AutovalidateMode.onUserInteraction
+                                    : AutovalidateMode.disabled,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    AppHeader(
+                                      title: "Create your account",
+                                      authUserProvider: provider,
+                                    ),
 
-                                  AppInputField(
-                                    label: "Full Name",
-                                    hint: "Full Name",
-                                    controller: provider.signUpNameCtrl,
-                                    validator: (v) =>
-                                        v == null || v.trim().isEmpty
-                                        ? "Required"
-                                        : v.length < 3
-                                        ? "Atleast 3 characters req"
-                                        : null,
-                                  ),
-                                  context.gap8,
+                                    AppInputField(
+                                      label: "Full Name",
+                                      hint: "Full Name",
+                                      controller: provider.signUpNameCtrl,
+                                      validator: (v) =>
+                                          v == null || v.trim().isEmpty
+                                          ? "Required"
+                                          : v.length < 3
+                                          ? "Atleast 3 characters req"
+                                          : null,
+                                    ),
+                                    context.gap8,
 
-                                  AppInputField(
-                                    label: "Email",
-                                    controller: provider.signUpEmailCtrl,
-                                    keyboardType: TextInputType.emailAddress,
-                                    hint: "example@gmail.com",
-                                    validator: provider.validateEmail,
-                                  ),
-                                  context.gap8,
+                                    AppInputField(
+                                      label: "Email",
+                                      controller: provider.signUpEmailCtrl,
+                                      keyboardType: TextInputType.emailAddress,
+                                      hint: "example@gmail.com",
+                                      validator: provider.validateEmail,
+                                    ),
+                                    context.gap8,
 
-                                  AppPasswordField(
-                                    label: "Password",
-                                    controller: provider.signUpPassCtrl,
-                                    obscure: provider.signUpObscure,
-                                    onToggle: provider.toggleSignUpObscure,
-                                    validator: provider.validatePassword,
-                                  ),
-                                  context.gap8,
+                                    AppPasswordField(
+                                      label: "Password",
+                                      controller: provider.signUpPassCtrl,
+                                      obscure: provider.signUpObscure,
+                                      onToggle: provider.toggleSignUpObscure,
+                                      validator: provider.validatePassword,
+                                    ),
+                                    context.gap8,
 
-                                  AppPasswordField(
-                                    label: "Confirm Password",
-                                    controller: provider.signUpConfirmCtrl,
-                                    obscure: provider.signUpConfirmObscure,
-                                    onToggle:
-                                        provider.toggleSignUpConfirmObscure,
-                                    validator: provider.validateConfirm,
-                                  ),
+                                    AppPasswordField(
+                                      label: "Confirm Password",
+                                      controller: provider.signUpConfirmCtrl,
+                                      obscure: provider.signUpConfirmObscure,
+                                      onToggle:
+                                          provider.toggleSignUpConfirmObscure,
+                                      validator: provider.validateConfirm,
+                                    ),
 
-                                  context.gap24,
-                                  AppButton(
-                                    onTap: () async {
-                                      final valid =
-                                          formKey.currentState?.validate() ??
-                                          false;
+                                    context.gap24,
+                                    AppButton(
+                                      onTap: () async {
+                                        final valid =
+                                            formKey.currentState?.validate() ??
+                                            false;
 
-                                      if (!valid) {
-                                        provider.enableAutoValidate();
-                                        return;
-                                      }
+                                        if (!valid) {
+                                          provider.enableAutoValidate();
+                                          return;
+                                        }
 
-                                      final status = await provider.signUp();
+                                        final status = await provider.signUp();
 
-                                      if (!context.mounted) return;
+                                        if (!context.mounted) return;
 
-                                      if (status == SignUpStatus.success ||
-                                          status ==
-                                              SignUpStatus.unverifiedExisting ||
-                                          status ==
-                                              SignUpStatus.tooManyRequests) {
-                                        Navigator.pushReplacementNamed(
-                                          context,
-                                          AppRoutes.verifyEmail,
-                                        );
-                                      }
-                                    },
-                                    text: "Sign Up",
-                                  ),
-
-                                  TextButton(
-                                    onPressed: () {
-                                      provider.clearError();
-                                      authFlowNavigate(
-                                        context,
-                                        AppRoutes.login,
-                                      );
-                                    },
-                                    child: RichText(
-                                      text: TextSpan(
-                                        text: "Already have an account? ",
-                                        style: appTextStyle(
-                                          context: context,
-                                          color: Theme.of(
+                                        if (status == SignUpStatus.success ||
+                                            status ==
+                                                SignUpStatus
+                                                    .unverifiedExisting ||
+                                            status ==
+                                                SignUpStatus.tooManyRequests) {
+                                          Navigator.pushReplacementNamed(
                                             context,
-                                          ).hintColor.withValues(alpha: 0.6),
-                                          fontSize: 14,
-                                        ),
-                                        children: [
-                                          TextSpan(
-                                            text: "Sign In!",
-                                            style: appTextStyle(
-                                              context: context,
-                                              fontSize: 14,
+                                            AppRoutes.verifyEmail,
+                                          );
+                                        }
+                                      },
+                                      text: "Sign Up",
+                                    ),
 
-                                              textDecorationColor:
-                                                  AppColors.authThemeColor,
-                                              color: AppColors.authThemeColor,
-                                              textDecoration:
-                                                  TextDecoration.underline,
+                                    TextButton(
+                                      onPressed: () {
+                                        provider.clearError();
+                                        authFlowNavigate(
+                                          context,
+                                          AppRoutes.login,
+                                        );
+                                      },
+                                      child: RichText(
+                                        text: TextSpan(
+                                          text: "Already have an account? ",
+                                          style: appTextStyle(
+                                            context: context,
+                                            color: Theme.of(
+                                              context,
+                                            ).hintColor.withValues(alpha: 0.6),
+                                            fontSize: 14,
+                                          ),
+                                          children: [
+                                            TextSpan(
+                                              text: "Sign In!",
+                                              style: appTextStyle(
+                                                context: context,
+                                                fontSize: 14,
+
+                                                textDecorationColor:
+                                                    AppColors.authThemeColor,
+                                                color: AppColors.authThemeColor,
+                                                textDecoration:
+                                                    TextDecoration.underline,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: 20,
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          const SizedBox(
+                                            width: 80,
+                                            child: Divider(
+                                              color: AppColors.greyishColor,
+                                              thickness: 1,
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 8.0,
+                                            ),
+                                            child: textWidget(
+                                              context: context,
+                                              text: "or",
+                                              color: AppColors.greyishColor,
+                                            ),
+                                          ),
+                                          const SizedBox(
+                                            width: 80,
+                                            child: Divider(
+                                              color: AppColors.greyishColor,
+                                              thickness: 1,
                                             ),
                                           ),
                                         ],
                                       ),
                                     ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 20),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        const SizedBox(
-                                          width: 80,
-                                          child: Divider(
-                                            color: AppColors.greyishColor,
-                                            thickness: 1,
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 8.0,
-                                          ),
-                                          child: textWidget(
-                                            context: context,
-                                            text: "or",
-                                            color: AppColors.greyishColor,
-                                          ),
-                                        ),
-                                        const SizedBox(
-                                          width: 80,
-                                          child: Divider(
-                                            color: AppColors.greyishColor,
-                                            thickness: 1,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
 
-                                  AppButton(
-                                    text: "Sign Up with Google",
-                                    onTap: () async {
-                                      final status = await provider
-                                          .googleSignIn();
+                                    AppButton(
+                                      text: "Sign Up with Google",
+                                      onTap: () async {
+                                        final status = await provider
+                                            .googleSignIn();
 
-                                      if (status == "success") {
-                                        accountProvider.startUserListener();
-                                        if (context.mounted) {
-                                          Navigator.pushNamedAndRemoveUntil(
-                                            context,
-                                            AppRoutes.home,
-                                            (route) => false,
-                                          );
-                                          provider.clearControllers();
-                                        }
-                                      } else if (status == "cancelled" &&
-                                          context.mounted) {
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          SnackBar(
-                                            content: textWidget(
-                                              context: context,
-                                              text: "Google Sign-Up cancelled",
-                                              color: AppColors.whiteColor,
-                                            ),
-                                          ),
-                                        );
-                                      } else {
-                                        if (context.mounted) {
+                                        if (status == "success") {
+                                          accountProvider.startUserListener();
+                                          if (context.mounted) {
+                                            Navigator.pushNamedAndRemoveUntil(
+                                              context,
+                                              AppRoutes.home,
+                                              (route) => false,
+                                            );
+                                            provider.clearControllers();
+                                          }
+                                        } else if (status == "cancelled" &&
+                                            context.mounted) {
                                           ScaffoldMessenger.of(
                                             context,
                                           ).showSnackBar(
                                             SnackBar(
                                               content: textWidget(
                                                 context: context,
-                                                text: status,
+                                                text:
+                                                    "Google Sign-Up cancelled",
                                                 color: AppColors.whiteColor,
                                               ),
                                             ),
                                           );
+                                        } else {
+                                          if (context.mounted) {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              SnackBar(
+                                                content: textWidget(
+                                                  context: context,
+                                                  text: status,
+                                                  color: AppColors.whiteColor,
+                                                ),
+                                              ),
+                                            );
+                                          }
                                         }
-                                      }
-                                    },
-                                    image: googleLogo,
-                                    imageSize: 20,
-                                    iconLeftMargin: 10,
-                                    buttonBackgroundColor: AppColors.whiteColor,
-                                    borderColor: AppColors.black,
-                                    textColor: AppColors.black,
-                                    isBorder: true,
-                                  ),
-                                ],
+                                      },
+                                      image: googleLogo,
+                                      imageSize: 20,
+                                      iconLeftMargin: 10,
+                                      buttonBackgroundColor:
+                                          AppColors.whiteColor,
+                                      borderColor: AppColors.black,
+                                      textColor: AppColors.black,
+                                      isBorder: true,
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
