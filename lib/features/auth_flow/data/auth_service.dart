@@ -5,7 +5,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:plan_ex_app/core/utils/app_logger.dart';
 import 'package:plan_ex_app/features/auth_flow/data/enum.dart';
 import 'package:plan_ex_app/features/dashboard_flow/data/models/user_model.dart';
-import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+// import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class AuthService {
   final _auth = FirebaseAuth.instance;
@@ -288,39 +288,39 @@ class AuthService {
     }
   }
 
-  Future<String?> signInWithApple() async {
-    try {
-      final appleCredential = await SignInWithApple.getAppleIDCredential(
-        scopes: [
-          AppleIDAuthorizationScopes.email,
-          AppleIDAuthorizationScopes.fullName,
-        ],
-      );
+  // Future<String?> signInWithApple() async {
+  //   try {
+  //     final appleCredential = await SignInWithApple.getAppleIDCredential(
+  //       scopes: [
+  //         AppleIDAuthorizationScopes.email,
+  //         AppleIDAuthorizationScopes.fullName,
+  //       ],
+  //     );
 
-      final oauthCredential = OAuthProvider("apple.com").credential(
-        idToken: appleCredential.identityToken,
-        accessToken: appleCredential.authorizationCode,
-      );
+  //     final oauthCredential = OAuthProvider("apple.com").credential(
+  //       idToken: appleCredential.identityToken,
+  //       accessToken: appleCredential.authorizationCode,
+  //     );
 
-      final userCredential = await _auth.signInWithCredential(oauthCredential);
+  //     final userCredential = await _auth.signInWithCredential(oauthCredential);
 
-      final user = userCredential.user;
+  //     final user = userCredential.user;
 
-      if (user != null && user.emailVerified) {
-        await createUserDocument(user);
-        return null;
-      } else if (user != null && !user.emailVerified) {
-        return "unverified";
-      } else {
-        return "error";
-      }
-    } catch (e) {
-      if (e.toString().contains("AuthorizationErrorCode.canceled")) {
-        return "cancelled";
-      }
-      return "Apple sign-in failed: $e";
-    }
-  }
+  //     if (user != null && user.emailVerified) {
+  //       await createUserDocument(user);
+  //       return null;
+  //     } else if (user != null && !user.emailVerified) {
+  //       return "unverified";
+  //     } else {
+  //       return "error";
+  //     }
+  //   } catch (e) {
+  //     if (e.toString().contains("AuthorizationErrorCode.canceled")) {
+  //       return "cancelled";
+  //     }
+  //     return "Apple sign-in failed: $e";
+  //   }
+  // }
 
   Future<void> signOut() async {
     try {

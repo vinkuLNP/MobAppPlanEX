@@ -386,10 +386,8 @@ class AccountProvider extends ChangeNotifier {
       if (value) {
         final notificationAllowed =
             await NotificationService.requestPermissionIfNeeded();
-        final exactAlarmAllowed =
-            await NotificationService.requestExactAlarmPermissionIfNeeded();
 
-        if ((!notificationAllowed || !exactAlarmAllowed) && context.mounted) {
+        if ((!notificationAllowed) && context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: textWidget(
@@ -406,6 +404,16 @@ class AccountProvider extends ChangeNotifier {
         await NotificationService.scheduleDailySummaryAt(
           const TimeOfDay(hour: 10, minute: 30),
           "You completed $completed out of $total tasks today 🎯",
+        );
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: textWidget(
+              context: context,
+              color: Theme.of(context).cardColor,
+              text:
+                  "We use exact alarms to deliver your daily summary at 10:30 AM.",
+            ),
+          ),
         );
       } else {
         await NotificationService.cancelDailySummary();

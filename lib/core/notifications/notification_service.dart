@@ -69,37 +69,46 @@ class NotificationService {
     final granted = await androidPlugin.requestExactAlarmsPermission();
     return granted ?? false;
   }
-static Future<bool> requestPermissionIfNeeded() async {
-  if (Platform.isAndroid) {
-    final status = await Permission.notification.status;
 
-    if (status.isGranted) return true;
+  static Future<bool> requestPermissionIfNeeded() async {
+    if (Platform.isAndroid) {
+      final status = await Permission.notification.status;
 
-    if (status.isDenied) {
-      final result = await Permission.notification.request();
-      return result.isGranted;
+      if (status.isGranted) {
+        await requestExactAlarmPermissionIfNeeded();
+        return true;
+      }
+
+      if (status.isDenied) {
+        final result = await Permission.notification.request();
+        if (result.isGranted) {
+          await requestExactAlarmPermissionIfNeeded();
+        }
+
+        return result.isGranted;
+      }
+
+      if (status.isPermanentlyDenied) {
+        return false;
+      }
     }
 
-    if (status.isPermanentlyDenied) {
-      return false; 
+    final iosPlugin = _notifications
+        .resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin
+        >();
+
+    if (iosPlugin != null) {
+      final result = await iosPlugin.requestPermissions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+      return result ?? false;
     }
+
+    return true;
   }
-
-  final iosPlugin = _notifications
-      .resolvePlatformSpecificImplementation<
-          IOSFlutterLocalNotificationsPlugin>();
-
-  if (iosPlugin != null) {
-    final result = await iosPlugin.requestPermissions(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
-    return result ?? false;
-  }
-
-  return true;
-}
 
   static Future<void> scheduleDailySummaryAt(
     TimeOfDay time,

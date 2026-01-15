@@ -298,19 +298,19 @@ class AuthUserProvider extends ChangeNotifier {
     return error!;
   }
 
-  Future<String> appleSignIn() async {
-    _setLoading(true);
+  // Future<String> appleSignIn() async {
+  // _setLoading(true);
 
-    final result = await _service.signInWithApple();
+  // // final result = await _service.signInWithApple();
 
-    _setLoading(false);
+  // _setLoading(false);
 
-    if (result == null) return "success";
+  // if (result == null) return "success";
 
-    if (result == "cancelled") return "cancelled";
+  // if (result == "cancelled") return "cancelled";
 
-    error = result;
-    notifyListeners();
-    return error!;
-  }
+  // error = result;
+  // notifyListeners();
+  // return error!;
+  // }
 }

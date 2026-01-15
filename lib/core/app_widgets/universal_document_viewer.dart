@@ -44,10 +44,7 @@ class _UniversalDocumentViewerState extends State<UniversalDocumentViewer> {
                       color: Theme.of(context).hintColor,
                     ),
                     const SizedBox(height: 12),
-                    textWidget(
-                      context: context,
-                      text: "Loading document...",
-                    ),
+                    textWidget(context: context, text: "Loading document..."),
                   ],
                 ),
               ),
