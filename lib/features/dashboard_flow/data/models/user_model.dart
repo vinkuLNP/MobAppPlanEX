@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:plan_ex_app/features/dashboard_flow/domain/entities/user_entity.dart';
 
 class UserModel extends UserEntity {
@@ -19,6 +20,25 @@ class UserModel extends UserEntity {
     super.totalTasks,
     super.completedTasks,
   });
+  factory UserModel.fromFirebaseUser(User user, {String fullName = ''}) {
+    return UserModel(
+      uid: user.uid,
+      fullName: user.displayName ?? fullName,
+      email: user.email ?? '',
+      photoUrl: user.photoURL,
+      isPaid: false,
+      createdAt: DateTime.now(),
+      darkMode: false,
+      showCreationDates: false,
+      dailySummary: false,
+      taskReminders: false,
+      overdueAlerts: false,
+      autoSave: false,
+      totalNotes: 0,
+      totalTasks: 0,
+      completedTasks: 0,
+    );
+  }
 
   factory UserModel.fromMap(String uid, Map<String, dynamic> map) {
     return UserModel(

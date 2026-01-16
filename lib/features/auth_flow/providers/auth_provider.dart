@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:plan_ex_app/core/utils/app_logger.dart';
@@ -155,14 +156,14 @@ class AuthUserProvider extends ChangeNotifier {
         email: signUpEmailCtrl.text.trim(),
         password: signUpPassCtrl.text,
       );
+      log(status.toString());
       switch (status) {
         case SignUpStatus.unverifiedExisting:
           error = "You are not verified yet. Verification email sent.";
           break;
 
         case SignUpStatus.alreadyVerified:
-          error =
-              "This email is already registered and verified. Please login.";
+          error = "This email is already registered. Please login.";
           break;
 
         case SignUpStatus.tooManyRequests:

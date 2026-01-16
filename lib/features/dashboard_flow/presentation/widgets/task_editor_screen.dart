@@ -130,8 +130,11 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
 
                             if (title.isEmpty) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Task title is required'),
+                                SnackBar(
+                                  content: textWidget(
+                                    context: context,
+                                    text: 'Task title is required',
+                                  ),
                                 ),
                               );
                               return;
@@ -203,7 +206,6 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
     children: [
       textWidget(context: context, text: 'Tags', fontWeight: FontWeight.w600),
       const SizedBox(height: 8),
-
       SizedBox(
         width: double.infinity,
         child: Wrap(
@@ -212,7 +214,7 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
           children: [
             ...tags.map(
               (tag) => Chip(
-                label: Text(tag),
+                label: textWidget(context: context, text: tag),
                 deleteIcon: isViewOnly ? null : const Icon(Icons.close),
                 onDeleted: isViewOnly
                     ? null
@@ -222,7 +224,7 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
 
             if (!isViewOnly)
               ActionChip(
-                label: const Text('+ Add tag'),
+                label: textWidget(context: context, text: '+ Add tag'),
                 onPressed: () => _showAddTagDialog(),
               ),
           ],
@@ -237,7 +239,7 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Add Tag'),
+        title: textWidget(context: context, text: 'Add Tag'),
         content: TextField(
           controller: ctrl,
           maxLength: 20,
@@ -247,7 +249,7 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: textWidget(text: 'Cancel', context: context),
           ),
 
           AppButton(
@@ -323,24 +325,27 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
   Widget _dueAndRecurringRow(TasksProvider provider) => Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
-      Row(
-        children: [
-          isViewOnly
-              ? textWidget(context: context, text: 'Due Date')
-              : TextButton(
-                  onPressed: _pickDate,
-                  child: textWidget(context: context, text: 'Pick Due Date'),
-                ),
-          const Spacer(),
+      GestureDetector(
+        onTap: isViewOnly ? null : _pickDate,
+        child: Row(
+          children: [
+            isViewOnly
+                ? textWidget(context: context, text: 'Due Date')
+                : TextButton(
+                    onPressed: _pickDate,
+                    child: textWidget(context: context, text: 'Pick Due Date'),
+                  ),
+            const Spacer(),
 
-          textWidget(
-            context: context,
+            textWidget(
+              context: context,
 
-            text: dueDate == null
-                ? 'No due date'
-                : '${dueDate!.year}-${dueDate!.month}-${dueDate!.day}',
-          ),
-        ],
+              text: dueDate == null
+                  ? 'No due date'
+                  : '${dueDate!.year}-${dueDate!.month}-${dueDate!.day}',
+            ),
+          ],
+        ),
       ),
       const SizedBox(height: 8),
       Row(
@@ -360,10 +365,6 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
               fontWeight: FontWeight.w500,
             ),
           ),
-          // SizedBox(width: 5),
-
-          // ProBadge(),
-          // const Spacer(),
         ],
       ),
       if (recurringEnabled)
@@ -389,28 +390,39 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.grey[850],
+                color: Theme.of(context).inputDecorationTheme.fillColor,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(color: Colors.grey[700]!),
               ),
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<RecurrenceUnit>(
-                  value: recurrenceUnit,
-                  dropdownColor: Colors.grey[900],
-                  icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
-                  style: const TextStyle(
-                    color: Colors.white,
+                  value: recurrenceUnit == RecurrenceUnit.none
+                      ? RecurrenceUnit.days
+                      : recurrenceUnit,
+                  dropdownColor: Theme.of(
+                    context,
+                  ).inputDecorationTheme.fillColor,
+                  icon: Icon(
+                    Icons.arrow_drop_down,
+                    color: Theme.of(context).hintColor,
+                  ),
+                  style: TextStyle(
+                    color: Theme.of(context).hintColor,
                     fontWeight: FontWeight.w500,
                   ),
-                  items: RecurrenceUnit.values.map((u) {
-                    return DropdownMenuItem(
-                      value: u,
-                      child: Text(
-                        u.name,
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    );
-                  }).toList(),
+                  items: RecurrenceUnit.values
+                      .where((u) => u != RecurrenceUnit.none)
+                      .map((u) {
+                        return DropdownMenuItem(
+                          value: u,
+                          child: textWidget(
+                            context: context,
+                            text: u.name.toUpperCase(),
+                            color: Theme.of(context).hintColor,
+                          ),
+                        );
+                      })
+                      .toList(),
                   onChanged: isViewOnly
                       ? null
                       : (v) => setState(() => recurrenceUnit = v!),
@@ -430,7 +442,6 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
         children: [
           textWidget(
             context: context,
-
             text: 'Attachments',
             fontWeight: FontWeight.w600,
           ),
@@ -457,7 +468,6 @@ class _TaskEditorScreenState extends State<TaskEditorScreen> {
           padding: const EdgeInsets.only(top: 8),
           child: textWidget(
             context: context,
-
             text: provider.isPro
                 ? "No attachments yet."
                 : "Upgrade to Pro to add attachments.",

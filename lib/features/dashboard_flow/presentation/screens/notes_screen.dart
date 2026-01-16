@@ -143,9 +143,11 @@ class _NotesScreenState extends State<NotesScreen> {
                                   ),
                                   const SizedBox(width: 8),
                                   Expanded(
-                                    child: Text(
-                                      provider.selectedCategory,
-                                      overflow: TextOverflow.ellipsis,
+                                    child: textWidget(
+                                      context: context,
+
+                                      text: provider.selectedCategory,
+                                      textOverflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                 ],
@@ -157,9 +159,11 @@ class _NotesScreenState extends State<NotesScreen> {
                               .map(
                                 (c) => DropdownMenuItem(
                                   value: c,
-                                  child: Text(
-                                    c,
-                                    overflow: TextOverflow.ellipsis,
+                                  child: textWidget(
+                                    context: context,
+
+                                    text: c,
+                                    textOverflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                               )
@@ -235,12 +239,14 @@ class _NotesScreenState extends State<NotesScreen> {
               child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
-                  children: const [
+                  children: [
                     CircularProgressIndicator(),
                     SizedBox(height: 12),
-                    Text(
-                      "Deleting notes...",
-                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    textWidget(
+                      context: context,
+                      text: "Deleting notes...",
+                      color: Colors.white,
+                      fontSize: 16,
                     ),
                   ],
                 ),

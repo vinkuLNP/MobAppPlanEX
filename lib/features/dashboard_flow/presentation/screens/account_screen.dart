@@ -93,9 +93,7 @@ class _AccountScreenState extends State<AccountScreen> {
                         ],
                       ),
                     ),
-
                     const SizedBox(height: 20),
-
                     _card(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -114,9 +112,7 @@ class _AccountScreenState extends State<AccountScreen> {
                               context,
                             ).hintColor.withValues(alpha: 0.6),
                           ),
-
                           const SizedBox(height: 12),
-
                           AppButton(
                             text: 'Delete Account',
                             onTap: () => _confirmDelete(provider, context),
@@ -194,10 +190,7 @@ class _AccountScreenState extends State<AccountScreen> {
     );
     if (want != true) return;
     if (mainContext.mounted) {
-      final resultCode = await provider.deleteAccount(
-        mainContext,
-        passwordForReauth: null,
-      );
+      final resultCode = await provider.deleteAccount(mainContext);
       AppLogger.logString(resultCode.toString());
       if (resultCode == null) {
         if (mounted) {
@@ -216,7 +209,8 @@ class _AccountScreenState extends State<AccountScreen> {
           ).pushNamedAndRemoveUntil(AppRoutes.login, (route) => false);
         }
       } else if (resultCode == 'requires-recent-login' ||
-          resultCode == 'user-not-found') {
+          resultCode == 'user-not-found' ||
+          resultCode == 'requires-password') {
         _showReauthDialog(provider);
       } else {
         if (mounted) {

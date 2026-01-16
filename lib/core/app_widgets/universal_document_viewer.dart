@@ -21,7 +21,9 @@ class _UniversalDocumentViewerState extends State<UniversalDocumentViewer> {
         "https://docs.google.com/gview?embedded=true&url=${widget.fileUrl}";
 
     return Scaffold(
-      appBar: AppBar(title: const Text("Document Viewer")),
+      appBar: AppBar(
+        title: textWidget(text: "Document Viewer", context: context),
+      ),
       body: Stack(
         children: [
           InAppWebView(

@@ -112,9 +112,11 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                       ScaffoldMessenger.of(
                                         context,
                                       ).showSnackBar(
-                                        const SnackBar(
-                                          content: Text(
-                                            "Password reset link has been sent to your email",
+                                        SnackBar(
+                                          content: textWidget(
+                                            context: context,
+                                            text:
+                                                "Password reset link has been sent to your email",
                                           ),
                                           behavior: SnackBarBehavior.floating,
                                         ),
@@ -127,8 +129,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                                           context,
                                         ).showSnackBar(
                                           SnackBar(
-                                            content: Text(
-                                              auth.error.toString(),
+                                            content: textWidget(
+                                              context: context,
+                                              text: auth.error.toString(),
                                             ),
                                             behavior: SnackBarBehavior.floating,
                                           ),

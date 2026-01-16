@@ -362,12 +362,16 @@ class AccountProvider extends ChangeNotifier {
                   borderRadius: BorderRadius.circular(16),
                 ),
                 padding: const EdgeInsets.all(12),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.lock, color: Colors.white),
                     SizedBox(width: 8),
-                    Text('Premium Only', style: TextStyle(color: Colors.white)),
+                    textWidget(
+                      context: context,
+                      text: 'Premium Only',
+                      color: Colors.white,
+                    ),
                   ],
                 ),
               ),
@@ -487,30 +491,66 @@ class AccountProvider extends ChangeNotifier {
     BuildContext context, {
     String? passwordForReauth,
   }) async {
-    final firebaseUser = FirebaseAuth.instance.currentUser;
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return 'user-not-found';
 
-    if (firebaseUser == null) {
-      return 'Requires Re-Login';
-    }
-
-    final uid = firebaseUser.uid;
     _setProcessing(true);
 
     try {
-      if (firebaseUser.providerData.any((p) => p.providerId == 'google.com')) {
+      await user.delete();
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'requires-recent-login') {
+        final reauthResult = await _reauthenticateUser(
+          user,
+          passwordForReauth: passwordForReauth,
+        );
+        if (reauthResult != null) {
+          _setProcessing(false);
+          return reauthResult;
+        }
+
+        await user.delete();
+      } else {
+        _setProcessing(false);
+        return e.code;
+      }
+    } catch (e) {
+      _setProcessing(false);
+      return e.toString();
+    }
+
+    try {
+      await repository.deleteUserDocument(user.uid);
+      deleteAvatar();
+    } catch (e) {
+      AppLogger.error('Post-delete cleanup failed: $e');
+    }
+
+    if (context.mounted) {
+      await _forceLogout(context);
+    }
+
+    _setProcessing(false);
+    return null;
+  }
+
+  Future<String?> _reauthenticateUser(
+    User user, {
+    String? passwordForReauth,
+  }) async {
+    try {
+      final providerId = user.providerData.first.providerId;
+
+      // if (providerId == GoogleAuthProvider.PROVIDER_ID)
+
+      if (user.providerData.any((p) => p.providerId == 'google.com')) {
         final google = GoogleSignIn.instance;
         await google.initialize();
 
         final completer = Completer<GoogleSignInAuthenticationEvent>();
-
-        final sub = google.authenticationEvents.listen(
-          (event) {
-            if (!completer.isCompleted) completer.complete(event);
-          },
-          onError: (e) {
-            if (!completer.isCompleted) completer.completeError(e);
-          },
-        );
+        final sub = google.authenticationEvents.listen((event) {
+          if (!completer.isCompleted) completer.complete(event);
+        }, onError: completer.completeError);
 
         await google.authenticate();
         final event = await completer.future;
@@ -518,41 +558,114 @@ class AccountProvider extends ChangeNotifier {
 
         final GoogleSignInAccount? googleUser = switch (event) {
           GoogleSignInAuthenticationEventSignIn() => event.user,
-          GoogleSignInAuthenticationEventSignOut() => null,
+          _ => null,
         };
 
-        if (googleUser == null) return 'Google re-auth cancelled';
+        if (googleUser == null) return 'reauth-cancelled';
 
         final googleAuth = googleUser.authentication;
-
         final credential = GoogleAuthProvider.credential(
           idToken: googleAuth.idToken,
         );
 
-        await firebaseUser.reauthenticateWithCredential(credential);
-      } else if (passwordForReauth != null && firebaseUser.email != null) {
+        await user.reauthenticateWithCredential(credential);
+      }
+      // else if (providerId == AppleAuthProvider.PROVIDER_ID) {
+      //   await user.reauthenticateWithProvider(AppleAuthProvider());
+      // }
+      else if (providerId == EmailAuthProvider.PROVIDER_ID) {
+        if (passwordForReauth == null || passwordForReauth.isEmpty) {
+          return 'requires-password';
+        }
+
         final cred = EmailAuthProvider.credential(
-          email: firebaseUser.email!,
+          email: user.email!,
           password: passwordForReauth,
         );
-        await firebaseUser.reauthenticateWithCredential(cred);
+
+        await user.reauthenticateWithCredential(cred);
       }
 
-      await repository.deleteUserDocument(uid);
-      deleteAvatar();
-      await firebaseUser.delete();
-
-      if (context.mounted) await _forceLogout(context);
-
       return null;
+    } on FirebaseAuthException catch (e) {
+      return e.code;
     } catch (e) {
-      if (context.mounted) await _forceLogout(context);
-      if (e is FirebaseAuthException) return e.code;
       return e.toString();
-    } finally {
-      _setProcessing(false);
     }
   }
+
+  // Future<String?> deleteAccount(
+  //   BuildContext context,
+  //   //  {
+  //   // String? passwordForReauth,
+  // // }
+  // ) async {
+  //   final firebaseUser = FirebaseAuth.instance.currentUser;
+
+  //   if (firebaseUser == null) {
+  //     return 'Requires Re-Login';
+  //   }
+
+  //   final uid = firebaseUser.uid;
+  //   _setProcessing(true);
+
+  //   try {
+  //     if (firebaseUser.providerData.any((p) => p.providerId == 'google.com')) {
+  //       final google = GoogleSignIn.instance;
+  //       await google.initialize();
+
+  //       final completer = Completer<GoogleSignInAuthenticationEvent>();
+
+  //       final sub = google.authenticationEvents.listen(
+  //         (event) {
+  //           if (!completer.isCompleted) completer.complete(event);
+  //         },
+  //         onError: (e) {
+  //           if (!completer.isCompleted) completer.completeError(e);
+  //         },
+  //       );
+
+  //       await google.authenticate();
+  //       final event = await completer.future;
+  //       await sub.cancel();
+
+  //       final GoogleSignInAccount? googleUser = switch (event) {
+  //         GoogleSignInAuthenticationEventSignIn() => event.user,
+  //         GoogleSignInAuthenticationEventSignOut() => null,
+  //       };
+
+  //       if (googleUser == null) return 'Google re-auth cancelled';
+
+  //       final googleAuth = googleUser.authentication;
+
+  //       final credential = GoogleAuthProvider.credential(
+  //         idToken: googleAuth.idToken,
+  //       );
+
+  //       await firebaseUser.reauthenticateWithCredential(credential);
+  //     } else if (passwordForReauth != null && firebaseUser.email != null) {
+  //       final cred = EmailAuthProvider.credential(
+  //         email: firebaseUser.email!,
+  //         password: passwordForReauth,
+  //       );
+  //       await firebaseUser.reauthenticateWithCredential(cred);
+  //     }
+
+  //     await repository.deleteUserDocument(uid);
+  //     deleteAvatar();
+  //     await firebaseUser.delete();
+
+  //     if (context.mounted) await _forceLogout(context);
+
+  //     return null;
+  //   } catch (e) {
+  //     // if (context.mounted) await _forceLogout(context);
+  //     if (e is FirebaseAuthException) return e.code;
+  //     return e.toString();
+  //   } finally {
+  //     _setProcessing(false);
+  //   }
+  // }
 
   void deleteAvatar() async {
     if (user?.photoUrl != null && user!.photoUrl!.isNotEmpty) {

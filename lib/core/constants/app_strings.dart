@@ -1,10 +1,13 @@
 class AppStrings {
-  static const appName = "Notes & Tasks App";
+  static const String logOutTitle = 'Log Out';
+  static const String deleteAccountTitle = 'Delete Account';
+  static const String deleteAccountMessage =
+      'This will permanently delete your account and all data.';
 
-  static const loginSuccess = "Login successful";
-  static const logoutSuccess = "Logged out";
-  static const signupEmailSent = "Verification email sent. Please check your inbox.";
+  static const String cancel = 'Cancel';
+  static const String confirm = 'Confirm';
+  static const String retry = 'Retry';
 
-  static const errorUnexpected = "Something went wrong";
-  
+  static const String emailLabel = 'Email';
+  static const String passwordLabel = 'Password';
 }
